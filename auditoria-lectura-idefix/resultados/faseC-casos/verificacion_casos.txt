@@ -1,0 +1,64 @@
+c4r90 · Factura vertical con /Rotate 90: se muestra girada; el texto va en horizontal en el contenido
+  ✅ 12/12 líneas o párrafos presentes
+  ✅ en orden de lectura
+  ✅ importes.inferidos.base_imponible = 1354.6 (leído: 1354.6)
+  ✅ importes.inferidos.cuota_iva = 284.47 (leído: 284.47)
+  ✅ importes.inferidos.total = 1639.07 (leído: 1639.07)
+  ✅ aviso PDF_PAGE_READ_IN_TEXT_ORIENTATION
+c4r270 · Factura vertical con /Rotate 270: se muestra girada; el texto va en horizontal en el contenido
+  ✅ 12/12 líneas o párrafos presentes
+  ✅ en orden de lectura
+  ✅ importes.inferidos.base_imponible = 1354.6 (leído: 1354.6)
+  ✅ importes.inferidos.cuota_iva = 284.47 (leído: 284.47)
+  ✅ importes.inferidos.total = 1639.07 (leído: 1639.07)
+  ✅ aviso PDF_PAGE_READ_IN_TEXT_ORIENTATION
+c4ap · Página apaisada: /Rotate 90 con el contenido girado (se lee derecha en pantalla)
+  ✅ 12/12 líneas o párrafos presentes
+  ✅ en orden de lectura
+  ✅ importes.inferidos.base_imponible = 1354.6 (leído: 1354.6)
+  ✅ importes.inferidos.cuota_iva = 284.47 (leído: 284.47)
+  ✅ importes.inferidos.total = 1639.07 (leído: 1639.07)
+  ✅ sin el aviso PDF_PAGE_READ_IN_TEXT_ORIENTATION
+c3ct · Título, dos columnas de texto y una tabla a todo lo ancho debajo
+  ✅ 7/7 líneas o párrafos presentes
+  ✅ en orden de lectura
+  ✅ tabla con ≥ 5 filas ([5])
+  ✅ celda '2025/0103' en una tabla
+  ✅ celda '14.938,26' en una tabla
+  ✅ aviso PDF_COLUMNS_DETECTED
+c3dl · Factura con los bloques de emisor y cliente uno al lado del otro
+  ✅ línea entera: 'Emisor: Construcciones Muñoz Ibáñez, S.L.'
+  ✅ línea entera: 'Cliente: Talleres Peña Gutiérrez, S.A.'
+  ✅ línea entera: 'NIF emisor: B12345674'
+  ✅ línea entera: 'NIF cliente: A58818501'
+  ✅ importes.inferidos.base_imponible = 1354.6 (leído: 1354.6)
+  ✅ importes.inferidos.cuota_iva = 284.47 (leído: 284.47)
+  ✅ importes.inferidos.total = 1639.07 (leído: 1639.07)
+  ✅ celda 'Sustitución de canalón (m)' en una tabla
+  ✅ celda '384,60' en una tabla
+c3uc · Carta a una columna con la fecha alineada a la derecha: no hay columnas
+  ✅ 6/6 líneas o párrafos presentes
+  ✅ en orden de lectura
+  ✅ sin el aviso PDF_COLUMNS_DETECTED
+c1w · Tabla de Word con gridSpan, vMerge y gridBefore
+  ✅ fila 1: ['Cliente', 'Concepto', 'Importes', None, 'Nota'] (leída: ['Cliente', 'Concepto', 'Importes', None, 'Nota'])
+  ✅ fila 2: ['Ferretería Núñez', 'Material', '100,00', '21,00', 'ok'] (leída: ['Ferretería Núñez', 'Material', '100,00', '21,00', 'ok'])
+  ✅ fila 3: ['Ferretería Núñez', 'Portes', '10,00', '2,10', 'revisar'] (leída: ['Ferretería Núñez', 'Portes', '10,00', '2,10', 'revisar'])
+  ✅ fila 4: ['Subtotal', None, '110,00', '23,10', None] (leída: ['Subtotal', None, '110,00', '23,10', None])
+  ✅ fila 5: [None, None, None, '1.633,50', 'fin'] (leída: [None, None, None, '1.633,50', 'fin'])
+  ✅ fila 3 col 1: combinada_desde = 2
+  ✅ aviso DOCX_MERGED_CELLS_EXPANDED
+c2h · Factura HTML con base, IVA y total en una tabla de dos columnas
+  ✅ importes.inferidos.base_imponible = 1354.6 (leído: 1354.6)
+  ✅ importes.inferidos.cuota_iva = 284.47 (leído: 284.47)
+  ✅ importes.inferidos.total = 1639.07 (leído: 1639.07)
+c5f · Fragmento HTML (empieza por <div>) con filas onclick, un script y una instrucción inyectada
+  ✅ contiene 'Transferencia recibida Ferretería Núñez'
+  ✅ contiene 'Recibo suministro eléctrico'
+  ✅ contiene '-108,78'
+  ✅ no contiene 'document.title'
+  ✅ instrucción inyectada detectada
+  ✅ aviso HTML_FRAGMENT
+c5t · El mismo fragmento con extensión .txt: no se acepta como HTML
+  ✅ rechazado con mensaje: 'FORMATO NO ADMITIDO.\n\nLos archivos .csv, .xml, .txt, .rtf, .json, .zip'
+FALLOS: 0

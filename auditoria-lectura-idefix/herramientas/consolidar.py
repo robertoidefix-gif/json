@@ -72,8 +72,12 @@ def veredicto(e, d):
         return "❌", txt
     if "orden_lectura" in e:
         o = e["orden_lectura"]
-        return "❌", (f"{o['parrafos_contiguos']}/{o['parrafos']} párrafos legibles seguidos; las líneas de las dos columnas se intercalan"
-                      f" · {checks[0]['detalle'] if checks else ''}")
+        # Fase C: la regla común (✅ si se cumplen todas las comprobaciones); antes este caso siempre fallaba.
+        if o["parrafos_contiguos"] == o["parrafos"] and o["en_orden"] and extra_ok:
+            return "✅", f"{o['parrafos']}/{o['parrafos']} párrafos legibles y en orden · {checks[0]['detalle'] if checks else ''}"
+        return ("⚠️" if o["parrafos_contiguos"] * 2 >= o["parrafos"] else "❌"), (
+            f"{o['parrafos_contiguos']}/{o['parrafos']} párrafos legibles seguidos; las líneas de las dos columnas se intercalan"
+            f" · {checks[0]['detalle'] if checks else ''}")
     if d["id"] == "html05":
         r = json.load(open(os.path.join(OUT, "resultados", PRINCIPAL, "html05.json"), encoding="utf-8"))["resultado"]
         H = r["seguridad_contenido"]["patrones_sospechosos_detectados"]

@@ -1,0 +1,278 @@
+{
+ "config": {
+  "ocr": true
+ },
+ "msInicio": 1265,
+ "resumen": [
+  {
+   "id": "c4r90",
+   "ok": true,
+   "ms": 302,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "c4r270",
+   "ok": true,
+   "ms": 298,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "c4ap",
+   "ok": true,
+   "ms": 260,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "c3ct",
+   "ok": true,
+   "ms": 277,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "c3dl",
+   "ok": true,
+   "ms": 272,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "c3uc",
+   "ok": true,
+   "ms": 235,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "c1w",
+   "ok": true,
+   "ms": 46,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "c2h",
+   "ok": true,
+   "ms": 50,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "c5f",
+   "ok": true,
+   "ms": 35,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "c5t",
+   "ok": true,
+   "ms": 3,
+   "error": null,
+   "estado": "failed"
+  }
+ ],
+ "peticiones": [
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalC/base/prueba-auditoria.html",
+   "tipo": "document",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalC/base/vendor-paquetes/pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalC/base/vendor-paquetes/pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalC/base/vendor-paquetes/tesseract-7.0.0.min.js.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalC/base/vendor-paquetes/tesseract-7.0.0-worker.min.js.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalC/base/vendor-paquetes/tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalC/base/vendor-paquetes/tessdata-spa.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalC/base/vendor-paquetes/tessdata-cat.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalC/base/vendor-paquetes/tessdata-eus.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalC/base/vendor-paquetes/tessdata-eng.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalC/base/vendor-paquetes/tessdata-fra.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalC/base/analizador-archivos.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalC/base/prueba-auditoria.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/d8e23702-5b79-47cf-8fda-5d1b8210473e",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/946aa59c-0efa-4bbf-a14f-2e495ea41fdf",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/52a02c51-bc7c-4ce5-8c97-423ae7d8612f",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/89f558f3-6c9b-4ea2-8734-bd7f0fc4cca8",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/d8e23702-5b79-47cf-8fda-5d1b8210473e",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1f04e1e1-f8be-48bb-a03a-8470cb81f895",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalC/base/vendor-paquetes/pdfjs-6.2.108-legacy-fuentes.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/d8e23702-5b79-47cf-8fda-5d1b8210473e",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/d8e23702-5b79-47cf-8fda-5d1b8210473e",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1f04e1e1-f8be-48bb-a03a-8470cb81f895",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/d8e23702-5b79-47cf-8fda-5d1b8210473e",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/d8e23702-5b79-47cf-8fda-5d1b8210473e",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1f04e1e1-f8be-48bb-a03a-8470cb81f895",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/d8e23702-5b79-47cf-8fda-5d1b8210473e",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/d8e23702-5b79-47cf-8fda-5d1b8210473e",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1f04e1e1-f8be-48bb-a03a-8470cb81f895",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/d8e23702-5b79-47cf-8fda-5d1b8210473e",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/d8e23702-5b79-47cf-8fda-5d1b8210473e",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1f04e1e1-f8be-48bb-a03a-8470cb81f895",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/d8e23702-5b79-47cf-8fda-5d1b8210473e",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/d8e23702-5b79-47cf-8fda-5d1b8210473e",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1f04e1e1-f8be-48bb-a03a-8470cb81f895",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/d8e23702-5b79-47cf-8fda-5d1b8210473e",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/d8e23702-5b79-47cf-8fda-5d1b8210473e",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/d8e23702-5b79-47cf-8fda-5d1b8210473e",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/d8e23702-5b79-47cf-8fda-5d1b8210473e",
+   "tipo": "script",
+   "metodo": "GET"
+  }
+ ],
+ "externas": [],
+ "consola": [],
+ "navegador": "141.0.7390.37"
+}

@@ -1,0 +1,135 @@
+=====================================================================================================
+IDEFIX1.0 · FASE C (sobre la versión sin servidor + fase B) — CAMBIOS Y PRUEBAS
+(AnalizadorArchivos 6.14.0 · 2 de octubre de 2026)
+=====================================================================================================
+
+Lo que pediste: «Realiza la fase C». La fase C del informe de auditoría (apartado 9) es la estructura de
+tablas y texto, puntos 7 a 12 de la lista priorizada:
+  C1 (7)  Word: celdas combinadas (gridSpan, vMerge).        C2 (8)  Base, IVA y total dentro de tablas.
+  C3 (9)  PDF a dos columnas.                                C4 (10) Páginas PDF giradas.
+  C5 (11, 12) HTML: fragmentos sin <html> y filas con onclick.
+Las cinco están hechas. Se usa igual: doble clic en Idefix1.0/index.html (Chrome o Edge).
+
+Leyenda: ✅ comprobado aquí · ⚠️ no demostrable aquí (se dice por qué).
+
+-----------------------------------------------------------------------------------------------------
+1. RESULTADO MEDIDO (corpus de 72 documentos, mismas reglas de veredicto que la auditoría)
+-----------------------------------------------------------------------------------------------------
+  Nota por formato             fase B  →  fase C
+  HTML                           6,5   →   9,5     (html07, html08 y html09: ❌ → ✅)
+  HTML+HTM (mismo lector)        7,3   →   9,6
+  DOCX                           7,7   →   8,5     (docx02 y docx08: ⚠️ → ✅)
+  PDF digital                    6,3   →   7,0     (pdf05: ❌ → ✅)
+  PDF (global)                   6,8   →   7,2
+  Sin cambios: PDF escaneado 8,0 · XLSX 9,5 · XLS 10 · HTM 10 · PNG 7,5 · JPG 2,5 · JPEG 5,0.
+
+  Casos que cambian (fase B → fase C):
+  html07 filas <tr onclick>              0/12 registros (filas descartadas)  → 12/12, campos 100 %, totales 3/3
+  html08 fragmento que empieza por <table>  rechazado                      → 12/12, campos 100 %, totales 3/3
+  html09 empieza por <meta charset>         rechazado                      → 12/12, campos 100 %, totales 3/3
+  docx02 base, IVA y total en tabla      4/7 datos                          → 7/7 datos
+  docx08 gridSpan y vMerge               «1.633,50» bajo «Cuota», «Total» vacío → los 3 importes bajo su columna
+  pdf05  dos columnas                    0/6 párrafos legibles + 1 tabla inventada → 6/6 en orden, 0 tablas
+  pdf13  página con /Rotate 90           0/7 datos, texto 20 % (líneas mezcladas) → 3/7, texto 30 %: lo que hay
+                                         dentro de la página, en orden (ver 5)
+  Los otros 65 documentos: mismo resultado. 0 peticiones externas. Tiempo total del corpus: 42,0 s → 43,6 s.
+  (Corrección en la herramienta de medida: consolidar.py daba ❌ fijo a los casos de orden de lectura porque
+  pdf05 nunca había pasado; ahora aplica la regla común. Con la fase B el resultado es el mismo: ❌.)
+
+-----------------------------------------------------------------------------------------------------
+2. CÓMO FUNCIONA CADA CAMBIO
+-----------------------------------------------------------------------------------------------------
+C1 · Word. Antes cada celda (w:tc) contaba como una columna, así que tras una celda combinada en horizontal
+  los importes se corrían a la izquierda. Ahora la tabla se construye con su geometría: gridBefore deja
+  columnas vacías al principio de la fila, gridSpan ocupa varias columnas (las demás quedan vacías) y una
+  celda con vMerge que continúa la de arriba repite su valor y lleva source.combinada_desde (la fila de
+  origen), igual que las tablas HTML con rowspan. Aviso informativo DOCX_MERGED_CELLS_EXPANDED; el aviso
+  anterior («se exportaron sin reconstruir su geometría», warning) ya no hace falta.
+C2 · Totales en tabla. Además de los rótulos «Nombre: valor» del texto, se usan las filas de tabla con
+  exactamente dos celdas con contenido, un rótulo y un valor («Base imponible | 1.354,60 €»). Sirve para
+  Word, HTML y PDF. El valor indica de qué tabla y fila sale (fuente.tabla y fuente.fila) y su método
+  («rótulo y valor en una fila de tabla»); la confianza es la misma que la de los rótulos del texto.
+C3 · Dos columnas. Antes se juntaban en una línea las de las dos columnas que están a la misma altura. Ahora
+  se busca un canal vertical: al menos 4 líneas (y el 60 % de las candidatas) con UN solo hueco grande en la
+  misma posición y al menos 15 caracteres a cada lado, y casi ninguna línea que lo cruce. Si existe, se lee
+  la columna izquierda y luego la derecha. Un título a todo lo ancho o una fila de tabla (varios huecos) no
+  se parten y cierran el tramo de columnas. Aviso PDF_COLUMNS_DETECTED. Una tabla no puede activar esto por
+  sí sola: sus filas tienen varios huecos o celdas cortas.
+C4 · Páginas giradas. Cada fragmento de texto tiene una dirección (su matriz). Si la mayoría de los
+  caracteres (≥ 60 %) va girada 90°, 180° o 270° respecto a cómo se muestra la página, la página se lee
+  en la orientación de su texto (y el OCR, si hace falta, dibuja la página igual). Aviso
+  PDF_PAGE_READ_IN_TEXT_ORIENTATION. Una página apaisada bien hecha (texto derecho en pantalla) no cambia.
+C5 · HTML. Se aceptan fragmentos de página que empiezan por <table>, <meta>, <div>, <p>, <h1>… (exportaciones
+  «Excel» de bancos y ERP), solo si la extensión es .html, .htm, .xhtml o .xls (en .xls se sigue
+  recomendando convertirlo a .xlsx). Aviso HTML_FRAGMENT. De un elemento con onclick, onload… se ignora el
+  ATRIBUTO y se lee su texto (antes se descartaba la fila entera con sus datos): este lector es pasivo y
+  nunca ejecuta nada; scripts, estilos, iframes, etc. se siguen ignorando con su contenido.
+
+-----------------------------------------------------------------------------------------------------
+3. CAMBIOS POR ARCHIVO (líneas de Idefix1.0/analizador-archivos.js de esta carpeta, 17.891 líneas,
+   SHA-256 1675dd4dffac03627dfda78b02e9ff9334c0cc1a291ff0ec92a26a55bcff8bf9). Diff completo: fase-c.diff
+   Solo cambian analizador-archivos.js y el LEEME de la carpeta; páginas, demo y paquetes, iguales.
+-----------------------------------------------------------------------------------------------------
+  5–15        Cabecera: resumen de la fase C.
+  Worker núcleo (su SHA-256, SHA256_WORKER_NUCLEO en la línea 7767, se ha recalculado):
+  1673–1715   C1: docxFilasTabla (gridBefore, gridSpan, vMerge y combinada_desde).
+  1760–1785   C1: la tabla de Word usa esa geometría; aviso DOCX_MERGED_CELLS_EXPANDED (1781).
+  2952–2962   C3: pdfHuecosLinea (huecos grandes de una línea).
+  2970–2994   C3: pdfCanalColumnas (canal entre columnas, con sus condiciones).
+  3002–3023   C3: pdfLineasEnOrden (lectura columna a columna).
+  3375–3376   C3: estructurarPDF usa las líneas en orden; aviso PDF_COLUMNS_DETECTED en 3414.
+  4210–4236   C5: detectar acepta fragmentos según la extensión.
+  4580–4586   C5: de los elementos con on* se ignora el atributo, no el texto.
+  4672–4676   C5: aviso HTML_EVENT_HANDLERS_IGNORED (informativo).
+  5426–5449   C2: paresDeTablas y valorDeCampo.
+  5462        C2: inferirCampos usa también los pares de las tablas.
+  6102–6110   C5: aviso HTML_FRAGMENT.
+  Página (hilo principal):
+  7858–7868   C5: textos de ayuda del lector HTML y del rechazo de HTML no reconocible.
+  13556–13574 C4: _viewportDeLectura (orientación del texto).
+  13676       C4: _renderizarPagina admite la orientación (para el OCR).
+  13795–13796 C4: cada página se lee con esa orientación.
+  13852       C4: el OCR de una página mixta usa la misma orientación.
+  17276–17280 C4: aviso PDF_PAGE_READ_IN_TEXT_ORIENTATION.
+  ESLint (misma configuración que la auditoría): 36 errores y 70 avisos, todos anteriores; 0 nuevos y 1
+  menos que en la fase B (la complejidad de extraerDOCX). Sin eval, new Function, CDN ni scripts externos.
+
+-----------------------------------------------------------------------------------------------------
+4. PRUEBAS (Chromium 141.0.7390.37 · página abierta como file:// · sobre una copia exacta de Idefix1.0/)
+   Resultados: auditoria-lectura-idefix/resultados/faseC/, faseC-casos/, faseC-escenarios/
+-----------------------------------------------------------------------------------------------------
+  ✅ Corpus completo (72 documentos): ver apartado 1.
+  ✅ Casos de la fase C (herramientas/fase-c/), 0 fallos:
+     - Factura vertical con /Rotate 90 y con /Rotate 270: las 12 líneas en orden y base, IVA y total.
+     - Página apaisada con el contenido girado (se lee derecha en pantalla): igual que antes, sin aviso.
+     - Título + dos columnas + tabla a todo lo ancho: 7/7 párrafos en orden y la tabla con sus 5 filas.
+     - Emisor y cliente lado a lado: cada línea entera («Emisor: …», «Cliente: …»), importes y tabla.
+     - Carta a una columna con la fecha a la derecha: no se detectan columnas; orden intacto.
+     - Tabla de Word con gridSpan, vMerge y gridBefore: las 5 filas exactas y combinada_desde.
+     - Factura HTML con los totales en tabla: base, IVA y total.
+     - Fragmento HTML (empieza por <div>) con filas onclick, un <script> y una instrucción inyectada: se
+       leen las filas, el script no aparece, la instrucción se detecta y avisa HTML_FRAGMENT. El mismo
+       fragmento como .txt se rechaza («FORMATO NO ADMITIDO»).
+  ✅ Casos de la fase B, OCR desactivado, escenarios de seguridad (paquete alterado, worker núcleo
+     alterado, ataque a la cola), navegador sin SIMD, demo y acceso por la interfaz: como en la fase B
+     (detalle en resultados/faseC-escenarios/verificacion_final_faseC.log).
+  ✅ Por la interfaz (index.html, file://): pdf05 (aviso PDF_COLUMNS_DETECTED), docx08 y html08 «complete».
+  ✅ Arranque hasta la interfaz con OCR: 1,48 s de media; memoria JS tras la recolección: 60 MB (igual).
+
+-----------------------------------------------------------------------------------------------------
+5. LÍMITES Y HALLAZGOS (dicho claramente)
+-----------------------------------------------------------------------------------------------------
+  - pdf13 del corpus está mal construido: reportlab creó un MediaBox apaisado (842×595) y dibujó la factura
+    para vertical, así que sus 12 primeras líneas quedan FUERA de la página. Ningún visor las muestra
+    (comprobado con poppler: pdftoppm y pdftotext solo dan las 5 últimas). Idefix lee ahora esas 5 líneas
+    bien (antes salían mezcladas) y su nota no puede pasar de 3/7: el ❌ se queda por el archivo, no por la
+    lectura. La auditoría atribuyó su 0/7 solo a la rotación; la rotación era parte del fallo, no todo.
+    Los casos c4_* (bien construidos) comprueban la rotación de verdad: 12/12 líneas.
+  - Como los visores, PDF.js no devuelve el texto que cae fuera de la página. Lo vi también en un caso de
+    prueba con una línea demasiado larga; no es un cambio de esta fase.
+  - C3 es una regla: dos columnas con muy pocas líneas (menos de 4) o con texto muy corto no se detectan, y
+    una maquetación con más de dos columnas solo se separa por el canal más claro.
+  - Sigue pendiente: fase D (texto oculto en DOCX/PDF/CSS, patrones cat/eus/fra), fase E (orientación de
+    fotos: jpg08 sigue 0/7) y fase F (pdf07 varias facturas en un PDF, numeración de listas y revisiones
+    de Word, mensajes de PDF.js en inglés, CRLF antes de %PDF-…).
+  ⚠️ Solo probado en Chromium 141 en Linux (mismo motor que Chrome y Edge); no en Windows.

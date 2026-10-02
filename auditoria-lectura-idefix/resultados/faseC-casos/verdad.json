@@ -1,0 +1,268 @@
+[
+ {
+  "id": "c4r90",
+  "archivo": "c4_rotada_90.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseC",
+  "checks": [],
+  "mime": "",
+  "nota": "Factura vertical con /Rotate 90: se muestra girada; el texto va en horizontal en el contenido",
+  "esperado": {
+   "orden": [
+    "Número de factura: A-2025/0157",
+    "Fecha de expedición: 14/03/2025",
+    "Emisor: Construcciones Muñoz Ibáñez, S.L.",
+    "NIF emisor: B12345674",
+    "Domicilio: C/ Mayor 12, 28013 Madrid",
+    "Cliente: Talleres Peña Gutiérrez, S.A.",
+    "NIF cliente: A58818501",
+    "Domicilio cliente: Avda. de la Constitución 45, 41001 Sevilla",
+    "Base imponible: 1.354,60 €",
+    "IVA 21 %: 284,47 €",
+    "Total factura: 1.639,07 €",
+    "Forma de pago: transferencia bancaria"
+   ],
+   "importes": {
+    "base_imponible": 1354.6,
+    "cuota_iva": 284.47,
+    "total": 1639.07
+   },
+   "aviso": "PDF_PAGE_READ_IN_TEXT_ORIENTATION"
+  }
+ },
+ {
+  "id": "c4r270",
+  "archivo": "c4_rotada_270.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseC",
+  "checks": [],
+  "mime": "",
+  "nota": "Factura vertical con /Rotate 270: se muestra girada; el texto va en horizontal en el contenido",
+  "esperado": {
+   "orden": [
+    "Número de factura: A-2025/0157",
+    "Fecha de expedición: 14/03/2025",
+    "Emisor: Construcciones Muñoz Ibáñez, S.L.",
+    "NIF emisor: B12345674",
+    "Domicilio: C/ Mayor 12, 28013 Madrid",
+    "Cliente: Talleres Peña Gutiérrez, S.A.",
+    "NIF cliente: A58818501",
+    "Domicilio cliente: Avda. de la Constitución 45, 41001 Sevilla",
+    "Base imponible: 1.354,60 €",
+    "IVA 21 %: 284,47 €",
+    "Total factura: 1.639,07 €",
+    "Forma de pago: transferencia bancaria"
+   ],
+   "importes": {
+    "base_imponible": 1354.6,
+    "cuota_iva": 284.47,
+    "total": 1639.07
+   },
+   "aviso": "PDF_PAGE_READ_IN_TEXT_ORIENTATION"
+  }
+ },
+ {
+  "id": "c4ap",
+  "archivo": "c4_apaisada_contenido_girado.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseC",
+  "checks": [],
+  "mime": "",
+  "nota": "Página apaisada: /Rotate 90 con el contenido girado (se lee derecha en pantalla)",
+  "esperado": {
+   "orden": [
+    "Número de factura: A-2025/0157",
+    "Fecha de expedición: 14/03/2025",
+    "Emisor: Construcciones Muñoz Ibáñez, S.L.",
+    "NIF emisor: B12345674",
+    "Domicilio: C/ Mayor 12, 28013 Madrid",
+    "Cliente: Talleres Peña Gutiérrez, S.A.",
+    "NIF cliente: A58818501",
+    "Domicilio cliente: Avda. de la Constitución 45, 41001 Sevilla",
+    "Base imponible: 1.354,60 €",
+    "IVA 21 %: 284,47 €",
+    "Total factura: 1.639,07 €",
+    "Forma de pago: transferencia bancaria"
+   ],
+   "importes": {
+    "base_imponible": 1354.6,
+    "cuota_iva": 284.47,
+    "total": 1639.07
+   },
+   "sin_aviso": "PDF_PAGE_READ_IN_TEXT_ORIENTATION"
+  }
+ },
+ {
+  "id": "c3ct",
+  "archivo": "c3_columnas_y_tabla.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseC",
+  "checks": [],
+  "mime": "",
+  "nota": "Título, dos columnas de texto y una tabla a todo lo ancho debajo",
+  "esperado": {
+   "orden": [
+    "Informe de revisión",
+    "Primer párrafo de la columna izquierda: la revisión del IVA soportado del trimestre se ha hecho con los libros registro.",
+    "Segundo párrafo de la izquierda: las facturas de suministros se han comprobado una a una con su justificante bancario.",
+    "Tercer párrafo de la izquierda: no se han encontrado cuotas duplicadas en el periodo revisado por el equipo.",
+    "Primer párrafo de la columna derecha: la prorrata aplicada coincide con la del ejercicio anterior según el expediente.",
+    "Segundo párrafo de la derecha: los gastos de vehículo se han deducido al cincuenta por ciento, como prevé la norma.",
+    "Tercer párrafo de la derecha: se recomienda conservar los contratos de arrendamiento junto a las facturas."
+   ],
+   "tabla_filas": 5,
+   "tabla_contiene": [
+    "2025/0103",
+    "14.938,26"
+   ],
+   "aviso": "PDF_COLUMNS_DETECTED"
+  }
+ },
+ {
+  "id": "c3dl",
+  "archivo": "c3_direcciones_lado_a_lado.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseC",
+  "checks": [],
+  "mime": "",
+  "nota": "Factura con los bloques de emisor y cliente uno al lado del otro",
+  "esperado": {
+   "lineas_enteras": [
+    "Emisor: Construcciones Muñoz Ibáñez, S.L.",
+    "Cliente: Talleres Peña Gutiérrez, S.A.",
+    "NIF emisor: B12345674",
+    "NIF cliente: A58818501"
+   ],
+   "importes": {
+    "base_imponible": 1354.6,
+    "cuota_iva": 284.47,
+    "total": 1639.07
+   },
+   "tabla_contiene": [
+    "Sustitución de canalón (m)",
+    "384,60"
+   ]
+  }
+ },
+ {
+  "id": "c3uc",
+  "archivo": "c3_una_columna.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseC",
+  "checks": [],
+  "mime": "",
+  "nota": "Carta a una columna con la fecha alineada a la derecha: no hay columnas",
+  "esperado": {
+   "orden": [
+    "Madrid, 3 de enero de 2025",
+    "Asunto: requerimiento de información sobre el IVA del primer trimestre de 2025.",
+    "En relación con su autoliquidación, le pedimos que aporte los libros registro y las facturas recibidas.",
+    "El plazo para atender este requerimiento es de diez días hábiles desde su notificación.",
+    "Puede presentar la documentación en la sede electrónica o en cualquier oficina de registro.",
+    "Atentamente, la Unidad de Gestión."
+   ],
+   "sin_aviso": "PDF_COLUMNS_DETECTED"
+  }
+ },
+ {
+  "id": "c1w",
+  "archivo": "c1_word_combinadas.docx",
+  "cajetilla": "otros",
+  "verdad": "faseC",
+  "checks": [],
+  "mime": "",
+  "nota": "Tabla de Word con gridSpan, vMerge y gridBefore",
+  "esperado": {
+   "filas": [
+    [
+     "Cliente",
+     "Concepto",
+     "Importes",
+     null,
+     "Nota"
+    ],
+    [
+     "Ferretería Núñez",
+     "Material",
+     "100,00",
+     "21,00",
+     "ok"
+    ],
+    [
+     "Ferretería Núñez",
+     "Portes",
+     "10,00",
+     "2,10",
+     "revisar"
+    ],
+    [
+     "Subtotal",
+     null,
+     "110,00",
+     "23,10",
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     "1.633,50",
+     "fin"
+    ]
+   ],
+   "combinada_desde": {
+    "2,0": 2
+   },
+   "aviso": "DOCX_MERGED_CELLS_EXPANDED"
+  }
+ },
+ {
+  "id": "c2h",
+  "archivo": "c2_html_totales_en_tabla.html",
+  "cajetilla": "otros",
+  "verdad": "faseC",
+  "checks": [],
+  "mime": "",
+  "nota": "Factura HTML con base, IVA y total en una tabla de dos columnas",
+  "esperado": {
+   "importes": {
+    "base_imponible": 1354.6,
+    "cuota_iva": 284.47,
+    "total": 1639.07
+   }
+  }
+ },
+ {
+  "id": "c5f",
+  "archivo": "c5_fragmento_div_onclick.htm",
+  "cajetilla": "otros",
+  "verdad": "faseC",
+  "checks": [],
+  "mime": "",
+  "nota": "Fragmento HTML (empieza por <div>) con filas onclick, un script y una instrucción inyectada",
+  "esperado": {
+   "contiene": [
+    "Transferencia recibida Ferretería Núñez",
+    "Recibo suministro eléctrico",
+    "-108,78"
+   ],
+   "no_contiene": [
+    "document.title"
+   ],
+   "aviso": "HTML_FRAGMENT",
+   "inyeccion": true
+  }
+ },
+ {
+  "id": "c5t",
+  "archivo": "c5_fragmento_en_txt.txt",
+  "cajetilla": "otros",
+  "verdad": "faseC",
+  "checks": [],
+  "mime": "",
+  "nota": "El mismo fragmento con extensión .txt: no se acepta como HTML",
+  "esperado": {
+   "rechazado": true
+  }
+ }
+]

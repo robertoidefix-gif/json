@@ -493,3 +493,28 @@ Punto | Estado | Archivo | Línea | Evidencia | Impacto | Corrección | Priorida
   Lo que queda (fases C, D y E): dos columnas, páginas giradas, celdas combinadas en Word, fragmentos HTML,
   filas con onclick, texto oculto en DOCX/PDF/CSS y fotos giradas (jpg08 sigue 0/7). En libros escaneados,
   revisar las cifras: el OCR aún confunde alguna (95–97 % de campos).
+
+-----------------------------------------------------------------------------------------------------
+15. ANEXO · FASE C APLICADA (2026-10-02)
+-----------------------------------------------------------------------------------------------------
+  Entrega: idefix1.0-fase-c/ (sobre la fase B; código completo .txt, fase-c.diff y CAMBIOS-FASE-C.txt con cada
+  cambio, su línea y sus pruebas). Pruebas: resultados/faseC/, resultados/faseC-casos/, resultados/faseC-escenarios/
+  y resultados/capturas/faseC_*.png. Herramientas: herramientas/fase-c/.
+  Puntos de la lista priorizada resueltos: 7 (gridSpan/vMerge en Word), 8 (totales en tabla), 9 (dos columnas),
+  10 (páginas giradas), 11 (fragmentos HTML) y 12 (filas con on*).
+  Medido con el mismo corpus y las mismas reglas:
+    Nota por formato      fase B → fase C       Nota por formato      fase B → fase C
+    HTML                   6,5  →  9,5          DOCX                   7,7  →  8,5
+    HTML+HTM               7,3  →  9,6          PDF digital            6,3  →  7,0
+    PDF (global)           6,8  →  7,2          Sin cambios: PDF escaneado 8,0 · XLSX 9,5 · XLS 10 ·
+                                                HTM 10 · PNG 7,5 · JPG 2,5 · JPEG 5,0
+    - html07, html08, html09 0/12 → 12/12 · docx02 4/7 → 7/7 · docx08 importes bajo su columna · pdf05 0/6 →
+      6/6 en orden y sin tabla inventada. Los otros 65 documentos, igual. 0 peticiones externas.
+    - Casos de la fase C (giradas 90°/270°, apaisada, columnas con tabla, bloques lado a lado, una columna, Word
+      combinada, totales en tabla HTML, fragmento con onclick e inyección, fragmento .txt): 0 fallos.
+  Corrección de este informe: pdf13 (apartado 2.4) está mal construido. Su MediaBox es apaisado (842×595) y la
+  factura se dibujó en vertical, así que 12 de sus 17 líneas quedan fuera de la página: ningún visor las muestra
+  (comprobado con poppler). El 0/7 no se debía solo a la rotación. Idefix lee ahora bien las 5 líneas visibles
+  (3/7 datos, el máximo posible con ese archivo); la rotación se comprueba con casos bien construidos (12/12).
+  Corrección de la herramienta: consolidar.py daba ❌ fijo a los casos de orden de lectura; ahora aplica la regla
+  común (apartado 1.5).

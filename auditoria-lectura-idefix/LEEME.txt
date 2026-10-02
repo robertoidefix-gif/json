@@ -31,6 +31,10 @@ Fase B: ../idefix1.0-fase-b/ (apartado 14 del informe). Pruebas en resultados/fa
   resultados/faseB-casos/ (casos de borde y OCR desactivado), resultados/faseB-escenarios/ (interfaz,
   seguridad, demo, tiempos y memoria) y resultados/capturas/faseB_*.png. Herramientas en herramientas/fase-b/.
 
+Fase C: ../idefix1.0-fase-c/ (apartado 15 del informe). Pruebas en resultados/faseC/ (corpus completo),
+  resultados/faseC-casos/ (casos de la fase C), resultados/faseC-escenarios/ y resultados/capturas/faseC_*.png.
+  Herramientas en herramientas/fase-c/. Ojo: pdf13 del corpus está mal construido (ver apartado 15).
+
 Cómo repetirlo: apartado 11 del informe.
   Nota: herramientas/prueba-auditoria.html lleva el SRI del sellado usado en la auditoría; si sella su
   propia copia, cambie el atributo integrity por el que imprime sellar-idefix.py.
