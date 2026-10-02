@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Versión SIN SERVIDOR: se abre con doble clic (file://) en Chrome o Edge. No hay nada que instalar ni configurar.
+     CSP: solo se ejecutan los scripts de esta carpeta y los blob: creados con bytes cuyo SHA-256 se ha comprobado
+     (worker núcleo, PDF.js y Tesseract); connect-src 'none': la página no puede hacer ninguna petición de red.
+     style-src 'self': los estilos van incrustados en el JS y se aplican con adoptedStyleSheets, sin 'unsafe-inline'. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' blob:; worker-src blob:; connect-src 'none'; style-src 'self'; img-src 'none'; font-src 'none'; media-src 'none'; manifest-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Idefix1.0 · Analizador de archivos fiscales</title>
+</head>
+<body>
+<div id="analizadorArchivos"></div>
+<!-- Librerías oficiales (PDF.js 6.2.108, Tesseract.js 7.0.0, su núcleo y los modelos de idioma) en vendor-paquetes/:
+     cada paquete es un <script> con el archivo oficial en base64. analizador-archivos.js comprueba el tamaño y el
+     SHA-256 de cada archivo antes de usarlo (están fijados en su tabla AA_PAQUETES): si no coinciden, no se usa.
+     Sin atributo integrity: con file:// Chrome y Edge no cargan ningún script que lo lleve.
+     Lo que no está aquí (núcleo para navegadores sin SIMD, chino, CMaps, fuentes estándar y WASM de PDF.js) lo
+     carga la aplicación de vendor-paquetes/ solo cuando lo necesita, con la misma comprobación.
+     Idiomas del OCR: español, catalán, euskera, inglés y francés. Para documentos en chino, márcalo en el panel
+     «Idiomas del OCR» (o añade chi_sim / chi_tra a data-idiomas-ocr): junto a los demás, el OCR pierde las líneas
+     de las tablas y es mucho más lento. Sin OCR: index-sin-ocr.html. -->
+<script src="vendor-paquetes/pdfjs-6.2.108-legacy-pdf.mjs.paquete.js"></script>
+<script src="vendor-paquetes/pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js"></script>
+<script src="vendor-paquetes/tesseract-7.0.0.min.js.paquete.js"></script>
+<script src="vendor-paquetes/tesseract-7.0.0-worker.min.js.paquete.js"></script>
+<script src="vendor-paquetes/tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js"></script>
+<script src="vendor-paquetes/tessdata-spa.traineddata.gz.paquete.js"></script>
+<script src="vendor-paquetes/tessdata-cat.traineddata.gz.paquete.js"></script>
+<script src="vendor-paquetes/tessdata-eus.traineddata.gz.paquete.js"></script>
+<script src="vendor-paquetes/tessdata-eng.traineddata.gz.paquete.js"></script>
+<script src="vendor-paquetes/tessdata-fra.traineddata.gz.paquete.js"></script>
+<script src="analizador-archivos.js" data-ocr="true" data-idiomas-ocr="spa,cat,eus,eng,fra"></script>
+</body>
+</html>

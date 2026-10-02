@@ -3,7 +3,12 @@ IDEFIX1.0 — INSTALACIÓN Y USO 100 % LOCAL EN GOOGLE CHROME Y MICROSOFT EDGE
 (AnalizadorArchivos 6.14.0 · OCR con Tesseract.js 7.0.0 · 2 de octubre de 2026)
 =====================================================================================================
 
->>> VERSIÓN SIN SERVIDOR + FASE B (2 de octubre de 2026) — RECOMENDADA: carpeta idefix1.0-fase-b/
+>>> VERSIÓN SIN SERVIDOR + FASES B Y C (2 de octubre de 2026) — RECOMENDADA: carpeta idefix1.0-fase-c/
+    Doble clic en idefix1.0-fase-c/Idefix1.0/index.html (Chrome o Edge). Igual que la de la fase B y, además,
+    lee bien tablas de Word combinadas, totales en tabla, PDF a dos columnas y girados, y páginas HTML
+    guardadas por bancos y programas de gestión. Cambios y pruebas en idefix1.0-fase-c/CAMBIOS-FASE-C.txt.
+
+>>> VERSIÓN SIN SERVIDOR + FASE B (2 de octubre de 2026): carpeta idefix1.0-fase-b/
     Doble clic en idefix1.0-fase-b/Idefix1.0/index.html (Chrome o Edge). Se usa igual que la versión sin
     servidor (idefix1.0-sin-servidor/) y lee mejor: PDF escaneados con sello o CSV, tablas HTML con rowspan,
     Excel sin referencias de celda y tablas de imágenes y PDF escaneados. Cambios y pruebas en

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Idefix1.0 — demostración de OCR local en español con Tesseract.js 7.0.0. Se abre con doble clic (file://).
+     Misma CSP que la aplicación: ninguna petición de red (connect-src 'none') y los workers solo pueden
+     crearse desde blob: con bytes verificados. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' blob:; worker-src blob:; connect-src 'none'; style-src 'self'; img-src 'none'; font-src 'none'; media-src 'none'; manifest-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Idefix1.0 · Demo OCR local</title>
+<link rel="stylesheet" href="demo-ocr.css">
+</head>
+<body>
+<main class="demo">
+  <header class="demo-cab">
+    <h1>Idefix1.0 · OCR local en español</h1>
+    <p>Tesseract.js 7.0.0 ejecutado en este navegador. La imagen no sale de tu ordenador.</p>
+  </header>
+
+  <!-- Visible hasta que la demo arranca. Si sigue visible, la página no se ha podido iniciar. -->
+  <section id="sin-arrancar" class="aviso">
+    <strong>La demostración no se ha iniciado.</strong>
+    <p>Falta <code>analizador-archivos.js</code> junto a esta página o no se ha podido ejecutar. Copia la carpeta
+       completa (con <code>vendor-paquetes</code>) y ábrela en Chrome o Edge.</p>
+  </section>
+
+  <section class="tarjeta" id="panel" hidden>
+    <div class="estado-fila">
+      <span id="estado-origen" class="pastilla">—</span>
+      <span id="estado-motor" class="pastilla">Motor OCR: sin cargar</span>
+    </div>
+
+    <div id="zona" class="zona" tabindex="0" role="button" aria-label="Elegir o arrastrar una imagen PNG o JPEG">
+      <span class="zona-icono" aria-hidden="true">⇧</span>
+      <span class="zona-texto">Arrastra aquí una imagen o haz clic para elegirla</span>
+      <span class="zona-tipos">PNG o JPEG · máx. 30 MB</span>
+    </div>
+    <input id="archivo" type="file" accept="image/png,image/jpeg,.png,.jpg,.jpeg" hidden>
+
+    <div class="vista" id="vista" hidden>
+      <canvas id="lienzo" aria-label="Vista previa de la imagen"></canvas>
+      <div class="vista-datos" id="vista-datos"></div>
+    </div>
+
+    <div class="acciones">
+      <button id="reconocer" type="button" class="btn btn-primario" disabled>Reconocer texto (español)</button>
+      <button id="cancelar" type="button" class="btn" disabled>Cancelar</button>
+      <button id="copiar" type="button" class="btn" disabled>Copiar texto</button>
+    </div>
+    <div id="mensaje" class="mensaje" role="status" aria-live="polite"></div>
+    <div class="progreso" id="progreso" hidden><span></span></div>
+
+    <label class="etiqueta" for="resultado">Texto reconocido</label>
+    <textarea id="resultado" rows="12" readonly spellcheck="false" placeholder="Aquí aparecerá el texto reconocido."></textarea>
+    <details class="lineas">
+      <summary>Líneas y confianza</summary>
+      <table id="tabla-lineas"><thead><tr><th>#</th><th>Texto</th><th>Confianza</th></tr></thead><tbody></tbody></table>
+    </details>
+  </section>
+
+  <section class="tarjeta" id="red" hidden>
+    <h2>Comprobación de red</h2>
+    <p class="nota">Lista cada recurso que ha pedido esta página (Resource Timing) y cada intento bloqueado por la CSP.
+       Abierta con doble clic (file://), el navegador no anota aquí los archivos locales. Las peticiones de los
+       workers tampoco aparecen: compruébalas en DevTools → Red.</p>
+    <div id="red-resumen" class="red-resumen">—</div>
+    <table id="tabla-red"><thead><tr><th>Recurso</th><th>Origen</th></tr></thead><tbody></tbody></table>
+    <div id="red-csp" class="nota"></div>
+  </section>
+</main>
+<!-- Tesseract.js, su núcleo y el modelo de español (vendor-paquetes/; SHA-256 comprobado antes de usarlos). -->
+<script src="vendor-paquetes/tesseract-7.0.0.min.js.paquete.js"></script>
+<script src="vendor-paquetes/tesseract-7.0.0-worker.min.js.paquete.js"></script>
+<script src="vendor-paquetes/tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js"></script>
+<script src="vendor-paquetes/tessdata-spa.traineddata.gz.paquete.js"></script>
+<script src="analizador-archivos.js" data-autoarranque="false"></script>
+<script src="demo-ocr.js"></script>
+</body>
+</html>

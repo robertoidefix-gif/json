@@ -1,0 +1,542 @@
+--- fase-b/Idefix1.0/analizador-archivos.js
++++ fase-c/Idefix1.0/analizador-archivos.js
+@@ -2,6 +2,18 @@
+    IDEFIX1.0 — AnalizadorArchivos 6.14.0 (esquema del JSON 6.14.0)
+    Archivo único: JavaScript, interfaz, hoja de estilos, worker núcleo y MARCO_FISCAL_LOCAL.
+ 
++   Fase C (auditoría de lectura, 2026-10-02): estructura de tablas y texto.
++   - C1 Word: tablas con gridSpan, vMerge y gridBefore en su geometría real
++     (cada importe bajo su columna; DOCX_MERGED_CELLS_EXPANDED).
++   - C2 Base, IVA y total también desde filas de tabla «rótulo | valor».
++   - C3 PDF a dos columnas: se leen columna a columna (PDF_COLUMNS_DETECTED);
++     los títulos a todo lo ancho y las filas de tabla no se parten.
++   - C4 PDF girados: cada página se lee en la orientación de su texto
++     (PDF_PAGE_READ_IN_TEXT_ORIENTATION); el OCR usa la misma.
++   - C5 HTML: se aceptan fragmentos (<table>, <meta>, <div>…) con extensión
++     .html/.htm/.xls (HTML_FRAGMENT) y, de los elementos con onclick y
++     similares, se ignora el atributo y se lee el texto.
++
+    Fase B (auditoría de lectura, 2026-10-02): sin pérdidas silenciosas.
+    - B1 PDF mixto: una página con poco texto digital y una imagen grande (un
+      escaneo con un sello o un CSV añadido) se lee también con OCR (modo
+@@ -1652,6 +1664,56 @@
+   return parrafos.length ? parrafos.join("\n") : docxTexto(celda).trim();
+ }
+ 
++/**
++ * Fase C (C1): filas de una tabla de Word con su geometría real. gridBefore deja columnas vacías al principio de
++ * la fila, gridSpan hace que una celda ocupe varias columnas (las demás quedan vacías) y vMerge sin «restart»
++ * continúa la celda de arriba: su valor se repite y la celda lleva combinada_desde (la fila de origen), como en
++ * las tablas HTML con rowspan. Antes cada w:tc era una columna y los importes acababan bajo otra cabecera.
++ */
++function docxFilasTabla(tabla, maxColumnas) {
++  const propiedad = (el, contenedor, local) => {
++    const pr = X.hijos(el).find(x => x.local === contenedor);
++    return pr ? X.hijos(pr).find(x => x.local === local) || null : null;
++  };
++  const entero = (el, def) => {
++    const v = Number.parseInt(el ? X.attr(el, "w:val") || "" : "", 10);
++    return Number.isSafeInteger(v) && v > 0 ? Math.min(v, maxColumnas) : def;
++  };
++  const filas = [];
++  const origenes = [];
++  const arriba = []; // por columna: { valor, fila } de la última celda que empezó ahí
++  let combinadas = 0;
++  for (const tr of X.hijos(tabla).filter(x => x.local === "tr")) {
++    const fila = [];
++    const origen = new Map();
++    const antes = propiedad(tr, "trPr", "gridBefore");
++    for (let k = entero(antes, 0); k > 0 && fila.length < maxColumnas; k--) fila.push(null);
++    for (const tc of X.hijos(tr).filter(x => x.local === "tc")) {
++      if (fila.length >= maxColumnas) break;
++      const span = entero(propiedad(tc, "tcPr", "gridSpan"), 1);
++      const vMerge = propiedad(tc, "tcPr", "vMerge");
++      const continua = vMerge !== null && (X.attr(vMerge, "w:val") || "continue") !== "restart";
++      const x = fila.length;
++      if (span > 1 || vMerge !== null) combinadas++;
++      if (continua && arriba[x]) {
++        if (arriba[x].valor !== null) origen.set(x, arriba[x].fila);
++        fila.push(arriba[x].valor);
++      } else {
++        const texto = docxTextoCelda(tc);
++        fila.push(texto === "" ? null : texto);
++        arriba[x] = { valor: texto === "" ? null : texto, fila: filas.length + 1 };
++      }
++      for (let k = 1; k < span && fila.length < maxColumnas; k++) {
++        arriba[fila.length] = { valor: null, fila: filas.length + 1 };
++        fila.push(null);
++      }
++    }
++    filas.push(fila);
++    origenes.push(origen);
++  }
++  return { filas, origenes, combinadas };
++}
++
+ async function extraerDOCX(zip, limites, diag, idMensaje, incrustados) {
+   const opcionesXML = { maxElementos: limites.maxElementosXML, maxProfundidad: limites.maxProfundidadXML };
+   progreso(idMensaje, 30, "Leyendo el documento Word");
+@@ -1695,8 +1757,7 @@
+     }
+ 
+     nTabla++;
+-    const filas = X.hijos(nodo).filter(x => x.local === "tr")
+-      .map(tr => X.hijos(tr).filter(x => x.local === "tc").map(docxTextoCelda));
++    const { filas, origenes, combinadas } = docxFilasTabla(nodo, limites.maxColumnasExcel);
+     const maxCols = filas.reduce((m, f) => Math.max(m, f.length), 0);
+     const cabecera = filas[0] || [];
+     const columns = Array.from({ length: maxCols }, (_, i) => ({
+@@ -1705,7 +1766,8 @@
+     const tableId = `t${String(nTabla).padStart(4, "0")}`;
+     const rows = filas.map((fila, i) => ({
+       sourceRow: i + 1,
+-      cells: columns.map((c, j) => N.celda(fila[j] ?? null, c.id, { part: "word/document.xml", row: i + 1 }))
++      cells: columns.map((c, j) => N.celda(fila[j] ?? null, c.id,
++        { part: "word/document.xml", row: i + 1, ...(origenes[i].has(j) ? { combinada_desde: origenes[i].get(j) } : {}) }))
+     }));
+     N.inferirTipos(columns, rows.slice(filas.length ? 1 : 0));
+     tables.push({
+@@ -1715,9 +1777,11 @@
+     });
+     blocks.push({ id: `b${String(++nBloque).padStart(6, "0")}`, kind: "table", tableId, source: { part: "word/document.xml" } });
+ 
+-    if (X.contiene(nodo, "gridSpan") || X.contiene(nodo, "vMerge")) {
+-      diag.marcar("docx-merged-table-cells");
+-      diag.add("DOCX_MERGED_CELLS_SIMPLIFIED", "warning", "Se detectaron celdas combinadas; se exportaron sin reconstruir su geometría.");
++    if (combinadas) {
++      diag.add("DOCX_MERGED_CELLS_EXPANDED", "info",
++        `La tabla ${nTabla} tiene ${combinadas} celda(s) combinada(s): cada valor queda bajo su columna; las combinadas en ` +
++        "horizontal dejan vacías las demás columnas que abarcan y las combinadas en vertical repiten su valor en cada fila " +
++        "(esas celdas llevan source.combinada_desde; al sumar, cuenta cada importe una sola vez).", null, { tabla: nTabla, celdas: combinadas });
+     }
+   }
+ 
+@@ -2884,6 +2948,80 @@
+   });
+ }
+ 
++/** Huecos grandes (≥ 1,5 veces la letra) entre los fragmentos de una línea, de izquierda a derecha. */
++function pdfHuecosLinea(linea) {
++  const its = [...linea.items].sort((a, b) => a.x - b.x);
++  const em = Math.max(5, linea.fontSize || linea.height || 10);
++  const huecos = [];
++  let derecha = -Infinity;
++  for (let i = 0; i < its.length; i++) {
++    if (i > 0 && its[i].x - derecha >= em * 1.5) huecos.push({ desde: derecha, hasta: its[i].x, indice: i });
++    derecha = Math.max(derecha, its[i].x + its[i].width);
++  }
++  return { its, huecos };
++}
++
++/**
++ * Fase C (C3): canal entre columnas de texto. Es candidata una línea con UN solo hueco grande y al menos 15
++ * caracteres a cada lado (prosa: una fila de tabla tiene varios huecos o celdas cortas). Hace falta que al menos
++ * 4 líneas, y el 60 % de las candidatas, compartan la posición del canal y que casi ninguna línea de esa zona lo
++ * cruce. Devuelve la x del canal o null.
++ */
++function pdfCanalColumnas(lineas) {
++  const candidatas = [];
++  for (const l of lineas) {
++    const { its, huecos } = pdfHuecosLinea(l);
++    if (huecos.length !== 1) continue;
++    const h = huecos[0];
++    const izq = its.slice(0, h.indice).map(it => it.text).join(" ").trim();
++    const der = its.slice(h.indice).map(it => it.text).join(" ").trim();
++    if (izq.length >= 15 && der.length >= 15) candidatas.push({ desde: h.desde, hasta: h.hasta, y: l.y });
++  }
++  if (candidatas.length < 4) return null;
++  let canal = null;
++  let max = 0;
++  for (const c of candidatas) {
++    const x = (c.desde + c.hasta) / 2;
++    const n = candidatas.filter(o => o.desde <= x && x <= o.hasta).length;
++    if (n > max) { max = n; canal = x; }
++  }
++  if (max < 4 || max < candidatas.length * 0.6) return null;
++  const dentro = candidatas.filter(o => o.desde <= canal && canal <= o.hasta);
++  const y1 = Math.min(...dentro.map(o => o.y));
++  const y2 = Math.max(...dentro.map(o => o.y));
++  const cruzan = lineas.filter(l => l.y >= y1 && l.y <= y2 && l.items.some(it => it.x < canal && it.x + it.width > canal)).length;
++  return cruzan <= Math.max(1, dentro.length * 0.2) ? canal : null;
++}
++
++/**
++ * Fase C (C3): líneas de una página en orden de lectura. Sin columnas, como siempre. Con columnas, las líneas
++ * se parten por el canal y se lee primero la columna izquierda y luego la derecha; una línea que cruza el canal
++ * (un título a todo lo ancho) o que tiene varios huecos grandes (una fila de tabla) se queda entera y cierra el
++ * tramo de columnas. Antes se juntaban las líneas de las dos columnas y salía un texto ilegible (pdf05).
++ */
++function pdfLineasEnOrden(items) {
++  const lineas = pdfAgruparLineas(items);
++  const canal = pdfCanalColumnas(lineas);
++  if (canal === null) return { lineas, columnas: false };
++  const salida = [];
++  let izq = [];
++  let der = [];
++  const vaciar = () => { salida.push(...izq, ...der); izq = []; der = []; };
++  for (const l of [...lineas].sort((a, b) => a.y - b.y)) {
++    const a = l.items.filter(it => it.x + it.width <= canal);
++    const b = l.items.filter(it => it.x >= canal);
++    if (a.length + b.length < l.items.length || (a.length && b.length && pdfHuecosLinea(l).huecos.length > 1)) {
++      vaciar();
++      salida.push(l);
++      continue;
++    }
++    if (a.length) izq.push(...pdfAgruparLineas(a));
++    if (b.length) der.push(...pdfAgruparLineas(b));
++  }
++  vaciar();
++  return { lineas: salida, columnas: true };
++}
++
+ function mediana(valores) {
+   const v = valores.filter(Number.isFinite).sort((a, b) => a - b);
+   if (!v.length) return 0;
+@@ -3227,13 +3365,15 @@
+  */
+ function estructurarPDF(paginas, idMensaje, documentoTipo, maxRegistros, seguridad) {
+   const diag = new Diagnostico();
++  const paginasColumnas = [];
+   const blocks = [];
+   let nBloque = 0;
+   const conLineas = [];
+ 
+   paginas.forEach((pagina, i) => {
+     if (i % 20 === 0) progreso(idMensaje, 10 + Math.round((i / Math.max(1, paginas.length)) * 70), `Reconstruyendo página ${i + 1}/${paginas.length}`);
+-    const lineas = pdfAgruparLineas(pagina.items);
++    const { lineas, columnas } = pdfLineasEnOrden(pagina.items);
++    if (columnas) paginasColumnas.push(pagina.pageNumber);
+     // Fase B (B4): las tablas de una página escaneada (o de la parte escaneada de una página mixta) se
+     // reconstruyen con las palabras del OCR, en las mismas coordenadas (puntos) que el texto digital.
+     const palabras = pagina.palabras || [];
+@@ -3270,6 +3410,11 @@
+     }
+   });
+ 
++  if (paginasColumnas.length) {
++    diag.add("PDF_COLUMNS_DETECTED", "info",
++      `La(s) página(s) ${paginasColumnas.slice(0, 50).join(", ")} tienen el texto en columnas: se han leído columna a columna ` +
++      "(los títulos a todo lo ancho y las filas de tabla se mantienen en su sitio).", null, { pages: paginasColumnas.slice(0, 1000) });
++  }
+   progreso(idMensaje, 85, "Detectando campos y tablas");
+   const fields = N.campos(blocks);
+   let tables = pdfTablasGeometricas(conLineas, diag);
+@@ -3997,7 +4142,6 @@
+     "hgroup", "hr", "legend", "li", "listing", "main", "menu", "nav", "ol", "p", "pre", "section", "summary", "ul",
+     "option", "optgroup", "select", "body", "html", "head"]);
+   const PRE = new Set(["pre", "listing", "textarea", "plaintext", "xmp"]);
+-  const EXENTOS_EVENTOS = new Set(["html", "head", "body"]);
+   const ATRIBUTOS_URL = new Set(["href", "src", "action", "formaction", "data", "poster", "background", "srcset",
+     "xlink:href", "cite", "longdesc", "manifest", "ping", "codebase", "archive", "lowsrc", "dynsrc"]);
+ 
+@@ -4062,8 +4206,12 @@
+   const bomDe = b => b[0] === 0xEF && b[1] === 0xBB && b[2] === 0xBF ? "utf-8"
+     : b[0] === 0xFF && b[1] === 0xFE ? "utf-16le" : b[0] === 0xFE && b[1] === 0xFF ? "utf-16be" : null;
+ 
+-  /** ¿Es HTML reconocible? Solo por contenido (§2): DOCTYPE html o etiqueta html/head/body inicial. */
+-  function detectar(buffer) {
++  /**
++   * ¿Es HTML reconocible? Por contenido (§2): DOCTYPE html o etiqueta html/head/body inicial → true.
++   * Fase C (C5): un FRAGMENTO (empieza por <table>, <meta>, <div>…, como las exportaciones «Excel» de bancos y
++   * ERP) → "fragmento", solo si la extensión es de página web (o .xls, para recomendar convertirlo).
++   */
++  function detectar(buffer, nombreArchivo = "") {
+     const b = new Uint8Array(buffer, 0, Math.min(buffer.byteLength, 8192));
+     const bom = bomDe(b);
+     let cab;
+@@ -4078,7 +4226,13 @@
+       cab = cab.replace(/^[\s]+/, "").replace(/^<!--[\s\S]*?-->/, "").replace(/^<\?xml[^>]*\?>/i, "");
+       if (cab === antes) break;
+     }
+-    return /^<!doctype\s+html(?=[\s>])/i.test(cab) || /^<(?:html|head|body)(?=[\s>/])/i.test(cab);
++    if (/^<!doctype\s+html(?=[\s>])/i.test(cab) || /^<(?:html|head|body)(?=[\s>/])/i.test(cab)) return true;
++    const ext = /\.([A-Za-z0-9]{1,8})$/.exec(String(nombreArchivo))?.[1].toLowerCase() || "";
++    if (["html", "htm", "xhtml", "xls"].includes(ext) &&
++        /^<(?:meta|title|table|div|p|h[1-6]|span|font|center|form|ul|ol|pre|section|article|main|header|style|link)(?=[\s>/])/i.test(cab)) {
++      return "fragmento";
++    }
++    return false;
+   }
+ 
+   function decodificar(buffer, diag) {
+@@ -4169,7 +4323,7 @@
+     const src = bruto.charCodeAt(0) === 0xFEFF ? bruto.slice(1) : bruto;
+     const n = src.length;
+ 
+-    const cont = { ignorados: {}, eventos: 0, eventosConContenido: 0, formularios: 0, urlsExternas: 0, urlsScript: 0,
++    const cont = { ignorados: {}, eventos: 0, formularios: 0, urlsExternas: 0, urlsScript: 0,
+       comentarios: 0, entidadesDesconocidas: 0, celdasCombinadas: 0, celdasCombinadasFilas: 0 };
+     const blocks = [];
+     const tables = [];
+@@ -4423,9 +4577,10 @@
+         continue;
+       }
+ 
+-      if (IGNORADOS.has(nombre) || (tieneEventos && !EXENTOS_EVENTOS.has(nombre))) {
+-        if (IGNORADOS.has(nombre)) contar(nombre);
+-        else if (!esVacio) cont.eventosConContenido++;
++      // Fase C (C5): de un elemento con atributos de evento (onclick…) se ignora el ATRIBUTO, no su texto: este
++      // analizador nunca ejecuta nada, y las páginas guardadas de banca o ERP ponen onclick en cada fila de datos.
++      if (IGNORADOS.has(nombre)) {
++        contar(nombre);
+         if (!esVacio && !et.autocierre && contenidoCrudo === null) saltando = { nombre, prof: 1 };
+         continue;
+       }
+@@ -4514,15 +4669,10 @@
+         `Se ignoraron por seguridad, con todo su contenido: ${ign.map(([nm, k]) => `${k} <${nm}>`).join(", ")}. ` +
+         "Nunca se ejecutan ni se cargan.", null, { elementos: Object.fromEntries(ign) });
+     }
+-    if (cont.eventosConContenido) {
+-      diag.marcar("html-event-handler-elements-ignored");
+-      diag.add("HTML_EVENT_HANDLER_ELEMENTS_IGNORED", "warning",
+-        `Se ignoraron ${cont.eventosConContenido} elemento(s) con atributos de evento (onclick, onload…) junto con su ` +
+-        "contenido, por seguridad. Si contenían datos, guarda la página como PDF y cárgala de nuevo.",
+-        null, { elementos: cont.eventosConContenido });
+-    } else if (cont.eventos) {
++    if (cont.eventos) {
+       diag.add("HTML_EVENT_HANDLERS_IGNORED", "info",
+-        `La página tiene ${cont.eventos} atributo(s) de evento (on*) en elementos sin contenido o en html/body; no se ejecutan.`);
++        `La página tiene ${cont.eventos} elemento(s) con atributos de evento (onclick, onload…). Los atributos se ignoran y ` +
++        "nunca se ejecutan; el texto de esos elementos se lee como el resto de la página.", null, { elementos: cont.eventos });
+     }
+     if (cont.urlsExternas || cont.urlsScript) {
+       diag.marcar("html-external-references-not-followed");
+@@ -4565,7 +4715,7 @@
+         tables,
+         fields: N.campos(blocks),
+         statistics: { elements: elementos, paragraphs: nParrafo, headings: nTitulos, tables: tables.length,
+-          ignoredElements: Object.values(cont.ignorados).reduce((a, b) => a + b, 0) + cont.eventosConContenido,
++          ignoredElements: Object.values(cont.ignorados).reduce((a, b) => a + b, 0),
+           hiddenTextFragments: ocultos.length }
+       },
+       ocultos
+@@ -5269,7 +5419,36 @@
+     return { nif, nombre };
+   }
+ 
+-  /* ---------- Documentos sin registros: inferencia desde campos "Nombre: valor" ---------- */
++  /**
++   * Fase C (C2): pares «rótulo | valor» de las filas de tabla con exactamente dos celdas con contenido
++   * («Base imponible | 1.354,60 €»), muy habituales en facturas de Word, HTML y PDF. Mismo formato que un campo.
++   */
++  function paresDeTablas(contenido) {
++    const pares = [];
++    for (const t of contenido.tables || []) {
++      for (const fila of t.rows || []) {
++        const llenas = (fila.cells || []).filter(c => c.raw !== null && c.raw !== undefined && String(c.raw).trim() !== "");
++        if (llenas.length !== 2) continue;
++        const [r, v] = llenas;
++        const rotulo = String(r.raw).trim();
++        if (rotulo.length > 80 || (rotulo.match(/\p{L}/gu) || []).length < 2 || r.valueType === "integer" || r.valueType === "decimal") continue;
++        pares.push({ name: rotulo, normalizedName: N.clave(rotulo), rawValue: v.raw, value: v.value, valueType: v.valueType,
++          metodo: "rótulo y valor en una fila de tabla",
++          fuente: { tabla: t.id, ...(Number.isSafeInteger(fila.sourceRow) && fila.sourceRow > 0 ? { fila: fila.sourceRow } : {}),
++            ...(v.source?.page ? { pagina: v.source.page } : {}) } });
++      }
++    }
++    return pares;
++  }
++
++  /** Valor trazado de un campo «Nombre: valor» del texto o de una fila de tabla (Fase C). */
++  function valorDeCampo(f, valor, factor) {
++    return vt(valor, "INFERENCIA", r2(0.6 * factor), { fragmento: recortar(`${f.name}: ${f.rawValue}`, 120),
++      fuente: f.fuente || { ...(f.source?.page ? { pagina: f.source.page } : {}), ...(f.source?.blockId ? { bloque: f.source.blockId } : {}) },
++      ...(f.metodo ? { metodo: f.metodo } : {}) });
++  }
++
++  /* ---------- Documentos sin registros: inferencia desde campos "Nombre: valor" (y filas de tabla, Fase C) ---------- */
+   function inferirCampos(contenido, factor) {
+     const reglas = [
+       ["numero_documento", /^(?:(?:n|no|num|numero)_?(?:de_)?factura|factura(?:_(?:n|no|num|numero))?|n_documento|numero_documento)$/, "texto"],
+@@ -5280,7 +5459,7 @@
+     ];
+     const res = {};
+     const nifs = [];
+-    for (const f of contenido.fields) {
++    for (const f of [...contenido.fields, ...paresDeTablas(contenido)]) {
+       const nn = f.normalizedName;
+       if (/^(?:nif|cif|n_i_f|c_i_f|nif_cif|dni)(?:_\w+)?$/.test(nn) && typeof f.rawValue === "string") {
+         const v = validarNIF(f.rawValue);
+@@ -5295,8 +5474,7 @@
+         else if (tipo === "fecha" && f.valueType === "date") valor = f.value;
+         else if (tipo === "texto" && f.value !== null && f.value !== "") valor = String(f.value);
+         if (valor === null || (tipo === "numero" && !num(valor))) continue;
+-        res[campo] = vt(valor, "INFERENCIA", r2(0.6 * factor), { fragmento: recortar(`${f.name}: ${f.rawValue}`, 120),
+-          fuente: { ...(f.source?.page ? { pagina: f.source.page } : {}), ...(f.source?.blockId ? { bloque: f.source.blockId } : {}) } });
++        res[campo] = valorDeCampo(f, valor, factor);
+       }
+     }
+     return { campos: res, nifs };
+@@ -5783,7 +5961,7 @@
+       sem.partes.nifs_mencionados = nifs;
+       for (const [k, x] of Object.entries(campos)) {
+         bajaConfianza.push({ campo: k === "numero_documento" || k === "fecha_documento" ? `documento.${k}` : `importes.inferidos.${k}`,
+-          confianza: x.confianza, motivo: "valor deducido de un rótulo «Nombre: valor» del texto" });
++          confianza: x.confianza, motivo: x.metodo ? `valor deducido de un ${x.metodo}` : "valor deducido de un rótulo «Nombre: valor» del texto" });
+       }
+       const b = campos.base_imponible?.valor, c = campos.cuota_iva?.valor, t = campos.total?.valor;
+       if (num(b) && num(c) && num(t)) {
+@@ -5921,8 +6099,14 @@
+     Object.assign(contenido, SEG.analizarContenido({ contenido, nombreArchivo, limites }));
+     return { tipo: "xls", sha256, contenido, imagen: null, ...diag.exportar() };
+   }
+-  if (HTML.detectar(buffer)) {
++  const html = HTML.detectar(buffer, nombreArchivo);
++  if (html) {
+     const diag = new Diagnostico();
++    if (html === "fragmento") {
++      diag.add("HTML_FRAGMENT", "info",
++        "El archivo es un fragmento de página (no empieza por <html> ni <!DOCTYPE html>), como las exportaciones «Excel» " +
++        "de bancos y programas de gestión. Se ha leído con el mismo analizador pasivo, sin ejecutar nada.");
++    }
+     progreso(idMensaje, 10, "Leyendo la página HTML");
+     const { contenido, ocultos } = HTML.extraer(buffer, limites, diag, idMensaje);
+     progreso(idMensaje, 92, "Aplicando el formato del tipo documental");
+@@ -7580,7 +7764,7 @@
+ }
+ });
+ /* AA:INCRUSTADOS:FIN */
+-const SHA256_WORKER_NUCLEO = "1c3f438f096ab0258d4979a34993f0f722078dd96d1f1397f3ce303483ead362";
++const SHA256_WORKER_NUCLEO = "984339a2995409750aa626277eb9954f99e6798fa4a6e9365d30941074aa304e";
+ 
+ /** Nombre de archivo más largo que se admite (el esquema del resultado permite 4096). */
+ const AA_MAX_LONGITUD_NOMBRE_ARCHIVO = 1024;
+@@ -7673,12 +7857,14 @@
+   htmlAviso:
+     "La página se ha leído con un analizador pasivo aislado, sin navegador y sin ejecutar nada.\n\n" +
+     "Se ignoran por completo (con su contenido): scripts, estilos, marcos (iframe), objetos incrustados, " +
+-    "enlaces a recursos, metadatos, noscript, plantillas, SVG, fórmulas MathML y los elementos con eventos (onclick…).\n\n" +
++    "enlaces a recursos, metadatos, noscript, plantillas, SVG y fórmulas MathML. De los elementos con eventos (onclick…) " +
++    "se ignora el atributo y se lee su texto.\n\n" +
+     "Los enlaces no se siguen ni se incluyen. El texto oculto a la vista (hidden, display:none…) se conserva, " +
+     "pero queda marcado en seguridad_contenido.",
+   htmlNoReconocible:
+     "FORMATO NO ADMITIDO: el archivo tiene extensión .html/.htm, pero su contenido no es una página HTML reconocible " +
+-    "(debe empezar por <!DOCTYPE html>, <html>, <head> o <body>).\n\n" +
++    "(debe empezar por <!DOCTYPE html>, <html>, <head> o <body>, o ser un fragmento que empiece por una etiqueta como " +
++    "<table>, <meta> o <div>).\n\n" +
+     "Si es un texto o un CSV, guárdalo como .xlsx desde Excel; si es una página web, guárdala de nuevo desde el navegador.",
+   htmlComoExcel:
+     "EL CONTENIDO NO COINCIDE CON LA EXTENSIÓN: el archivo tiene extensión de Excel, pero en realidad es una PÁGINA HTML " +
+@@ -13362,6 +13548,31 @@
+     return Math.max(0, Math.min(1, area / pagina));
+   }
+ 
++  /**
++   * Fase C (C4): viewport (escala 1) en el que el texto de la página va en horizontal. La dirección de cada
++   * fragmento sale de su matriz; si la mayoría de los caracteres va girada 90°, 180° o 270° respecto a la
++   * orientación con que se muestra la página, se usa la rotación que la pone en horizontal.
++   */
++  _viewportDeLectura(page, content) {
++    const viewport = page.getViewport({ scale: 1 });
++    const peso = new Map();
++    let total = 0;
++    for (const raw of content?.items || []) {
++      if (!raw || typeof raw.str !== "string" || !raw.str.trim() || !Array.isArray(raw.transform)) continue;
++      const t = this.pdfjs.Util?.transform ? this.pdfjs.Util.transform(viewport.transform, raw.transform)
++        : this._mulMatrix(viewport.transform, raw.transform);
++      if (!Number.isFinite(t[0]) || !Number.isFinite(t[1]) || (t[0] === 0 && t[1] === 0)) continue;
++      const angulo = ((Math.round(Math.atan2(t[1], t[0]) / (Math.PI / 2)) * 90) % 360 + 360) % 360;
++      const n = raw.str.trim().length;
++      peso.set(angulo, (peso.get(angulo) || 0) + n);
++      total += n;
++    }
++    if (!total) return viewport;
++    const [angulo, n] = [...peso.entries()].sort((a, b) => b[1] - a[1])[0];
++    if (angulo === 0 || n < total * 0.6) return viewport;
++    return page.getViewport({ scale: 1, rotation: ((viewport.rotation - angulo) % 360 + 360) % 360 });
++  }
++
+   /** Fase B (B1): fracción de la página ocupada por las cajas del texto digital. */
+   _coberturaTexto(items, viewport) {
+     const pagina = Math.abs(viewport.width * viewport.height) || 1;
+@@ -13425,14 +13636,15 @@
+    * Dibuja la página, hace el OCR y decide el modo: «ocr» (página sin texto digital suficiente) o, en una página
+    * mixta (Fase B, B1), «hybrid» sin lo que el OCR leyó encima del texto digital (ya incluido).
+    */
+-  async _leerPaginaConOCR(page, { items, chars, soloOCR, ocrProvider, preprocesarOCR, signal, maxPixelsPerPage, maxWorkingBytes, maxItemsPerPage }) {
++  async _leerPaginaConOCR(page, { items, chars, soloOCR, ocrProvider, preprocesarOCR, signal, maxPixelsPerPage, maxWorkingBytes, maxItemsPerPage,
++    rotation }) {
+     const r = { modo: "digital", extractionType: chars > 0 ? "digital-incomplete-ocr" : "scanned-no-ocr", ocrStatus: "failed",
+       ocrEngine: null, ocrUsed: false, ocrBlocks: [], ocrPalabras: [], separadores: [], sinCuadricula: false };
+     let rendered = null;
+     try {
+       // Único paso de PDF que sigue en el hilo principal: PDF.js solo
+       // dibuja páginas en un canvas de la página (limitado en píxeles).
+-      rendered = await this._renderizarPagina(page, { signal, maxPixelsPerPage, maxWorkingBytes });
++      rendered = await this._renderizarPagina(page, { signal, maxPixelsPerPage, maxWorkingBytes, rotation });
+       const leido = await this._ocrPagina(rendered, { ocrProvider, preprocesarOCR, signal, maxItemsPerPage });
+       r.sinCuadricula = !!(leido.cuadricula?.horizontales || leido.cuadricula?.verticales);
+       r.ocrStatus = ["complete", "unavailable", "failed"].includes(leido.ocrResult?.status) ? leido.ocrResult.status : "failed";
+@@ -13461,18 +13673,18 @@
+     }
+   }
+ 
+-  async _renderizarPagina(page, { signal = null, maxPixelsPerPage, maxWorkingBytes }) {
++  async _renderizarPagina(page, { signal = null, maxPixelsPerPage, maxWorkingBytes, rotation = undefined }) {
+     // El límite efectivo es el menor entre píxeles configurados y memoria.
+     const limitePixeles = Math.max(
+       1,
+       Math.min(maxPixelsPerPage, Math.floor(maxWorkingBytes / (4 * FACTOR_MEMORIA_OCR)))
+     );
+ 
+-    let viewport = page.getViewport({ scale: this.escala });
++    let viewport = page.getViewport({ scale: this.escala, rotation });
+     const initialPixels = Math.ceil(viewport.width) * Math.ceil(viewport.height);
+ 
+     if (initialPixels > limitePixeles) {
+-      viewport = page.getViewport({ scale: this.escala * Math.sqrt(limitePixeles / initialPixels) * 0.999 });
++      viewport = page.getViewport({ scale: this.escala * Math.sqrt(limitePixeles / initialPixels) * 0.999, rotation });
+     }
+ 
+     const width = Math.max(1, Math.ceil(viewport.width));
+@@ -13561,6 +13773,7 @@
+ 
+       const pages = [];
+       const paginasSinCuadricula = [];
++      const paginasGiradas = [];
+       let ocrPages = 0;
+       let taggedPages = 0;
+       let directCharacters = 0;
+@@ -13576,8 +13789,11 @@
+         const page = await pdf.getPage(pageNumber);
+ 
+         try {
+-          const viewport = page.getViewport({ scale: 1 });
+           const content = await page.getTextContent({ includeMarkedContent: true, disableNormalization: false });
++          // Fase C (C4): la página se lee en la orientación en la que va su texto (p. ej. /Rotate 90 con el texto
++          // horizontal en el contenido, o un contenido girado), no necesariamente en la que se muestra.
++          const viewport = this._viewportDeLectura(page, content);
++          if (viewport.rotation !== (page.rotate || 0) % 360) paginasGiradas.push(pageNumber);
+ 
+           const structTree = typeof page.getStructTree === "function"
+             ? await page.getStructTree().catch(() => null)
+@@ -13633,7 +13849,7 @@
+             } else {
+               ocrPages++;
+               const r = await this._leerPaginaConOCR(page, { items, chars, soloOCR: pdfMode === "ocr-local" || chars < minCharsPerPage,
+-                ocrProvider, preprocesarOCR, signal, maxPixelsPerPage, maxWorkingBytes, maxItemsPerPage });
++                ocrProvider, preprocesarOCR, signal, maxPixelsPerPage, maxWorkingBytes, maxItemsPerPage, rotation: viewport.rotation });
+               ({ modo, extractionType, ocrStatus, ocrEngine, ocrUsed, ocrBlocks, ocrPalabras, separadores } = r);
+               if (r.sinCuadricula) paginasSinCuadricula.push(pageNumber);
+               if (ocrStatus !== "complete") allComplete = false;
+@@ -13680,6 +13896,7 @@
+         complete: allComplete,
+         paginasTruncadas,
+         paginasSinCuadricula,
++        paginasGiradas,
+         pages,
+         ocrPages,
+         taggedPages,
+@@ -17057,6 +17274,11 @@
+           "digital, se ha leído la imagen con OCR (bloques ocr-text).", { page: page.pageNumber }, page.mixta);
+       }
+     }
++    if (analysis.paginasGiradas?.length) {
++      this._addIssue(item, "PDF_PAGE_READ_IN_TEXT_ORIENTATION", "info",
++        `En la(s) página(s) ${analysis.paginasGiradas.slice(0, 50).join(", ")} el texto va girado respecto a cómo se muestra ` +
++        "la página: se ha leído en la orientación del texto (Fase C).", null, { pages: analysis.paginasGiradas.slice(0, 1000) });
++    }
+     if (analysis.paginasSinCuadricula?.length) {
+       this._addIssue(item, "OCR_GRID_REMOVED", "info",
+         "Antes del OCR se borraron las líneas de la cuadrícula de las tablas para que no se confundan con letras " +

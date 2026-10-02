@@ -1,0 +1,22 @@
+herramientas/fase-c/ — cómo se comprobó la fase C
+==================================================
+Idefix se ejecuta tal cual en el navegador. Python y Node.js (Playwright) solo GENERAN y MIDEN aquí.
+
+  generar_casos_faseC.py      casos de la fase C con su verdad: páginas giradas bien construidas (90° y 270°) y
+                              una apaisada con el contenido girado (no debe tocarse); dos columnas con tabla
+                              debajo, bloques de emisor y cliente lado a lado y una carta a una columna (no debe
+                              detectar columnas); tabla de Word con gridSpan, vMerge y gridBefore; factura HTML
+                              con los totales en una tabla; fragmento HTML con onclick, script e instrucción
+                              inyectada, y el mismo fragmento como .txt (debe rechazarse).
+  verificar_casos_faseC.py    comprueba esos casos (orden de lectura, líneas enteras, importes, celdas, avisos).
+  verificacion_final_faseC.sh corpus completo, casos de las fases B y C, OCR desactivado, escenarios por la
+                              interfaz, demo, tiempos y memoria sobre una copia exacta de idefix1.0-fase-c/Idefix1.0
+                              (rutas de este entorno: ajústalas antes de usarlo).
+  ../fase-b/resellar-nucleo.py  recalcula SHA256_WORKER_NUCLEO tras cambiar el worker núcleo (se ha usado en cada cambio).
+Resultados: resultados/faseC/ (corpus), resultados/faseC-casos/, resultados/faseC-escenarios/ y
+resultados/capturas/faseC_*.png.
+
+Sobre pdf13 del corpus: el archivo está mal construido (MediaBox apaisado y factura dibujada en vertical): sus
+12 primeras líneas quedan fuera de la página y ningún visor las muestra (comprobado con poppler: pdftoppm y
+pdftotext dan solo las 5 últimas). Su nota del corpus no puede pasar de 3/7 datos; los casos c4_* son los
+correctos.
