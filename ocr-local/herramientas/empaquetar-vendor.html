@@ -1,0 +1,59 @@
+<!doctype html>
+<!--
+  Ruta: ocr-local/herramientas/empaquetar-vendor.html
+  Herramienta 100 % local (doble clic, sin Node.js ni npm) que convierte las descargas OFICIALES
+  (los .tgz del registro npm o los archivos sueltos) en los paquetes de ocr-local/vendor-paquetes/.
+  Solo genera un paquete si el SHA-256 del archivo coincide con el oficial.
+  Dependencias: ../js/cargador-verificado.js (manifiesto y SHA-256), empaquetar-vendor.js,
+  herramientas.css y ../css/ocr-local.css.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; connect-src 'none'; img-src 'self' data:; style-src 'self'; font-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Empaquetar bibliotecas oficiales · OCR local</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../css/ocr-local.css">
+  <link rel="stylesheet" href="herramientas.css">
+</head>
+<body class="herramienta">
+  <main class="contenedor-herramienta">
+    <h1 class="titulo-app">Empaquetar las bibliotecas oficiales</h1>
+    <p class="subtitulo-app">Convierte las descargas oficiales en los archivos de <code>ocr-local/vendor-paquetes/</code>.
+      Todo ocurre en este navegador; no se envía nada.</p>
+
+    <section class="bloque" aria-labelledby="tituloPaso1">
+      <h2 id="tituloPaso1">1. Descargue los archivos oficiales (único paso con Internet)</h2>
+      <p>Descargue estos cuatro archivos del registro oficial de npm. La herramienta comprueba su huella sha512
+        (la misma que publica el registro), así que el nombre del archivo da igual.</p>
+      <ul class="lista-descargas" id="listaDescargas"></ul>
+    </section>
+
+    <section class="bloque" aria-labelledby="tituloPaso2">
+      <h2 id="tituloPaso2">2. Elija o arrastre los archivos descargados</h2>
+      <input type="file" id="entradaArchivos" class="visually-hidden entrada-oculta" multiple accept=".tgz,.gz,.js,.css">
+      <label for="entradaArchivos" class="zona-arrastre" id="zonaArchivos">
+        <span class="zona-titulo">Arrastre aquí los .tgz (o los archivos sueltos) o haga clic para elegirlos</span>
+        <span class="zona-ayuda">Se aceptan solo los archivos oficiales cuya huella coincide</span>
+      </label>
+      <div id="mensajes" class="mensajes" aria-live="polite"></div>
+    </section>
+
+    <section class="bloque" aria-labelledby="tituloPaso3">
+      <h2 id="tituloPaso3">3. Guarde los paquetes en <code>ocr-local/vendor-paquetes/</code></h2>
+      <table class="tabla-paquetes">
+        <thead>
+          <tr><th scope="col">Paquete</th><th scope="col">Estado</th><th scope="col">SHA-256 del archivo oficial</th><th scope="col">Acción</th></tr>
+        </thead>
+        <tbody id="cuerpoPaquetes"></tbody>
+      </table>
+      <p class="nota">Si su navegador pregunta si permite descargar varios archivos, acepte. Después, mueva los archivos
+        descargados a la carpeta <code>vendor-paquetes</code> (sustituyendo los existentes) y abra <code>index.html</code>.</p>
+    </section>
+  </main>
+  <script src="../js/cargador-verificado.js"></script>
+  <script src="empaquetar-vendor.js"></script>
+</body>
+</html>

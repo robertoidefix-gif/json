@@ -1,0 +1,16 @@
+Eventos en el net-log: 1710
+URLs distintas: 10
+  local    http://127.0.0.1:8851/                                                                               x4
+  local    http://127.0.0.1:8851/css/ocr-local.css                                                              x4
+  local    http://127.0.0.1:8851/js/cargador-verificado.js                                                      x4
+  local    http://127.0.0.1:8851/js/demo-ocr.js                                                                 x4
+  local    http://127.0.0.1:8851/js/ocr-local.js                                                                x4
+  local    http://127.0.0.1:8851/vendor-paquetes/bootstrap-5.3.8.min.css.paquete.js                             x4
+  local    http://127.0.0.1:8851/vendor-paquetes/tessdata-spa-4.0.0_best_int.traineddata.gz.paquete.js          x4
+  local    http://127.0.0.1:8851/vendor-paquetes/tesseract-7.0.0.min.js.paquete.js                              x4
+  local    http://127.0.0.1:8851/vendor-paquetes/tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js              x4
+  local    http://127.0.0.1:8851/vendor-paquetes/tesseract-worker-7.0.0.min.js.paquete.js                       x4
+Resoluciones DNS: {'http://127.0.0.1:8851': 30}
+Hosts en parámetros: {'127.0.0.1': 10}
+Sockets: {'TCP_CONNECT_ATTEMPT address=127.0.0.1:8851': 10, 'TCP_CONNECT remote_address=127.0.0.1:8851': 10}
+TOTAL URLs EXTERNAS: 0

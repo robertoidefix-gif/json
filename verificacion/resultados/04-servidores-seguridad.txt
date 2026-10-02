@@ -1,0 +1,28 @@
+=== puerto 8841
+GET /../README.md              404
+GET /%2e%2e/README.md          404
+GET /..%2fREADME.md            404
+GET /js/..%5c..%5cREADME.md    404
+GET /servidor/servidor-local.py 404
+GET /.git/config               404
+GET /js/                       404
+GET /C:/Windows/win.ini        404
+GET /js/ocr-local.js%00.txt    404
+GET /index.html?x=1            200
+POST /index.html               405
+GET con Host: evil.example     421
+=== puerto 8851
+GET /../README.md              404
+GET /%2e%2e/README.md          404
+GET /..%2fREADME.md            404
+GET /js/..%5c..%5cREADME.md    404
+GET /servidor/servidor-local.py 404
+GET /.git/config               404
+GET /js/                       404
+GET /C:/Windows/win.ini        404
+GET /js/ocr-local.js%00.txt    404
+GET /index.html?x=1            200
+POST /index.html               405
+GET con Host: evil.example     421
+escucha en 127.0.0.1 8851
+escucha en 127.0.0.1 8841

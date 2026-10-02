@@ -1,0 +1,13 @@
+OCR local · servidor estático en http://127.0.0.1:8841/ (solo este equipo)
+Carpeta servida: /home/user/json/ocr-local
+Pulse Ctrl+C para detener.
+[08:28:55] GET / 200
+[08:28:55] GET /js/cargador-verificado.js 200
+[08:28:55] GET /css/ocr-local.css 200
+[08:28:55] GET /js/ocr-local.js 200
+[08:28:55] GET /js/demo-ocr.js 200
+[08:28:55] GET /vendor-paquetes/bootstrap-5.3.8.min.css.paquete.js 200
+[08:28:55] GET /vendor-paquetes/tesseract-7.0.0.min.js.paquete.js 200
+[08:28:55] GET /vendor-paquetes/tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js 200
+[08:28:55] GET /vendor-paquetes/tesseract-worker-7.0.0.min.js.paquete.js 200
+[08:28:55] GET /vendor-paquetes/tessdata-spa-4.0.0_best_int.traineddata.gz.paquete.js 200

@@ -1,0 +1,26 @@
+FLAGS [] Chromium 141.0.7390.37
+{
+ "origin": "file://",
+ "protocol": "file:",
+ "isSecureContext": "true",
+ "cryptoSubtle": "true",
+ "sriScriptExecuted": "undefined",
+ "tesseractGlobal": "object",
+ "fetch_vendor": "FALLA TypeError: Failed to fetch",
+ "xhr_vendor": "FALLA Error: XHR onerror",
+ "worker_file_url": "FALLA SecurityError: Failed to construct 'Worker': Script at 'file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/sondas/vendor/worker.min.js' cannot be accessed from origin 'null'.",
+ "worker_blob_importScripts_file": "OK importScripts OK",
+ "worker_blob_inline": "OK blob worker vivo; origin=null",
+ "worker_blob_importScripts_blob": "OK ERROR NetworkError: Failed to execute 'importScripts' on 'WorkerGlobalScope': The script at 'blob:null/aac36dba-253f-49e0-a622-b677ab90688a' failed to load.",
+ "wasm_in_blob_worker": "OK wasm OK",
+ "idb_open": "OK IndexedDB OK",
+ "tesseract_estandar_rutas_locales": "FALLA Error: TIMEOUT 20000ms",
+ "tesseract_file_envoltorios": "FALLA undefined: undefined"
+}
+error: Subresource Integrity: The resource 'file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/sondas/vendor/tesseract.min.js' has an integrity attribute, but the resource requires the request to be CORS enabled to check the integrity, and it is not. The resource has been 
+error: Subresource Integrity: The resource 'file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/sondas/vendor/tesseract.min.js' has an integrity attribute, but the resource requires the request to be CORS enabled to check the integrity, and it is not. The resource has been 
+error: Fetch API cannot load file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/sondas/vendor/worker.min.js. URL scheme "file" is not supported.
+error: Access to XMLHttpRequest at 'file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/sondas/vendor/worker.min.js' from origin 'null' has been blocked by CORS policy: Cross origin requests are only supported for protocol schemes: chrome, chrome-untrusted, data, http, http
+error: Failed to load resource: net::ERR_FAILED
+pageerror: TypeError: Failed to fetch
+pageerror: Failed to execute 'importScripts' on 'WorkerGlobalScope': The script at 'blob:null/3cbe9582-5a13-49fa-b6a7-7a7f58ed2a63' failed to load.

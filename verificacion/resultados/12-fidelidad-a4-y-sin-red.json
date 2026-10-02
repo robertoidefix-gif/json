@@ -1,0 +1,19 @@
+{
+ "condicionesDeRed": "proxy http://127.0.0.1:9 (inexistente) + DNS anulado para todo salvo 127.0.0.1",
+ "insigniaRed": "Red externa: 0 peticiones",
+ "resumen": "70 líneas · 980 palabras · 36 dudosas (confianza < 60) · 2480 × 3508 px · 9,8 s · Tesseract.js 7.0.0 · tesseract-core-simd-lstm",
+ "lineasReconocidas": 70,
+ "lineasExactas": 0,
+ "importesCorrectos": "70/70",
+ "fechasCorrectas": "70/70",
+ "numerosCorrectos": "70/70",
+ "simboloNumeroOrdinalCorrecto": "0/70",
+ "simboloEuroCorrecto": "70/70",
+ "lineasConErrorMarcadasComoDudosas": "36/70",
+ "ejemplosDeFallo": [],
+ "muestra": [
+  "Línea 1: concepto de gasto deducible ne 1000, importe 0,00 € y fecha 01/01/2025",
+  "Línea 2: concepto de gasto deducible ne 1001, importe 37,50 € y fecha 02/02/2025",
+  "Línea 3: concepto de gasto deducible ne 1002, importe 75,00 € y fecha 03/03/2025"
+ ]
+}

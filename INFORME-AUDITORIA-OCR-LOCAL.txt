@@ -1,0 +1,248 @@
+=====================================================================================================
+INFORME DE AUDITORÍA DE CALIDAD Y BUGS
+OCR local con Tesseract.js 7.0.0 + cajetilla «Contexto del análisis» (+ contraste con el informe Idefix1.0)
+Fecha: 2 de octubre de 2026 · Repositorio robertoidefix-gif/json · Rama claude/trusting-pasteur-jtqg4a
+Rol: auditor de calidad y de bugs. No se propone reescribir nada; las correcciones son puntuales.
+=====================================================================================================
+
+Notación: ✅ cumple · ⚠️ cumple con reservas o no demostrable · ❌ no cumple.
+«resultados/NN» = verificacion/resultados/NN-*.json|txt (salidas reales de esta sesión).
+Ninguna afirmación se da por buena sin archivo y línea o sin una ejecución guardada.
+
+-----------------------------------------------------------------------------------------------------
+0. ALCANCE REAL (LEER PRIMERO)
+-----------------------------------------------------------------------------------------------------
+Estado del repositorio al empezar: solo README.md (contenido «# json»). No contiene
+analizador-archivos.js (Idefix1.0, 16 504 líneas según el informe subido), ni su index.html, ni el
+prompt maestro (§1–§131), ni el informe §132 anterior (v6.11.0), ni documentos reales de ejemplo.
+
+Auditado con evidencia:
+  A. Código entregado en esta sesión: ocr-local/ y contexto-analisis/ (3 989 líneas).
+  B. Tesseract.js 7.0.0 y tesseract.js-core 7.0.0 oficiales tal como se integran (defectos con
+     archivo:línea del paquete oficial).
+  C. Afirmaciones del informe subido «informe-auditoria-Idefix1.0.txt» que se pueden contrastar con
+     pruebas reales (apartado 8).
+NO auditable: todo lo que depende de analizador-archivos.js → «⚠️ No demostrable con el código
+proporcionado». No se ha inventado ninguna línea de ese archivo.
+
+Método: lectura del código; ejecución real en Chromium 141.0.7390.37 con Playwright (12 baterías,
+salidas en verificacion/resultados/); net-log de Chromium para la red; PowerShell 7.4.6 y Python
+3.11 para los servidores; pruebas hostiles y de manipulación. Entorno: resultados/entorno.txt.
+
+-----------------------------------------------------------------------------------------------------
+1. BUGS Y ERRORES FUNCIONALES
+   Punto | Estado | Archivo | Línea | Evidencia | Impacto | Corrección | Prioridad
+-----------------------------------------------------------------------------------------------------
+1.1 Código entregado
+
+B01 | ✅ corregido en esta sesión | ocr-local/js/ocr-local.js | 549–561 | Reproducción: m.reconocer(img); m.reconocer(img) sin await. Esperado: OCUPADO. Real (antes): MOTOR «no disponible», porque el estado 'reconociendo' se fijaba después de «await this.iniciar()». Ahora la marca #ocupado se pone de forma síncrona (552). resultados/05 I.segundaLlamadaSimultanea = "OCUPADO" | Mensaje engañoso; con otra interfaz, doble ejecución | Hecho | (era Media)
+B02 | ✅ | ocr-local/js/ocr-local.js | 690–755, 729, 785–794 | Carreras con el Worker: cada worker tiene «generación»; los mensajes y errores de un worker terminado se descartan (713–721, 729); canal de error por generación; Promise.race con cancelación y tiempo máximo. Pruebas: cancelar el arranque → CANCELADO y reintento «listo»; cancelar el OCR de un A4 → 1 worker vivo; 3 pasadas → 1 worker; 0 rechazos sin gestionar; 0 errores de página (resultados/05) | — | — | —
+B03 | ✅ | ocr-local/js/ocr-local.js | 703–725, 785–794 | Fuga del Worker cuando Tesseract.createWorker no termina (defecto T02): se captura el Worker nativo y se termina en cualquier fallo. resultados/06: tras TIEMPO_AGOTADO, INTEGRIDAD o PAQUETE → 0 workers | — | — | —
+B04 | ✅ | ocr-local.js · demo-ocr.js · cargador-verificado.js · empaquetar-vendor.js | 753 · 198–205 · 280–284 · liberarUrls() | URL.revokeObjectURL en todas las URL blob: (worker tras arrancar, vista previa al cambiar o quitar, script verificado, descargas de la herramienta) | — | — | —
+B05 | ✅ | ocr-local/js/demo-ocr.js | 386–430 (388, 394) | Arrastrar y soltar: preventDefault en dragover y drop a nivel de document; soltar fuera no navega (resultados/05 E.fuera.urlSinCambio = true) y avisa; zona resaltada con transición (css 191); varios archivos → se usa el primero y se avisa (la demo procesa 1 imagen por diseño); el resaltado se retira al soltar | — | — | —
+B06 | ✅ | demo-ocr.js · ocr-local.js | 221–270 · 322–380 | Casos límite: 0 bytes → ARCHIVO_VACIO; texto o PDF con extensión .png → FORMATO (firma real); 20000×20000 → DIMENSIONES sin decodificar; PNG truncado → DECODIFICACION; nombre de 200 caracteres → se muestra recortado (resultados/05 A) | — | — | —
+B07 | ✅ | ocr-local/js/demo-ocr.js | 122 (definición); 226, 267, 317, 363, 397 (usos) | Los mensajes no se acumulan: limpiarAvisos() al elegir imagen, quitarla, reconocer, copiar y soltar fuera de la zona | — | — | —
+B08 | ✅ | ocr-local/js/demo-ocr.js | 184–193 | «Reconocer» deshabilitado (disabled + aria-disabled) sin imagen válida y durante el OCR; la entrada de archivos se desactiva mientras se procesa | — | — | —
+B09 | ⚠️ | ocr-local/js/ocr-local.js | 579, 353 | Cancelar mientras se prepara la imagen abandona la promesa, pero createImageBitmap/convertToBlob siguen hasta acabar (el ImageBitmap tardío se cierra) | CPU y memoria unos segundos con imágenes grandes | Pasar un AbortSignal a prepararImagen() y comprobarlo entre pasos | Baja
+B10 | ⚠️ | ocr-local/js/ocr-local.js | 644–662 | Cancelar durante la verificación de paquetes: la carga del resto sigue en segundo plano (no se crea worker) | ~1 s de trabajo inútil | Comprobar la cancelación entre cada obtenerVerificado() | Baja
+B11 | ⚠️ No demostrable | ocr-local/js/demo-ocr.js | 401–412 | Contador dragenter/dragleave: si se cancela el arrastre con Esc sobre un hijo de la zona, el resaltado podría quedarse (no reproducido) | Resaltado residual | Poner el contador a 0 en 'drop'/'dragend' de document y en 'mouseleave' de la zona | Baja
+B12 | ⚠️ No demostrable | ocr-local/js/ocr-local.js | 350–354 | Orientación EXIF: se pide imageOrientation 'from-image', pero no se ha probado con fotos reales giradas | Una foto girada 90° daría un OCR inservible | Probar con fotos EXIF 1, 3, 6 y 8 | Media
+B13 | ⚠️ informativo | ocr-local/js/ocr-local.js | 703–725 | window.Worker se sustituye solo durante la llamada síncrona a createWorker para capturar la instancia (se restaura en finally) | Ninguno observado; patrón poco habitual | Mantener comentado; retirarlo si Tesseract.js expone el Worker al fallar | Baja
+B14 | ✅ corregido en esta sesión | ocr-local/js/ocr-local.js | 521–537, 594–598 | Encontrado en la revisión adversarial del propio código: si se llamaba a liberar() durante el arranque o el reconocimiento, el manejador asíncrono sobrescribía después «liberado» con «sin_iniciar», y el motor volvía a ser utilizable. Ahora «liberado» es definitivo. resultados/05 I.liberarDuranteArranque y I.liberarDuranteOCR = «CANCELADO · estado=liberado» | Contrato de liberar() incumplido | Hecho | (era Baja)
+
+1.2 Defectos de Tesseract.js 7.0.0 (paquete oficial) que afectan a la integración
+
+T01 | ❌ biblioteca | tesseract.js 7.0.0 · src/worker-script/index.js | 238 | initialize convierte un idioma { code, data } en l.data (los bytes) y lo usa como nombre: api.Init(…, "31,139,8,…") | La vía documentada para dar el modelo sin fetch no funciona | Evitado: idioma 'spa' + langPath de memoria (ocr-local.js:710–711) | Info (comunicarlo al proyecto)
+T02 | ❌ biblioteca | src/createWorker.js | 213, 243 | Si falla loadLanguage o initialize, solo un fallo de 'load' rechaza la promesa de createWorker (213) y la cadena termina en .catch(() => {}) (243): createWorker NO termina nunca. Reproducido: configuración estándar en file:// → «createWorker SIN TERMINAR tras 20 s» (resultados/11) | Interfaz colgada sin error | Mitigado: tiempo máximo + canal de error + Worker capturado (ocr-local.js:703–755) | Alta (mitigado)
+T03 | ❌ biblioteca | src/createWorker.js | 44–47 | worker.onerror solo rechaza la promesa inicial: si el worker cae después, el recognize() en curso queda pendiente para siempre | Cuelgue | Mitigado: listener 'error' propio + canal + tiempo máximo (ocr-local.js:730, 585) | Alta (mitigado)
+T04 | ⚠️ biblioteca | src/worker/browser/defaultOptions.js · src/worker-script/browser/getCore.js · src/worker-script/index.js | 11 · 14 · 130 | Por defecto descarga worker, núcleo e idiomas de cdn.jsdelivr.net | Red/privacidad si se configura mal | Neutralizado: rutas explícitas + CSP connect-src 'none' + preludio (resultados/05 F: fetch a jsDelivr bloqueado y notificado) | Info
+T05 | ⚠️ biblioteca | src/worker-script/index.js | 112, 181 | Caché del modelo en IndexedDB sin control de integridad (lectura y escritura activas por defecto) | Envenenamiento persistente del modelo | cacheMethod 'none' (ocr-local.js:711) + IndexedDB anulado en el worker | Info
+T06 | ⚠️ biblioteca | src/createWorker.js | 217 | Sin errorHandler, un 'reject' hace throw dentro de onmessage (error no capturado) | Errores sueltos | errorHandler siempre definido (ocr-local.js:718) | Info
+T07 | ⚠️ biblioteca | src/worker/browser/loadImage.js | 43 | Si la imagen es una cadena, hace fetch(imagen) | Petición con una URL | Siempre se entrega un Blob PNG local | Info
+
+1.3 Aplicación Idefix1.0
+
+I01 | ⚠️ No demostrable con el código proporcionado | analizador-archivos.js | — | Workers por cajetilla, botón «Convertir», ejercicio fuera de rango, drag & drop en las 15 cajetillas + auxiliar NIF, «Descargar JSON» con aria-disabled (también tras quitar todo), NIF y Nombre del cliente (§55-BIS) y sustitución de {{nif_cliente}} en el rol (§76) | Desconocido | Subir el archivo y repetir esta dimensión | Bloqueante para auditar Idefix
+
+-----------------------------------------------------------------------------------------------------
+2. CALIDAD DE LA CONVERSIÓN DE LA INFORMACIÓN (FIDELIDAD)
+   Punto | Estado | Archivo | Línea | Evidencia | Impacto | Corrección | Prioridad
+-----------------------------------------------------------------------------------------------------
+Muestras disponibles: no hay documentos reales en el repositorio. Se usaron imágenes sintéticas con
+contenido conocido (verificacion/imagenes/) y se compararon campo a campo.
+
+F01 | ✅ | resultados/01 | — | Factura PNG 980×443: 9/9 líneas. NIF «B12345674», fecha «14/03/2025», «1.234,56 €», «259,26 €», «1.493,82 €», «Muñoz Ibáñez», «expedición» exactos. Único error: «Nº» → «N*» (la única palabra marcada dudosa; línea al 81 %) | — | — | —
+F02 | ✅ | resultados/12 | — | A4 a 300 ppp, 70 líneas, 980 palabras (con Internet cortado): importes 70/70, fechas 70/70, números 70/70, «€» 70/70 | — | — | —
+F03 | ❌ | resultados/12 · resultados/05 | — | «nº» → «ne» en 70/70 líneas del A4; «Nº» → «N*» (PNG, WebP) y «N2» (JPEG) en la factura | Un «nº de factura» puede quedar mal etiquetado o mezclado | Regla post-OCR que PROPONGA «nº/Nº» cuando N/n + {e, 2, *, °, o} precede a un número, marcada como corrección y como dudosa (fase M1-3) | Media
+F04 | ❌ | resultados/12 · ocr-local/js/ocr-local.js | 886 | La confianza de Tesseract no detecta ese error sistemático: solo 36 de las 70 líneas con «ne» quedan marcadas dudosas (umbral 60) → 34 líneas erróneas parecen fiables | Confianza demasiado optimista en tokens no numéricos | Marcar como dudosa toda palabra tocada por una regla (F03) y calibrar el umbral con un banco real (M1-5) | Media
+F05 | ✅ | ocr-local/js/ocr-local.js | 870–909 | La confianza es real, por palabra y por línea (no un valor fijo): 81–96 % por línea en la factura; 36/980 palabras < 60 en el A4 | — | — | —
+F06 | ⚠️ fuera del módulo | — | — | El motor devuelve texto, líneas, cajas y confianza; NO convierte a JSON fiscal. «1.234,56 €» → 1234.56, separadores, columnas de libros, varias facturas por PDF, NIF/CIF, moneda implícita EUR, null frente a 0 y campos_baja_confianza son del pipeline D7 de analizador-archivos.js → ⚠️ No demostrable con el código proporcionado. El informe subido probó D7 con un SUSTITUTO de Tesseract | Fidelidad del JSON con OCR real desconocida | Conectar este motor a D7 y repetir la batería d7-regresion con salidas reales | Alta
+F07 | ⚠️ | ocr-local/js/ocr-local.js | 322–380 | Sin preprocesado (grises, contraste, binarización, re-escalado a ~300 ppp, enderezado) ni segunda pasada | Peor en fotos y escaneos pobres | Fases M1-1 y M1-2 | Media
+F08 | ⚠️ | ocr-local/js/ocr-local.js | 746 | preserve_interword_spaces = '1', pero las tablas no se reconstruyen en celdas a partir de las cajas | Tablas leídas como texto corrido | Fase M1-4 | Media
+F09 | ⚠️ No demostrable | — | — | Sin escaneos, fotos de móvil ni tickets reales | Fidelidad real desconocida | Banco de 30–50 documentos reales con transcripción (M1-0) | Alta
+F10 | ⚠️ | — | — | El motor solo admite imágenes (PNG, JPEG, WebP, BMP). Los PDF escaneados necesitan rasterizarse antes (PDF.js en Idefix, según el informe) | Sin PDF en esta demo | Rasterizar cada página a 300 ppp y pasar el PNG a reconocer() | Info
+
+-----------------------------------------------------------------------------------------------------
+2-BIS. VALORACIÓN PROPIA Y PROPUESTA DE MEJORA DE LA CALIDAD DE LA INFORMACIÓN
+-----------------------------------------------------------------------------------------------------
+¿Hay margen real de mejora? SÍ, y es medible:
+  - El reconocimiento de cifras es muy bueno en texto limpio (importes, fechas y números 100 % en
+    las muestras), pero los símbolos tipográficos frecuentes en facturas españolas («nº», «Nº», «ª»)
+    fallan de forma sistemática y la confianza de Tesseract no lo avisa (F03/F04). Es justo el tipo
+    de error peligroso: silencioso.
+  - Con una sola pasada y sin preprocesado, la calidad dependerá mucho de la imagen; con documentos
+    limpios es alta, pero no hay evidencia sobre fotos o escaneos reales (F09).
+  - La confianza reportada es razonable para los números y optimista para los símbolos.
+  - Patrones que se manejarán peor (previsión, no medido): fotos con perspectiva o sombras,
+    tickets térmicos desvaídos, tablas con columnas estrechas, texto a dos columnas.
+La propuesta concreta está en el apartado 7 («Fase de mejora M1»), separada del plan de seguridad.
+
+-----------------------------------------------------------------------------------------------------
+3. CALIDAD DEL CÓDIGO JAVASCRIPT
+   Punto | Estado | Archivo | Línea | Evidencia | Impacto | Corrección | Prioridad
+-----------------------------------------------------------------------------------------------------
+C01 | ✅ | todos | — | Nombres en español y coherentes (verbo + objeto: obtenerVerificado, prepararImagen, construirBloque); errores con código estable (ErrorOCR.codigo, ErrorCarga.codigo) | — | — | —
+C02 | ✅ | ocr-local.js · cargador-verificado.js · contexto-analisis.js · servidores | 45–58 · 25 · 30–36 · cabeceras | Límites centralizados con nombre: LIMITES (bytes, píxeles, tiempos), MS_MAX_CARGA_PAQUETE, LIMITES del contexto, PUERTO_POR_DEFECTO, INTENTOS_DE_PUERTO, MaxBytesCabecera, MsEsperaMaxima | — | — | —
+C03 | ⚠️ | ocr-local/js/ocr-local.js | 644, 655, 657, 659 | Pesos de progreso (0.05, 0.15, 0.3, 0.38) como literales en #iniciarInterno (los de Tesseract sí están en ETAPAS_MOTOR, 70–75) | Legibilidad | Llevarlos a una tabla con nombre | Baja
+C04 | ⚠️ | contexto-analisis.js · ocr-local.js · demo-ocr.js · empaquetar-vendor.js | 188 (88 l.) · 690 (66 l.), 391 (62 l.) · 587 (67 l.) · 143 (58 l.) | Funciones largas: crearCampo, #crearTrabajador, construirPreludio (cadena del preludio), autodiagnostico, leerTar | Revisión más costosa | Extraer subfunciones (pintar/validar en crearCampo; tabla de pruebas del autodiagnóstico) | Baja
+C05 | ⚠️ | demo-ocr.js · empaquetar-vendor.js · demo-contexto.js | 133 · 238 · 23 | Tres implementaciones de «mostrar aviso»; recortar() (demo-ocr.js:92) y textoError() (ocr-local.js:107) se solapan | Divergencia futura | Utilidad común de avisos | Baja
+C06 | ✅ | todos | — | Sin catch que trague errores: los rechazos ya comunicados pasan por registrarYaGestionado() (ocr-local.js:98, console.debug); el único catch sin registro, en el preludio, está documentado (no hay canal) | — | — | —
+C07 | ✅ | todos | — | async/await en todo el flujo; .then solo en conTiempoMaximo (166) e iniciar (521), donde encadena el estado | — | — | —
+C08 | ⚠️ | ocr-local/js/demo-ocr.js | 386, 450, 492, 587, 659, 672, 691 | JSDoc en el 100 % de la API pública (OCRLocal, CargadorVerificado, ContextoAnalisis); faltan en 7 funciones internas de la demo | Menor | Añadir JSDoc breve | Baja
+C09 | ✅ | — | — | Sin código muerto; construirPreludioWorker y URL_DATOS_MEMORIA se exportan solo para pruebas y está documentado (ocr-local.js:924) | — | — | —
+C10 | ✅ | — | — | Módulos con una responsabilidad: integridad (cargador) / OCR (motor) / interfaz / herramienta / servidores / contexto; sin dependencias circulares | — | — | —
+C11 | ✅ | — | — | node --check sin errores en todos los .js; 0 usos de innerHTML, outerHTML, insertAdjacentHTML, document.write, eval, new Function (salvo la sonda eval del autodiagnóstico, que debe fallar y falla) | — | — | —
+C12 | ✅ corregido en esta sesión | contexto-analisis/contexto-analisis.js | 42–43 | Las secuencias  /  de la expresión regular se escribieron como caracteres literales → error de sintaxis y la cajetilla no cargaba. Detectado por las pruebas, corregido y verificado (resultados/08); se revisaron los demás .js (sin caracteres invisibles literales) | La cajetilla no aparecía | Hecho | (era Alta)
+C13 | ⚠️ No demostrable | — | — | «Ninguna pérdida de funcionalidad» (§1): no hay versión anterior de este código ni diagnóstico de Fase 0 en el repositorio | — | Subir Idefix1.0 | —
+
+-----------------------------------------------------------------------------------------------------
+4-BIS. EXPERIENCIA DE USUARIO
+   Punto | Estado | Archivo | Línea | Evidencia | Impacto | Corrección | Prioridad
+-----------------------------------------------------------------------------------------------------
+Capturas: verificacion/capturas/demo-escritorio-file.png, demo-movil-390px.png, contexto-analisis.png.
+
+U01 | ✅ | ocr-local/css/ocr-local.css | 8–30 | Tokens comunes de color, radio y sombra; Bootstrap 5.3.8 + capa propia; mismas tarjetas, insignias y avisos en las tres páginas; tipografía del sistema (Segoe UI en Windows) | — | — | —
+U02 | ✅ | ocr-local/css/ocr-local.css | 191, 213 | Zona de arrastre con borde discontinuo, icono, ayuda, hover y resaltado con transición de 180 ms; foco de teclado visible en la zona | — | — | —
+U03 | ✅ | medido | — | Contraste WCAG AA en todos los pares: texto 15,5:1; secundario 5,3–6,0:1; insignias 4,7–5,8:1; avisos 7,2–8,0:1; botón primario 4,5:1; fila dudosa 14,1:1 | — | — | —
+U04 | ✅ | ocr-local/css/ocr-local.css | 41–47, 453 | Sin animaciones mientras se aplican los estilos (clase «transiciones»); respeta prefers-reduced-motion | — | — | —
+U05 | ✅ | captura móvil | — | 390 px sin desbordamiento horizontal; tabla con desplazamiento propio | — | — | —
+U06 | ✅ | demo-ocr.js · ocr-local.js | 161–176 · 70–75 | Progreso por etapas en español («Verificando…», «Cargando el modelo de español», «Reconociendo texto») con transición de 260 ms; el A4 avanza de forma continua durante ~10 s | — | — | —
+U07 | ⚠️ | ocr-local/index.html · demo-ocr.js | 60–64 · 189 | «Cancelar» aparece y desaparece (hidden) y desplaza «Quitar imagen» | Pequeño salto de diseño | Reservar su hueco (visibility) | Baja
+U08 | ⚠️ | ocr-local/index.html | 25 | A 390 px el icono queda encima del título | Cabecera menos compacta | Agrupar icono y título en un contenedor sin wrap | Baja
+U09 | ⚠️ | ocr-local/js/demo-ocr.js | 280 | Las palabras dudosas solo se ven en la tabla, no en el texto principal | Hay que abrir «Líneas y confianza» para verlas | Vista de lectura con las líneas dudosas resaltadas (textarea para copiar aparte) | Media
+U10 | ⚠️ | — | — | Sin modo oscuro | Estético | data-bs-theme según prefers-color-scheme | Baja
+Priorizado por impacto/esfuerzo: U09 (alto/medio) > U07 (medio/bajo) > U08 (bajo/bajo) > U10.
+
+-----------------------------------------------------------------------------------------------------
+5. CUMPLIMIENTO DE REQUISITOS
+   Punto | Estado | Archivo | Línea | Evidencia | Impacto | Corrección | Prioridad
+-----------------------------------------------------------------------------------------------------
+5.1 Requisitos de este encargo
+
+R01 Tesseract.js 7.0.0 | ✅ | cargador-verificado.js | 34–77 | Archivos oficiales de tesseract.js@7.0.0 y tesseract.js-core@7.0.0 con sha512 del registro npm y SHA-256 fijados | — | — | —
+R02 Sin Internet | ✅ | resultados/12, 01–03 | — | Funciona con Internet cortado; net-log: 0 URLs, 0 DNS y 0 sockets externos | — | — | —
+R03 Sin Node.js, npm, backend ni CDN | ✅ | index.html | 13 | Modo file:// sin servidor; servidor solo como alternativa opcional; Node.js solo en verificacion/ (pruebas del auditor) | — | — | —
+R04 Chrome y Edge recientes | ✅ motor / ⚠️ marcas | — | — | Verificado en Chromium 141; Chrome y Edge de marca NO ejecutados → autodiagnóstico en la demo | Posibles diferencias por políticas | Ejecutar el autodiagnóstico en ambos | Alta
+R05 Viabilidad comprobada antes de escribir | ✅ | ENTREGA-OCR-LOCAL.txt | apartado 1 | Sondas file:// con la biblioteca real, con y sin --allow-file-access-from-files, y configuración estándar (resultados/09–11) | — | — | —
+R06 .txt con todo el código, rutas y dependencias | ✅ | ENTREGA-OCR-LOCAL.txt | apartados 2 y 9 | 15 archivos íntegros con SHA-256; los paquetes (13,6 MB de base64 de terceros) con formato exacto, huellas y regeneración byte a byte | — | — | —
+R07 HTML de demostración con OCR en español | ✅ | ocr-local/index.html | — | resultados/01 | — | — | —
+R08 Instrucciones paso a paso | ✅ | ENTREGA-OCR-LOCAL.txt | apartado 3 | — | — | — | —
+R09 Comprobación explícita de red | ✅ | ENTREGA-OCR-LOCAL.txt | apartado 4 | net-log + control positivo + 12 vías bloqueadas en el worker + método manual | — | — | —
+R10 «Contexto del análisis» en la interfaz del prompt fiscal | ❌ no integrado / ✅ módulo | contexto-analisis/contexto-analisis.js | 60–275 | El archivo de la interfaz fiscal no está en el repositorio; módulo, demo, pruebas hostiles (resultados/08) y guía de integración entregados | La cajetilla no aparece aún en su aplicación | Subir analizador-archivos.js | Bloqueante para R10
+R11 Solo JS, HTML, CSS nativos y Bootstrap | ✅ | — | — | Bootstrap 5.3.8 (solo CSS); sin frameworks ni otras bibliotecas | — | — | —
+R12 Seguridad rigurosa | ✅ | ENTREGA apartado 6 | — | CSP sin unsafe-*; integridad SHA-256; red anulada en el worker; validación de imagen; servidor endurecido (resultados/04) | Riesgos residuales documentados | — | —
+R13 Auditoría en 6 dimensiones | ✅ con alcance limitado | este archivo | — | Idefix1.0 no disponible (apartado 0) | — | — | —
+R14 Una fase de mejora | ✅ | este archivo | apartado 7 | — | — | — | —
+R15 Dónde descargar cada biblioteca | ✅ | ENTREGA apartado 8 · este archivo apartado 9 | — | — | — | — | —
+
+5.2 Prompt maestro §1–§131 (método §132)
+P01 | ⚠️ No demostrable con el código proporcionado | — | — | Ni el prompt maestro ni el informe §132 v6.11.0 están disponibles; el informe Idefix1.0 subido no permite comprobar qué cambió en el código desde entonces | No se puede certificar el cumplimiento | Subir prompt maestro, informe §132 y código | Bloqueante para §5
+
+-----------------------------------------------------------------------------------------------------
+6. FORMATO, LISTA ÚNICA PRIORIZADA Y RECOMENDACIÓN
+-----------------------------------------------------------------------------------------------------
+6.1 Lista única priorizada (todas las categorías juntas)
+  1. [Bloqueante] Subir analizador-archivos.js, el index.html del proyecto y, si existen, el prompt
+     maestro y el informe §132 v6.11.0. Sin ellos no se puede integrar la cajetilla (R10) ni auditar
+     Idefix (I01, F06, C13, P01).
+  2. [Alta] Ejecutar la demo y el autodiagnóstico en Google Chrome y Microsoft Edge de marca en
+     Windows, también con Edge en seguridad mejorada estricta (R04).
+  3. [Alta] Conectar este motor real al pipeline D7 de Idefix y repetir su batería con salidas
+     reales; hasta ahora D7 solo se probó con un sustituto de Tesseract (F06).
+  4. [Alta] Banco de verdad-terreno con 30–50 documentos reales (escaneos, fotos, tickets) y medir
+     (F09; fase M1-0).
+  5. [Media] «nº/Nº» mal leído de forma sistemática y no marcado como dudoso (F03, F04).
+  6. [Media] Probar fotos con orientación EXIF (B12).
+  7. [Media] Preprocesado y segunda pasada (F07), tablas por cajas (F08), dudosas visibles en el
+     texto (U09).
+  8. [Media] Fijar la base de requisitos: el encargo de auditoría habla de 15 cajetillas + auxiliar
+     NIF y el informe Idefix1.0 de 20 cajetillas (X08).
+  9. [Baja] Probar servidor-local.ps1 en Windows PowerShell 5.1 (solo si file:// está bloqueado).
+ 10. [Baja] Cancelación más fina (B09, B10) y contador de arrastre (B11).
+ 11. [Baja] Calidad de código: pesos de progreso con nombre (C03), funciones largas (C04), avisos
+     duplicados (C05), JSDoc de funciones internas (C08).
+ 12. [Baja] UX: hueco fijo de «Cancelar» (U07), cabecera móvil (U08), modo oscuro (U10).
+ 13. [Info] Comunicar a Tesseract.js los defectos T01–T03.
+ Corregidos y re-verificados en esta sesión: B01 (carrera en reconocer), B14 (estado tras liberar) y
+ C12 (expresión regular).
+
+6.2 Recomendación final
+  - Motor OCR local (esta entrega): LISTO para usarse como componente de OCR en español, 100 %
+    local, en el motor Chromium, con revisión humana de lo que marca como dudoso. No quedan fallos
+    bloqueantes ni altos abiertos en el código entregado: los tres fallos propios encontrados
+    (B01, B14, C12) están corregidos y re-verificados, y los defectos de la biblioteca que podían
+    colgar la interfaz (T02, T03) están mitigados y probados.
+  - ¿Está la APLICACIÓN lista para generar JSON de confianza para la IA de análisis fiscal (§73 en
+    adelante)? NO se puede dar el visto bueno desde esta auditoría, porque su código no está
+    disponible. Antes del visto bueno hay que resolver exactamente:
+      1) subir analizador-archivos.js y auditarlo (dimensiones 1, 2, 3 y 5 completas);
+      2) integrar este motor y repetir la batería D7 con OCR real;
+      3) banco de documentos reales con importes exactos ≥ 99 % y 0 importes inventados;
+      4) que ningún error de lectura en campos fiscales quede sin marcar (F03/F04);
+      5) verificación en Chrome y Edge de marca (R04).
+  - Para documentos digitales (sin OCR), la conclusión del informe Idefix1.0 («SÍ, con la salvedad
+    F12») no se puede confirmar ni refutar aquí.
+
+-----------------------------------------------------------------------------------------------------
+7. FASE DE MEJORA PROPUESTA — M1 «FIDELIDAD OCR MEDIBLE»
+-----------------------------------------------------------------------------------------------------
+Objetivo: que cada dato fiscal leído por OCR sea correcto o quede marcado como dudoso, y poder
+demostrarlo con números. Restricciones: solo JavaScript, Canvas y Web Crypto nativos; sin bibliotecas
+nuevas; sin red; la CSP no cambia; nada se corrige en silencio.
+
+ Paso | Objetivo | Cambio técnico | Documentos que más ganan | Cómo se mide | Prioridad
+ M1-0 | Línea base | herramientas/banco-ocr.html (local): carpeta de imágenes + transcripción esperada (.txt) y campos clave (.json); calcula CER, WER, % de importes/fechas/NIF exactos y % de errores NO marcados | Todos | Ejecutar con la versión actual y guardar el informe | 1
+ M1-3 | Errores silenciosos | Reglas post-OCR que PROPONEN y marcan: «nº/Nº/ª» ante números; importes con separadores españoles; NIF/CIF con dígito de control (proponer O↔0, S↔5, B↔8 solo si el control lo confirma); fechas válidas. Toda palabra tocada pasa a dudosa y conserva la lectura original | Facturas, tickets | % errores no marcados: de 34/70 líneas a 0 en el A4 de prueba | 2
+ M1-1 | Imágenes pobres | Preprocesado en OffscreenCanvas: grises, estiramiento de histograma, re-escalado si la altura de x < 20 px (≈300 ppp), binarización Otsu opcional; A/B contra la línea base | Fotos de móvil, escaneos de 150 ppp, tickets térmicos | CER y confianza media antes/después en el mismo lote | 3
+ M1-5 | Confianza fiable | Calibrar el umbral (hoy 60) por tipo de token (números, símbolos, palabras) con el banco | Todos | Curva errores no marcados / falsos dudosos | 4
+ M1-2 | Recuperar líneas malas | Segunda pasada solo en líneas con confianza < 70: recorte por su caja, escala ×2, PSM 7; se queda la mejor y se registran ambas | Escaneos con ruido | Líneas recuperadas y tiempo extra por página | 5
+ M1-4 | Tablas | Agrupar palabras por cajas en filas y columnas (huecos verticales) y devolver celdas; PSM 6 solo en zonas tabulares | Libros de facturas, extractos | Celdas correctas / celdas totales | 6
+Criterio de salida de M1: CER ≤ 2 % en documentos limpios, importes exactos ≥ 99 %, 0 errores en
+campos fiscales sin marcar, tiempo ≤ 3 s por página A4 en un portátil medio.
+
+-----------------------------------------------------------------------------------------------------
+8. CONTRASTE CON EL INFORME SUBIDO «informe-auditoria-Idefix1.0.txt»
+   Punto | Estado | Archivo | Línea | Evidencia | Impacto | Corrección | Prioridad
+-----------------------------------------------------------------------------------------------------
+X01 | ✅ ahora demostrado (solo spa) | informe R06, I02 | 78, 172 | El informe marcaba el OCR real como NO DEMOSTRABLE (se probó con un sustituto). Aquí: Tesseract.js 7.0.0 real, español, resultados/01, 05, 12. cat, chi_sim, chi_tra, eng, eus y fra siguen sin probar | — | Repetir con cada idioma | Media
+X02 | ✅ resuelto aquí | informe R09 | 81 | «Bootstrap oficial no incrustado»: aquí Bootstrap 5.3.8 oficial (sha512 del registro + SHA-256) aplicado sin 'unsafe-inline' (hoja construible en la capa «vendor») | — | Se puede reutilizar cargador-verificado.js | —
+X03 | ✅ aclarado | informe apartado 7 | 328–331 | «tesseract.js-core: versión exacta NO VERIFICADA»: es la 7.0.0 (tesseract.js 7.0.0 declara "^7.0.0"). Ojo: la etiqueta «latest» del registro apunta a 6.1.2 | Riesgo de descargar la versión equivocada | Usar la URL exacta del apartado 9 | Media
+X04 | ⚠️ impreciso | informe apartado 7 | 332–333 | «Datos de idioma: tessdata de Tesseract (tesseract-ocr) comprimidos con gzip»: el modelo por defecto de Tesseract.js 7 es @tesseract.js-data/<idioma> 4.0.0_best_int (derivado de tessdata_best, convertido a enteros). Un modelo de tessdata o tessdata_fast de GitHub es otro archivo con otro SHA-256 | Huellas del manifiesto que no coincidirían | Fijar la fuente exacta por idioma | Media
+X05 | ⚠️ parcialmente refutado | informe I04 | 174 | «file:// no viable… sin servidor local no funciona». Con la configuración estándar es cierto (resultados/11), pero con la técnica de paquetes verificados funciona sin servidor (resultados/01, 05, 12). Confirmado: fetch, XHR y new Worker desde archivo bloqueados; script con integrity no se ejecuta; con --allow-file-access-from-files fetch sigue bloqueado (resultados/09–10) | Se puede eliminar la dependencia del servidor | Ver ENTREGA apartado 1 | Media
+X06 | ✅ / ⚠️ | informe I05 | 175 | PowerShell «no probado»: aquí se probó servidor-local.ps1 (otro script, el de esta entrega) con PowerShell 7.4.6; Windows PowerShell 5.1 sigue sin probar | — | Probar en Windows | Baja
+X07 | ⚠️ No demostrable | informe I01 | 171 | «Contexto del análisis ✅» en las líneas 13675, 9585, 9602, 10584, 11214, 13768: el código no está disponible | — | Subir el archivo | Bloqueante para R10
+X08 | ❌ inconsistencia de requisitos | informe R01 / encargo de auditoría | 73 | El encargo de auditoría exige «15 cajetillas + auxiliar NIF»; el informe habla de 20 cajetillas (t-auto, t-matriz 20/20) | No se puede saber contra qué base auditar §2 | Fijar la lista vigente de cajetillas | Media
+X09 | ⚠️ matiz | informe B11 | 97 | El informe trata «.catch(() => {})» como un problema de estilo. En Tesseract.js 7.0.0 ese mismo patrón (createWorker.js:243) es la causa de T02 (cuelgue silencioso): no es solo estilo | Cuelgues ocultos | Revisar cada .catch(() => {}) de Idefix con ese criterio | Media
+
+-----------------------------------------------------------------------------------------------------
+9. DÓNDE DESCARGAR CADA BIBLIOTECA (resumen; detalle y huellas en ENTREGA-OCR-LOCAL.txt, apartado 8)
+-----------------------------------------------------------------------------------------------------
+  Tesseract.js 7.0.0 ........ https://registry.npmjs.org/tesseract.js/-/tesseract.js-7.0.0.tgz
+  tesseract.js-core 7.0.0 ... https://registry.npmjs.org/tesseract.js-core/-/tesseract.js-core-7.0.0.tgz
+  Modelo español ............ https://registry.npmjs.org/@tesseract.js-data/spa/-/spa-1.0.0.tgz
+  Bootstrap 5.3.8 (CSS) ..... https://registry.npmjs.org/bootstrap/-/bootstrap-5.3.8.tgz
+  Proyectos: github.com/naptha/tesseract.js · github.com/naptha/tesseract.js-core ·
+  github.com/tesseract-ocr/tessdata_best · getbootstrap.com
+  Para convertirlos en paquetes: ocr-local/herramientas/empaquetar-vendor.html (sin Node.js).
+
+FIN DEL INFORME

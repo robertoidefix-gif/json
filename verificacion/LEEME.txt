@@ -1,0 +1,48 @@
+verificacion/ — Pruebas automáticas usadas para comprobar la entrega
+=====================================================================
+
+IMPORTANTE: esta carpeta NO forma parte de la aplicación. La aplicación (ocr-local/ y
+contexto-analisis/) funciona sin Node.js. Estas pruebas sí usan Node.js 18+ y Playwright, porque
+hacía falta controlar un navegador real para obtener evidencias. Puede borrar la carpeta.
+
+Resultados de la ejecución del 2 de octubre de 2026 (Chromium 141.0.7390.37): resultados/
+  entorno.txt ................................ versiones usadas
+  01-demo-file.json / -netlog.txt ............ demo abierta como file://: OCR + red (0 externas)
+  02-demo-servidor-ps1.json / -netlog.txt .... misma demo servida por servidor-local.ps1 (PowerShell 7.4.6)
+  03-demo-servidor-py.json / -netlog.txt ..... misma demo servida por servidor-local.py
+  02-servidor-ps1.log, 03-servidor-py.log .... registro de peticiones de cada servidor
+  04-servidores-seguridad.txt ................ recorridos de ruta, métodos, Host, escucha en 127.0.0.1
+  05-casos-limite.json ....................... formatos, archivos inválidos, cancelación, arrastre,
+                                               red anulada dentro del worker, API (OCUPADO, LIBERADO)
+  06-manipulacion-ausencia-tiempo.json ....... paquete alterado, paquete ausente, tiempo agotado
+  07-herramienta-empaquetado.json ............ la herramienta genera paquetes idénticos a los incluidos
+  08-contexto-analisis.json .................. pruebas hostiles de la cajetilla «Contexto del análisis»
+  09-file-sondas-sin-flag.txt ................ qué funciona y qué no con file:// (biblioteca oficial)
+  10-file-sondas-allow-file-access.txt ....... lo mismo con --allow-file-access-from-files
+  11-file-tesseract-config-estandar.txt ...... configuración documentada de Tesseract.js en file://
+  12-fidelidad-a4-y-sin-red.json ............. fidelidad campo a campo (A4) con Internet cortado
+capturas/ ..................................... capturas de las demos (escritorio, móvil, contexto)
+imagenes/ ..................................... imágenes de prueba (sintéticas, contenido conocido)
+
+Cómo repetir las pruebas (opcional):
+  1. Instale Node.js 18+ y Playwright (npx playwright install chromium) en un equipo de pruebas.
+  2. Desde esta carpeta:
+       node prueba-demo.js file:///RUTA/ocr-local/index.html imagenes/factura-es.png netlog.json captura.png
+       python analizar-netlog.py netlog.json
+       node prueba-casos.js
+       node prueba-copias.js
+       node prueba-contexto.js captura-contexto.png
+       node prueba-fidelidad-y-sin-red.js
+       node prueba-herramienta.js CARPETA_CON_LOS_4_TGZ_OFICIALES   (más bootstrap-manipulado.tgz,
+            cualquiera.js y worker-suelto.min.js, como se describe en el propio script)
+     Servidores: arránquelos en los puertos que prefiera y pase http://127.0.0.1:PUERTO/ a prueba-demo.js.
+     Control del net-log: sirva ocr-local con servidor-local.py en el puerto 8831 y ejecute
+       node control-netlog.js RUTA/control-netlog.html netlog-control.json
+  3. Las sondas file:// (prueba-file-sondas.*, prueba-file-estandar.*) necesitan una carpeta vendor/
+     junto a ellas con los archivos OFICIALES sin empaquetar (tesseract.min.js, worker.min.js,
+     tesseract-core-simd-lstm.wasm.js, spa.traineddata.gz), una imagen factura-es.png y los
+     envoltorios wrap-worker.js, wrap-core.js y wrap-spa.js (window.__SRC_WORKER, __SRC_CORE y
+     __B64_SPA). Sirvieron para demostrar por qué la vía estándar no funciona en file://.
+  4. empaquetar-referencia.py es el generador de referencia (Python) con el que se crearon los
+     paquetes; la herramienta del navegador produce exactamente los mismos bytes (resultado 07).
+  Variable opcional PLAYWRIGHT_MODULE: ruta del módulo playwright si no está en node_modules.

@@ -1,0 +1,155 @@
+{
+ "A": {
+  "factura.jpg": {
+   "botonReconocerHabilitado": true,
+   "avisos": [
+    "aviso: Revise las líneas resaltadas.1 palabra tiene una confianza baja."
+   ],
+   "primeraLinea": "FACTURA N2 2025/0157",
+   "pie": 28
+  },
+  "factura.webp": {
+   "botonReconocerHabilitado": true,
+   "avisos": [
+    "ok: Texto reconocido.Todo se ha procesado en este equipo."
+   ],
+   "primeraLinea": "FACTURA N* 2025/0157",
+   "pie": 29
+  },
+  "blanco.bmp": {
+   "botonReconocerHabilitado": true,
+   "avisos": [
+    "aviso: No se ha reconocido texto.Pruebe con una imagen más nítida, recta y con más resolución."
+   ],
+   "primeraLinea": "",
+   "pie": 25
+  },
+  "vacio.png": {
+   "botonReconocerHabilitado": false,
+   "avisos": [
+    "error: No se puede usar «vacio.png».El archivo está vacío (0 bytes).Código: ARCHIVO_VACIO"
+   ],
+   "primeraLinea": "",
+   "pie": 0
+  },
+  "texto-con-extension.png": {
+   "botonReconocerHabilitado": false,
+   "avisos": [
+    "error: No se puede usar «texto-con-extension.png».No es una imagen PNG, JPEG, WebP ni BMP (se comprueba el contenido, no la extensión).Código: FORMATO"
+   ],
+   "primeraLinea": "",
+   "pie": 0
+  },
+  "documento.pdf.png": {
+   "botonReconocerHabilitado": false,
+   "avisos": [
+    "error: No se puede usar «documento.pdf.png».No es una imagen PNG, JPEG, WebP ni BMP (se comprueba el contenido, no la extensión).Código: FORMATO"
+   ],
+   "primeraLinea": "",
+   "pie": 0
+  },
+  "bomba-dimensiones.png": {
+   "botonReconocerHabilitado": true,
+   "avisos": [
+    "error: No se pudo reconocer el texto.La imagen es demasiado grande (20000 × 20000 píxeles; máximo 12000 por lado y 40 megapíxeles).Código: DIMENSIONES"
+   ],
+   "primeraLinea": "",
+   "pie": 35
+  },
+  "truncado.png": {
+   "botonReconocerHabilitado": true,
+   "avisos": [
+    "error: No se pudo reconocer el texto.El navegador no pudo decodificar la imagen (archivo dañado o incompleto).Código: DECODIFICACION"
+   ],
+   "primeraLinea": "",
+   "pie": 26
+  },
+  "nombre-de-200-caracteres.png": {
+   "botonReconocerHabilitado": true,
+   "avisos": [
+    "aviso: Revise las líneas resaltadas.1 palabra tiene una confianza baja."
+   ],
+   "primeraLinea": "FACTURA N* 2025/0157",
+   "pie": 96
+  }
+ },
+ "B": {
+  "avisosTrasCancelar": [
+   "info: Reconocimiento cancelado.Puede volver a intentarlo cuando quiera."
+  ],
+  "workersAntesDeCancelar": 1,
+  "workersTrasCancelar": 1,
+  "etapa": "Cancelado",
+  "reintento": {
+   "ms": 9691,
+   "resumen": "70 líneas · 980 palabras · 36 dudosas (confianza < 60) · 2480 × 3508 px · 9,2 s · Tesseract.js 7.0.0 · tesseract-core-simd-lstm",
+   "avisos": [
+    "aviso: Revise las líneas resaltadas.36 palabras tienen una confianza baja."
+   ],
+   "workers": 1,
+   "linea70": "Línea 70: concepto de gasto deducible ne 1069, importe 2587,50 € y fecha 07/07/2025"
+  }
+ },
+ "C": {
+  "workersTras3Pasadas": 1
+ },
+ "E": {
+  "fuera": {
+   "urlSinCambio": true,
+   "avisos": [
+    "info: Suelte la imagen dentro del recuadro punteado."
+   ]
+  },
+  "dosEnZona": {
+   "avisos": [
+    "info: Se ha soltado más de un archivo.Esta demostración procesa una imagen: se usa «factura.webp»."
+   ],
+   "pie": "factura.webp · WEBP · 51,5 KB",
+   "claseArrastrandoTrasSoltar": false
+  }
+ },
+ "F": {
+  "resultado": {
+   "fetch(URL_DATOS) 1ª vez": "PERMITIDO: 5 bytes servidos desde memoria",
+   "fetch(URL_DATOS) 2ª vez": "bloqueado (TypeError)",
+   "fetch externo": "bloqueado (TypeError)",
+   "WorkerGlobalScope.prototype.fetch": "bloqueado (TypeError)",
+   "redefinir fetch": "bloqueado (TypeError)",
+   "XMLHttpRequest": "bloqueado (TypeError)",
+   "WebSocket": "bloqueado (TypeError)",
+   "EventSource": "bloqueado (TypeError)",
+   "importScripts": "bloqueado (TypeError)",
+   "indexedDB.open": "bloqueado (TypeError)",
+   "caches.open": "bloqueado (TypeError)",
+   "Worker anidado": "bloqueado (TypeError)",
+   "import() dinámico": "bloqueado (TypeError)",
+   "WebAssembly": "PERMITIDO: ok"
+  },
+  "avisosRecibidos": [
+   "fetch → ocr-local-memoria://tessdata/spa.traineddata.gz",
+   "fetch → https://cdn.jsdelivr.net/npm/@tesseract.js-data/spa/4.0.0_best_int/spa",
+   "fetch → https://example.com/",
+   "XMLHttpRequest → ",
+   "WebSocket → wss://example.com/",
+   "EventSource → https://example.com/",
+   "importScripts → https://example.com/x.js",
+   "indexedDB.open → x",
+   "caches.open → x",
+   "Worker → data:text/javascript,1",
+   "CSP script-src-elem → https://example.com/m.js"
+  ]
+ },
+ "I": {
+  "cancelarArranque": "CANCELADO · estado=sin_iniciar",
+  "trasReintento": "listo",
+  "segundaLlamadaSimultanea": "OCUPADO",
+  "primera": "9 líneas",
+  "trasLiberar": "liberado",
+  "usarTrasLiberar": "LIBERADO",
+  "liberarDuranteArranque": "CANCELADO · estado=liberado",
+  "liberarDuranteOCR": "CANCELADO · estado=liberado"
+ },
+ "workersFinales": 1,
+ "rechazosSinGestionar": [],
+ "erroresDePagina": []
+}

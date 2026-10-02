@@ -1,0 +1,7 @@
+<!doctype html><meta charset="utf-8"><title>control</title>
+<script>
+window.__r = Promise.allSettled([
+  fetch('http://127.0.0.1:8831/index.html', { mode: 'no-cors' }),
+  fetch('https://example.org/control-externo', { mode: 'no-cors' })
+]).then((r) => r.map((x) => x.status));
+</script>

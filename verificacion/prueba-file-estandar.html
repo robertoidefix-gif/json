@@ -1,0 +1,14 @@
+<!doctype html><meta charset="utf-8"><title>estandar</title>
+<script src="vendor/tesseract.min.js"></script>
+<script>
+window.__log = [];
+window.__run = async () => {
+  const t0 = performance.now();
+  const p = Tesseract.createWorker('spa', 1, { workerPath: 'vendor/worker.min.js', corePath: 'vendor/tesseract-core-simd-lstm.wasm.js', langPath: 'vendor', cacheMethod: 'none',
+    logger: (m) => window.__log.push('progreso: ' + m.status + ' ' + Math.round(m.progress * 100) + '%'),
+    errorHandler: (e) => window.__log.push('errorHandler: ' + String(e).slice(0, 200)) });
+  const r = await Promise.race([p.then(() => 'createWorker RESUELTO'), p.catch((e) => 'createWorker RECHAZADO: ' + e), new Promise((res) => setTimeout(() => res('createWorker SIN TERMINAR tras 20 s'), 20000))]);
+  window.__log.push(r + ' (' + Math.round(performance.now() - t0) + ' ms)');
+  return window.__log;
+};
+</script>

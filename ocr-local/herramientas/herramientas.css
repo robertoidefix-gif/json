@@ -1,0 +1,129 @@
+/*
+ * Ruta: ocr-local/herramientas/herramientas.css
+ * Estilos de la herramienta de empaquetado. No dependen de Bootstrap (la herramienta debe funcionar
+ * aunque vendor-paquetes/ esté vacío). Dependencias: ../css/ocr-local.css (variables y componentes).
+ */
+
+.contenedor-herramienta {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+}
+
+.bloque {
+  background: var(--ocr-superficie);
+  border: 1px solid var(--ocr-borde);
+  border-radius: var(--ocr-radio);
+  box-shadow: var(--ocr-sombra);
+  padding: 1.25rem 1.25rem 1.5rem;
+  margin-top: 1.25rem;
+}
+
+.bloque h2 {
+  font-size: 1.05rem;
+  font-weight: 650;
+  margin: 0 0 0.6rem;
+}
+
+.bloque p {
+  margin: 0 0 0.75rem;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.lista-descargas {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: 0.9rem;
+}
+
+.lista-descargas li {
+  margin: 0.45rem 0;
+}
+
+.lista-descargas code,
+.tabla-paquetes code {
+  overflow-wrap: anywhere;
+  font-size: 0.8rem;
+}
+
+.mensajes {
+  margin-top: 0.75rem;
+}
+
+.tabla-paquetes {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.tabla-paquetes th,
+.tabla-paquetes td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.5rem;
+  border-bottom: 1px solid #eef1f6;
+}
+
+.tabla-paquetes th {
+  color: var(--ocr-texto-suave);
+  font-weight: 600;
+}
+
+.boton {
+  display: inline-block;
+  padding: 0.35rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid var(--ocr-acento);
+  background: var(--ocr-acento);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--ocr-transicion), opacity var(--ocr-transicion);
+}
+
+.boton:hover {
+  background: #0a4fb6;
+}
+
+.boton:focus-visible {
+  outline: 3px solid rgba(11, 94, 215, 0.45);
+  outline-offset: 2px;
+}
+
+.estado-pendiente {
+  color: var(--ocr-texto-suave);
+}
+
+.estado-ok {
+  color: var(--ocr-ok);
+  font-weight: 600;
+}
+
+@media (max-width: 700px) {
+  .tabla-paquetes thead {
+    display: none;
+  }
+  .tabla-paquetes tr {
+    display: block;
+    border-bottom: 1px solid var(--ocr-borde);
+    padding: 0.5rem 0;
+  }
+  .tabla-paquetes td {
+    display: block;
+    border: 0;
+    padding: 0.2rem 0;
+  }
+}

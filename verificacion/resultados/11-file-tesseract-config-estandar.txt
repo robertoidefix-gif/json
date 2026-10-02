@@ -1,0 +1,8 @@
+progreso: loading tesseract core 0%
+progreso: loading tesseract core 100%
+progreso: initializing tesseract 0%
+progreso: initializing tesseract 100%
+progreso: loading language traineddata 0%
+errorHandler: TypeError: Failed to fetch
+createWorker SIN TERMINAR tras 20 s (20003 ms)
+

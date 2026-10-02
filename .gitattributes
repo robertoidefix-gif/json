@@ -1,0 +1,9 @@
+# Los scripts de Windows necesitan fin de línea CRLF.
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+# Paquetes de bibliotecas: contenido generado, sin conversión.
+ocr-local/vendor-paquetes/*.paquete.js -text -diff
+*.png binary
+*.jpg binary
+*.webp binary
+*.bmp binary

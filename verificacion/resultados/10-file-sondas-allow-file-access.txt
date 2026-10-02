@@ -1,0 +1,27 @@
+FLAGS ["--allow-file-access-from-files"] Chromium 141.0.7390.37
+{
+ "origin": "file://",
+ "protocol": "file:",
+ "isSecureContext": "true",
+ "cryptoSubtle": "true",
+ "sriScriptExecuted": "object",
+ "tesseractGlobal": "object",
+ "fetch_vendor": "FALLA TypeError: Failed to fetch",
+ "xhr_vendor": "OK 200 111307",
+ "worker_file_url": "FALLA Error: TIMEOUT 8000ms",
+ "worker_blob_importScripts_file": "OK importScripts OK",
+ "worker_blob_inline": "OK blob worker vivo; origin=file://",
+ "worker_blob_importScripts_blob": "OK importScripts(blob) OK 42",
+ "wasm_in_blob_worker": "OK wasm OK",
+ "idb_open": "OK IndexedDB OK",
+ "tesseract_estandar_rutas_locales": "FALLA Error: TIMEOUT 20000ms",
+ "tesseract_file_envoltorios": "FALLA Error: TIMEOUT 60000ms"
+}
+error: Fetch API cannot load file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/sondas/vendor/worker.min.js. URL scheme "file" is not supported.
+pageerror: TypeError: Failed to fetch
+error: Error opening data file ./31,139,8,8,65,111,227,100,0,3,115,112,97,46,116,114,97,105,110,101,100,100,97,116,97,0,204,252,133,155,92,199,149,248,15,95,134,190,205,140,211,48,204,168,17,75,35,182,36,75,50,179,29,219,113,104,195,201,134,54,187,223,73,103,55,75,201,238,134,227,196,113,236,56,142,153,45,
+error: Please make sure the TESSDATA_PREFIX environment variable is set to your "tessdata" directory.
+error: Failed loading language '31,139,8,8,65,111,227,100,0,3,115,112,97,46,116,114,97,105,110,101,100,100,97,116,97,0,204,252,133,155,92,199,149,248,15,95,134,190,205,140,211,48,204,168,17,75,35,182,36,75,50,179,29,219,113,104,195,201,134,54,187,223,73,103,55,75,201,238,134,227,196,113,236,56,142,153,45,2
+error: errorHandler initialization failed
+pageerror: Cannot read properties of undefined (reading 'resolve')
+error: Tesseract couldn't load any languages!

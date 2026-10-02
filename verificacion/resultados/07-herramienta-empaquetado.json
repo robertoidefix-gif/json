@@ -1,0 +1,30 @@
+{
+ "invalidos": [
+  "aviso aviso-error | «bootstrap-manipulado.tgz»: no coincide con ningún archivo oficial esperado (ni por SHA-256 ni por sha512).",
+  "aviso aviso-error | «cualquiera.js»: no coincide con ningún archivo oficial esperado (ni por SHA-256 ni por sha512)."
+ ],
+ "validos": [
+  "aviso aviso-ok | «tesseract.js-7.0.0.tgz» es el tarball oficial tesseract.js@7.0.0 (sha512 correcto).",
+  "aviso aviso-ok | «tesseract.js-core-7.0.0.tgz» es el tarball oficial tesseract.js-core@7.0.0 (sha512 correcto).",
+  "aviso aviso-ok | «bootstrap-5.3.8.tgz» es el tarball oficial bootstrap@5.3.8 (sha512 correcto).",
+  "aviso aviso-ok | «descarga-con-otro-nombre.tgz» es el tarball oficial @tesseract.js-data/spa@1.0.0 (sha512 correcto).",
+  "aviso aviso-ok | «worker-suelto.min.js» es el archivo oficial npm tesseract.js@7.0.0 · package/dist/worker.min.js."
+ ],
+ "estados": [
+  "bootstrap-5.3.8.min.css.paquete.js✓ Verificado · paquete SHA-256 c470170ffa9a…d85327d99c7a",
+  "tesseract-7.0.0.min.js.paquete.js✓ Verificado · paquete SHA-256 df9acddf1f07…000c27d9cd0de",
+  "tesseract-worker-7.0.0.min.js.paquete.js✓ Verificado · paquete SHA-256 02b7bfa7dd6f…576b7d",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js✓ Verificado · paquete SHA-256 966326d5e5",
+  "tesseract-core-7.0.0-lstm.wasm.js.paquete.js✓ Verificado · paquete SHA-256 7780cf051aa3…ee",
+  "tessdata-spa-4.0.0_best_int.traineddata.gz.paquete.js✓ Verificado · paquete SHA-256 cc6861"
+ ],
+ "resultados": [
+  "bootstrap-5.3.8.min.css.paquete.js → IDÉNTICO al de vendor-paquetes sha256=c470170ffa9a9e799200f52f71316f8bd7f321abbd89670f3ac6eb64a4d72805",
+  "tesseract-7.0.0.min.js.paquete.js → IDÉNTICO al de vendor-paquetes sha256=df9acddf1f07e97813719466dfc67af8e96643f5d1c4970712009afeed770a53",
+  "tesseract-worker-7.0.0.min.js.paquete.js → IDÉNTICO al de vendor-paquetes sha256=02b7bfa7dd6f8ec5bb41783bff6123896b43934eecfe39311ca9ee3df24f033e",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js → IDÉNTICO al de vendor-paquetes sha256=966326d5e5c972e12b172b7601f953001bd37aa5a6cc68c9df170150491167b6",
+  "tesseract-core-7.0.0-lstm.wasm.js.paquete.js → IDÉNTICO al de vendor-paquetes sha256=7780cf051aa32031fee74ac0d04779dac4d7754b585391bba27b7993c8a58eab",
+  "tessdata-spa-4.0.0_best_int.traineddata.gz.paquete.js → IDÉNTICO al de vendor-paquetes sha256=cc6861862a582bfdb27797a8ab80738daeada251b06a4267e818f0fa070f8444"
+ ],
+ "errores": []
+}

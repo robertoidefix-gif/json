@@ -1,0 +1,47 @@
+<!doctype html>
+<!--
+  Ruta: contexto-analisis/demo-contexto.html
+  Demostración AISLADA de la cajetilla «Contexto del análisis» y del bloque que añade al prompt.
+  No es el generador del prompt fiscal del proyecto (ese código no está en este repositorio):
+  sirve para probar el componente antes de integrarlo.
+  Dependencias: contexto-analisis.js, demo-contexto.js, ../ocr-local/js/cargador-verificado.js
+  (Bootstrap verificado) y ../ocr-local/css/ocr-local.css.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; connect-src 'none'; img-src 'self' data:; style-src 'self'; font-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Contexto del análisis · demostración</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../ocr-local/css/ocr-local.css">
+</head>
+<body>
+  <div class="pantalla-carga" role="status">Cargando…</div>
+  <div class="app">
+    <header class="cabecera">
+      <div class="container py-3">
+        <h1 class="titulo-app">Contexto del análisis</h1>
+        <p class="subtitulo-app">Demostración aislada del campo y del bloque que se añade al prompt fiscal</p>
+      </div>
+    </header>
+    <main class="container contenido">
+      <section class="card tarjeta" aria-labelledby="tituloGenerador">
+        <div class="card-body">
+          <h2 class="titulo-tarjeta" id="tituloGenerador">Generador del prompt (ejemplo)</h2>
+          <div id="contenedorContexto"></div>
+          <button type="button" class="btn btn-primary" id="botonGenerar">Generar prompt de ejemplo</button>
+          <div class="mt-3" id="avisosContexto" aria-live="polite"></div>
+          <label for="promptGenerado" class="form-label fw-semibold mt-3">Prompt generado</label>
+          <textarea class="form-control resultado-texto" id="promptGenerado" rows="18" readonly></textarea>
+          <ul class="lista-diagnostico" id="verificacionPrompt" aria-live="polite"></ul>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="../ocr-local/js/cargador-verificado.js"></script>
+  <script src="contexto-analisis.js"></script>
+  <script src="demo-contexto.js"></script>
+</body>
+</html>

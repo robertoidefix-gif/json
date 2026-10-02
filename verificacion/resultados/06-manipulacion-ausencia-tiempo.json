@@ -1,0 +1,38 @@
+{
+ "manipulado": {
+  "etapa": "El motor OCR no ha podido arrancar",
+  "avisos": [
+   "El motor OCR no ha podido arrancar.El SHA-256 de «tessdata-spa» no coincide con el del archivo oficial. No se usará.Código: INTEGRIDAD"
+  ],
+  "workers": 0,
+  "panelBibliotecas": "✓ bootstrap-css — SHA-256 d85327d99c7a3ee1…✓ tesseract-main — SHA-256 000c27d9cd0def65…✓ tesseract-core-simd-lstm — SHA-256 c58b46a4c796c0b8…✓ tesseract-worker — SHA-256 576b7df7e3393e13…",
+  "botonReconocerConImagen": true,
+  "rechazos": [],
+  "errores": []
+ },
+ "ausente": {
+  "etapa": "El motor OCR no ha podido arrancar",
+  "avisos": [
+   "El motor OCR no ha podido arrancar.No se pudo cargar «./vendor-paquetes/tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js». Compruebe que la carpeta vendor-paquetes está completa.Código: PAQUETE"
+  ],
+  "workers": 0,
+  "panelBibliotecas": "✓ bootstrap-css — SHA-256 d85327d99c7a3ee1…✓ tesseract-main — SHA-256 000c27d9cd0def65…",
+  "botonReconocerConImagen": true,
+  "rechazos": [],
+  "errores": []
+ },
+ "tiempo": {
+  "etapa": "Motor OCR listo: elija una imagen",
+  "avisos": [],
+  "workers": 1,
+  "trasReconocer": {
+   "avisos": [
+    "No se pudo reconocer el texto.El reconocimiento superó 0.001 s y se ha detenido.Código: TIEMPO_AGOTADO"
+   ],
+   "workers": 0,
+   "botonHabilitado": true
+  },
+  "rechazos": [],
+  "errores": []
+ }
+}

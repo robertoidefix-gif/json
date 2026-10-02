@@ -1,0 +1,460 @@
+/*
+ * Ruta: ocr-local/css/ocr-local.css
+ * Estilos propios de la demostración OCR local. Complementan Bootstrap 5.3.8, que se aplica
+ * verificado (SHA-256) dentro de la capa «vendor»: estas reglas, al no tener capa, prevalecen.
+ * Dependencias: ninguna (funciona aunque Bootstrap no llegue a cargarse).
+ */
+
+:root {
+  --ocr-fondo: #f3f5fa;
+  --ocr-superficie: #ffffff;
+  --ocr-borde: #dfe3ec;
+  --ocr-texto: #1d2433;
+  --ocr-texto-suave: #5a6478;
+  --ocr-acento: #0b5ed7;
+  --ocr-acento-suave: #e7f0ff;
+  --ocr-ok: #0f7b4b;
+  --ocr-ok-suave: #e3f6ec;
+  --ocr-aviso: #8a5a00;
+  --ocr-aviso-suave: #fff4d9;
+  --ocr-error: #b42318;
+  --ocr-error-suave: #fdecea;
+  --ocr-radio: 14px;
+  --ocr-sombra: 0 1px 2px rgba(16, 24, 40, 0.06), 0 4px 16px rgba(16, 24, 40, 0.06);
+  --ocr-transicion: 180ms ease;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ocr-fondo);
+  color: var(--ocr-texto);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.5;
+}
+
+/* Sin transiciones ni animaciones hasta que la página ya se ha pintado con sus estilos: así la carga
+   de Bootstrap no provoca animaciones de colores al aparecer la interfaz. */
+html:not(.transiciones) *,
+html:not(.transiciones) *::before,
+html:not(.transiciones) *::after {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Mientras no se han aplicado los estilos verificados, solo se ve el aviso de carga. */
+html:not(.estilos-listos) .app {
+  visibility: hidden;
+}
+
+html.estilos-listos .pantalla-carga {
+  display: none;
+}
+
+.pantalla-carga {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--ocr-texto-suave);
+  font-size: 1rem;
+}
+
+.cabecera {
+  background: var(--ocr-superficie);
+  border-bottom: 1px solid var(--ocr-borde);
+}
+
+.marca {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  background: var(--ocr-acento-suave);
+  color: var(--ocr-acento);
+  display: grid;
+  place-items: center;
+}
+
+.marca svg {
+  width: 22px;
+  height: 22px;
+}
+
+.titulo-app {
+  font-size: 1.25rem;
+  font-weight: 650;
+  margin: 0;
+}
+
+.subtitulo-app {
+  margin: 0;
+  color: var(--ocr-texto-suave);
+  font-size: 0.875rem;
+}
+
+.contenido {
+  padding-top: 1.5rem;
+  padding-bottom: 2.5rem;
+}
+
+.tarjeta {
+  background: var(--ocr-superficie);
+  border: 1px solid var(--ocr-borde);
+  border-radius: var(--ocr-radio);
+  box-shadow: var(--ocr-sombra);
+  height: 100%;
+}
+
+.tarjeta .card-body {
+  padding: 1.25rem 1.25rem 1.5rem;
+}
+
+.titulo-tarjeta {
+  font-size: 1.05rem;
+  font-weight: 650;
+  margin: 0 0 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.paso {
+  display: inline-grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  background: var(--ocr-acento-suave);
+  color: var(--ocr-acento);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* Insignias de estado */
+.insignia {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: #eef1f6;
+  color: var(--ocr-texto-suave);
+  border: 1px solid transparent;
+  transition: background-color var(--ocr-transicion), color var(--ocr-transicion);
+  white-space: nowrap;
+}
+
+.insignia-ok {
+  background: var(--ocr-ok-suave);
+  color: var(--ocr-ok);
+}
+
+.insignia-aviso {
+  background: var(--ocr-aviso-suave);
+  color: var(--ocr-aviso);
+}
+
+.insignia-error {
+  background: var(--ocr-error-suave);
+  color: var(--ocr-error);
+}
+
+/* Zona de arrastrar y soltar */
+.zona-arrastre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 170px;
+  padding: 1.25rem;
+  border: 2px dashed #b8c2d6;
+  border-radius: 12px;
+  background: #fafbfd;
+  color: var(--ocr-texto-suave);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--ocr-transicion), background-color var(--ocr-transicion), transform var(--ocr-transicion);
+}
+
+.zona-arrastre:hover {
+  border-color: var(--ocr-acento);
+  background: #f5f9ff;
+}
+
+.zona-arrastre.arrastrando {
+  border-color: var(--ocr-acento);
+  background: var(--ocr-acento-suave);
+  transform: scale(1.01);
+}
+
+.zona-arrastre svg {
+  width: 36px;
+  height: 36px;
+  color: var(--ocr-acento);
+}
+
+.zona-titulo {
+  color: var(--ocr-texto);
+  font-weight: 600;
+}
+
+.zona-ayuda {
+  font-size: 0.82rem;
+}
+
+/* El input real está oculto visualmente pero sigue siendo accesible por teclado. */
+.entrada-oculta:focus-visible + .zona-arrastre {
+  outline: 3px solid rgba(11, 94, 215, 0.45);
+  outline-offset: 3px;
+  border-color: var(--ocr-acento);
+}
+
+.vista-previa {
+  margin: 1rem 0 0;
+  border: 1px solid var(--ocr-borde);
+  border-radius: 12px;
+  overflow: hidden;
+  background: repeating-conic-gradient(#f2f4f8 0% 25%, #ffffff 0% 50%) 50% / 18px 18px;
+}
+
+.vista-previa img {
+  display: block;
+  width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+}
+
+.vista-previa figcaption {
+  padding: 0.5rem 0.75rem;
+  background: var(--ocr-superficie);
+  border-top: 1px solid var(--ocr-borde);
+  font-size: 0.82rem;
+  color: var(--ocr-texto-suave);
+  overflow-wrap: anywhere;
+}
+
+/* Botones: estados claramente diferenciados */
+.btn {
+  border-radius: 10px;
+  font-weight: 600;
+  transition: background-color var(--ocr-transicion), border-color var(--ocr-transicion), color var(--ocr-transicion), box-shadow var(--ocr-transicion), opacity var(--ocr-transicion);
+}
+
+.btn:focus-visible {
+  outline: 3px solid rgba(11, 94, 215, 0.45);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Progreso */
+.bloque-progreso {
+  margin-top: 1rem;
+}
+
+.bloque-progreso .progress {
+  height: 0.6rem;
+  border-radius: 999px;
+  background: #e8ecf3;
+  overflow: hidden;
+}
+
+.bloque-progreso .progress-bar {
+  width: 0;
+  border-radius: 999px;
+  background: var(--ocr-acento);
+  transition: width 260ms ease-out;
+}
+
+.etapa {
+  font-size: 0.85rem;
+  color: var(--ocr-texto-suave);
+}
+
+/* Avisos */
+.aviso {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+  animation: aparecer 200ms ease-out;
+}
+
+.aviso + .aviso {
+  margin-top: 0.5rem;
+}
+
+.aviso strong {
+  display: block;
+}
+
+.aviso-ok {
+  background: var(--ocr-ok-suave);
+  color: #0b5a37;
+  border-color: #b9e6cf;
+}
+
+.aviso-info {
+  background: var(--ocr-acento-suave);
+  color: #0a4aa8;
+  border-color: #c6dafc;
+}
+
+.aviso-aviso {
+  background: var(--ocr-aviso-suave);
+  color: #6b4500;
+  border-color: #f3dca0;
+}
+
+.aviso-error {
+  background: var(--ocr-error-suave);
+  color: #8c1c13;
+  border-color: #f5c2bd;
+}
+
+.aviso-codigo {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.78rem;
+  opacity: 0.8;
+}
+
+/* Resultado */
+.resultado-texto {
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  min-height: 16rem;
+  resize: vertical;
+  background: #fbfcfe;
+}
+
+.resumen {
+  font-size: 0.85rem;
+  color: var(--ocr-texto-suave);
+  margin: 0 0 0.75rem;
+}
+
+.tabla-lineas {
+  font-size: 0.85rem;
+  margin: 0.5rem 0 0;
+}
+
+.tabla-lineas td.texto-linea {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  overflow-wrap: anywhere;
+}
+
+.tabla-lineas tr.fila-dudosa td {
+  background: var(--ocr-aviso-suave);
+}
+
+details.detalles-lineas > summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.25rem 0;
+}
+
+details.detalles-lineas > summary:focus-visible {
+  outline: 3px solid rgba(11, 94, 215, 0.45);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Panel de comprobación de red */
+.lista-comprobacion {
+  display: grid;
+  grid-template-columns: minmax(10rem, 16rem) 1fr;
+  gap: 0.45rem 1rem;
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+}
+
+.lista-comprobacion dt {
+  font-weight: 600;
+  color: var(--ocr-texto-suave);
+}
+
+.lista-comprobacion dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.lista-diagnostico {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  font-size: 0.88rem;
+}
+
+.lista-diagnostico li {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid #eef1f6;
+}
+
+.marca-ok {
+  color: var(--ocr-ok);
+  font-weight: 700;
+}
+
+.marca-error {
+  color: var(--ocr-error);
+  font-weight: 700;
+}
+
+.nota {
+  font-size: 0.82rem;
+  color: var(--ocr-texto-suave);
+  margin: 0.75rem 0 0;
+}
+
+code.hash {
+  font-size: 0.78rem;
+  color: var(--ocr-texto-suave);
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .lista-comprobacion {
+    grid-template-columns: 1fr;
+  }
+  .lista-comprobacion dd {
+    margin-bottom: 0.4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

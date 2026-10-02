@@ -1,0 +1,56 @@
+{
+ "url": "http://127.0.0.1:8851/",
+ "tMotorMs": 759,
+ "etapaMotor": "Motor OCR listo: elija una imagen",
+ "tOcrMs": 590,
+ "texto": "FACTURA N* 2025/0157\n\nFecha de expedición: 14/03/2025\n\nEmisor: Construcciones Muñoz Ibáñez, S.L.\nNIF: B12345674\n\nDescripción: reparación de cubierta y canalón\nBase imponible: 1.234,56 €\n\nIVA 21 %: 259,26 €\n\nTotal factura: 1.493,82 €\n\nForma de pago: transferencia bancaria\n",
+ "resumen": "9 líneas · 38 palabras · 1 dudosa (confianza < 60) · 980 × 443 px · 0,5 s · Tesseract.js 7.0.0 · tesseract-core-simd-lstm",
+ "confianza": "Confianza media: 93 %",
+ "avisos": [
+  "aviso aviso-aviso | Revise las líneas resaltadas.1 palabra tiene una confianza baja."
+ ],
+ "panel": [
+  "Modo de apertura: http://127.0.0.1:8851 (servidor estático local)",
+  "Política CSP: Activa: connect-src 'none', script-src 'self' blob:, sin 'unsafe-inline' ni 'unsafe-eval'",
+  "Bibliotecas verificadas: ✓ bootstrap-css — SHA-256 d85327d99c7a3ee1…✓ tesseract-main — SHA-256 000c27d9cd0def65…✓ tesseract-core-simd-lstm — SHA-256 c58b46a4c796c0b8…✓ tesseract-worker — SHA-256 576b7df7e3393e13…✓ tessdata-spa — SHA-256 40be52f97b5d4eb7…",
+  "Bootstrap: Bootstrap 5.3.8 aplicado (SHA-256 verificado)",
+  "Núcleo WebAssembly: tesseract-core-simd-lstm",
+  "Recursos de la página: 9 locales · 0 externos",
+  "Intentos de red en el worker OCR: 0 (red anulada por el preludio y por la CSP)",
+  "Bloqueos de la CSP en la página: 0"
+ ],
+ "insignias": [
+  "127.0.0.1:8851 · servidor local",
+  "Red externa: 0 peticiones"
+ ],
+ "bootstrapAplicado": "rgb(13, 110, 253)",
+ "filas": 9,
+ "dudosas": 1,
+ "diag": [
+  "✓Contexto seguro (necesario para crypto.subtle): sí (http:)",
+  "✓Web Crypto (SHA-256): correcto",
+  "✓WebAssembly y SIMD: disponible, con SIMD",
+  "✓Worker blob: + WebAssembly dentro del worker: correcto",
+  "✓CSP heredada por el worker (eval bloqueado): eval bloqueado también dentro del worker",
+  "✓La CSP bloquea conexiones externas (dominio reservado .invalid): bloqueada antes de salir del navegador",
+  "✓Bibliotecas locales íntegras: 5 archivo(s) con SHA-256 igual al oficial"
+ ],
+ "peticionesVistasPorPlaywright": [
+  "http://127.0.0.1:8851/",
+  "http://127.0.0.1:8851/css/ocr-local.css",
+  "http://127.0.0.1:8851/js/cargador-verificado.js",
+  "http://127.0.0.1:8851/js/ocr-local.js",
+  "http://127.0.0.1:8851/js/demo-ocr.js",
+  "http://127.0.0.1:8851/vendor-paquetes/bootstrap-5.3.8.min.css.paquete.js",
+  "http://127.0.0.1:8851/vendor-paquetes/tesseract-7.0.0.min.js.paquete.js",
+  "http://127.0.0.1:8851/vendor-paquetes/tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "http://127.0.0.1:8851/vendor-paquetes/tesseract-worker-7.0.0.min.js.paquete.js",
+  "http://127.0.0.1:8851/vendor-paquetes/tessdata-spa-4.0.0_best_int.traineddata.gz.paquete.js"
+ ],
+ "totalPeticiones": 15,
+ "consola": [
+  "error: Refused to connect to 'https://ocr-local.invalid/prueba' because it violates the following Content Security Policy directive: \"connect-src 'none'\".\n",
+  "error: Refused to connect to 'https://ocr-local.invalid/prueba' because it violates the following Content Security Policy directive: \"connect-src 'none'\".\n",
+  "error: Fetch API cannot load https://ocr-local.invalid/prueba. Refused to connect because it violates the document's Content Security Policy."
+ ]
+}

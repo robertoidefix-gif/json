@@ -1,0 +1,6 @@
+Eventos en el net-log: 10
+URLs distintas: 0
+Resoluciones DNS: ninguna
+Hosts en parámetros: ninguno
+Sockets: ninguno
+TOTAL URLs EXTERNAS: 0
