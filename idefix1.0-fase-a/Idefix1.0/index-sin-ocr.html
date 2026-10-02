@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- CSP. Envíala TAMBIÉN como cabecera HTTP (herramientas/cabeceras-http-recomendadas.txt).
+     style-src 'self': los estilos van incrustados en el JS y se aplican con adoptedStyleSheets, sin 'unsafe-inline'.
+     blob: el worker núcleo, PDF.js y Tesseract se ejecutan desde URL blob: con bytes cuyo SHA-256 se ha comprobado. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' blob:; worker-src blob:; connect-src 'self'; style-src 'self'; img-src 'none'; font-src 'none'; media-src 'none'; manifest-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Idefix1.0 · Analizador (sin OCR)</title>
+</head>
+<body>
+<div id="analizadorArchivos"></div>
+<!-- Archivo único. integrity: SHA-256 del archivo (recalcúlalo con herramientas/generar-manifiesto.html si lo cambias).
+     Sin OCR: las imágenes y los PDF escaneados no se leen. Con Tesseract copiado en vendor/, usa index.html.
+     Solo algunos idiomas (y copiar solo esos): añade, por ejemplo, data-idiomas-ocr="spa" o data-idiomas-ocr="spa,eng". -->
+<script src="analizador-archivos.js" integrity="sha256-HcN60aer4OthmjR1XLOMWXZwp6Nxhy4GUN3eNOlEjKU=" data-ocr="false"></script>
+</body>
+</html>

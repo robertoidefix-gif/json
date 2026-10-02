@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'none'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Integridad de la instalación</title>
+<link rel="stylesheet" href="generar-manifiesto.css">
+</head>
+<body>
+<main>
+  <h1>Integridad de la instalación</h1>
+  <p>Comprueba la carpeta de la aplicación y genera <code>vendor/manifiesto-integridad.json</code> con el SHA-256 de
+     cada archivo de <code>vendor</code>. Todo se calcula en este navegador; no se envía nada.</p>
+  <p>La aplicación confía en esta cadena: <code>index.html</code> (atributo <code>integrity</code>) →
+     <code>analizador-archivos.js</code> → SHA-256 del manifiesto y del worker → cada archivo de <code>vendor</code>.
+     Si cambias algo, esta herramienta te dice qué valor hay que actualizar y dónde.</p>
+  <ol>
+    <li>Pulsa el botón y elige la carpeta <strong>raíz de la aplicación</strong> (la que contiene
+        <code>index.html</code>, <code>analizador-archivos.js</code> y <code>vendor</code>; en la versión de
+        archivo único el worker núcleo, los estilos y el MARCO_FISCAL_LOCAL van dentro de <code>analizador-archivos.js</code>).</li>
+    <li>Si el manifiesto ha cambiado, descárgalo y guárdalo como <code>vendor/manifiesto-integridad.json</code>.</li>
+    <li>Copia en <code>analizador-archivos.js</code> los valores marcados en rojo (<code>SHA256_MANIFIESTO_INTEGRIDAD</code>,
+        <code>SHA256_WORKER_NUCLEO</code>).</li>
+    <li>Vuelve a elegir la carpeta: si <code>analizador-archivos.js</code> ha cambiado, copia en <code>index.html</code>
+        el nuevo valor de <code>integrity</code>. Repite hasta que todo esté en verde.</li>
+  </ol>
+  <p class="nota">Con OCR, <code>vendor/tesseract-core</code> debe tener los tres núcleos
+     <code>tesseract-core-relaxedsimd-lstm.wasm.js</code>, <code>tesseract-core-simd-lstm.wasm.js</code> y
+     <code>tesseract-core-lstm.wasm.js</code>: si falta alguno, no se genera el manifiesto.</p>
+  <p class="nota">Hazlo cada vez que actualices una librería de <code>vendor</code> o el MARCO_FISCAL_LOCAL
+     (en el archivo único, el bloque <code>marco:</code> de <code>analizador-archivos.js</code>; en la versión de
+     desarrollo, <code>vendor/marco-fiscal/marco-fiscal-local.json</code>), por ejemplo al incorporar reglas de tu fuente normativa.
+     Si algo no coincide, la aplicación no arranca.</p>
+  <label class="boton">Elegir la carpeta de la aplicación
+    <input id="carpeta" type="file" webkitdirectory multiple hidden>
+  </label>
+  <div id="estado" role="status" aria-live="polite"></div>
+  <ul id="errores" class="lista-errores"></ul>
+  <ul id="avisos" class="lista-avisos"></ul>
+  <table id="comprobaciones" hidden>
+    <thead><tr><th>Comprobación</th><th>Resultado</th><th>Valor que debe figurar</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <button id="descargar" type="button" disabled>Descargar manifiesto-integridad.json</button>
+</main>
+<script src="generar-manifiesto.js"></script>
+</body>
+</html>

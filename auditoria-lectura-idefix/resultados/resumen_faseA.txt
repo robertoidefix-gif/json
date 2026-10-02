@@ -1,0 +1,72 @@
+html01   complete      73ms | campos 7/7 recall 1.000 CER 0.000 | tabla 1.00
+html02   complete      56ms | reg 12/12 campos 1.000 tot 3/3 texto 1.000
+htm03    complete      35ms | campos 7/7 recall 1.000 CER 0.000 | sin_mojibake=True
+htm04    complete      65ms | campos 7/7 recall 1.000 CER 0.000 | sin_mojibake=True
+html05   complete      87ms | campos 7/7 recall 1.000 CER 1.362
+html06   complete      43ms | reg 12/12 campos 0.194 tot 0/3 texto 0.921
+html07   partial       32ms | reg 0/12 campos 0.000 tot 0/3 texto 0.014
+html08   failed        21ms | reg 0/12 campos 0.000 tot 0/3 texto 0.000
+html09   failed        68ms | reg 0/12 campos 0.000 tot 0/3 texto 0.000
+html11   complete      33ms | contiene=True
+docx01   complete      96ms | campos 7/7 recall 1.000 CER 0.000 | tabla 1.00
+docx02   complete      99ms | campos 4/7 recall 0.963 CER 0.005 | tabla 1.00
+docx03   complete      80ms | reg 12/12 campos 1.000 tot 3/3 texto 1.000
+docx04   complete      67ms | contiene=True | contiene=True | contiene=True | contiene=True | contiene=True | numeracion_lista=False (0/3 con su número) | titulos=True (2 títulos)
+docx05   complete      73ms | contiene=True | no_contiene=True | aviso_esperado=False
+docx06   complete      59ms | contiene=True | oculto_marcado=False
+docx07   complete      65ms | contiene=True | apariciones=False (2 apariciones)
+docx08   partial       70ms | celda_bajo_cabecera=False (bajo «Total» hay «») | celda_bajo_cabecera=False (bajo «Cuota» hay «1.633,50») | celda_bajo_cabecera=True (bajo «Base» hay «100,00»)
+docx09   complete      68ms | contiene_en_algun_sitio=True | contiene_en_algun_sitio=True | contiene_en_algun_sitio=True | contiene_en_algun_sitio=True
+docx11   complete      76ms | campos 7/7 recall 1.000 CER 0.256 | contiene=True | contiene=True
+docx12   failed        22ms | rechazo_controlado=True (estado=failed; ZIP inválido: no se encontró el directorio central.)
+xlsx01   complete      82ms | reg 12/12 campos 1.000 tot 3/3 texto 0.655 | valores_formula={'registros_marcados_formula': 12}
+xlsx02   complete      56ms | reg 12/12 campos 1.000 tot 3/3 texto 0.655 | fila_total_excluida=True
+xlsx03   complete      56ms | reg 12/12 campos 1.000 tot 3/3 texto 1.000
+xlsx09   complete      68ms | reg 12/12 campos 1.000 tot 3/3 texto 0.655
+xlsx07   complete      53ms | reg 12/12 campos 0.898 tot 3/3 texto 0.576
+xlsx06   complete      66ms | reg 12/12 campos 1.000 tot 3/3 texto 0.655 | hoja_oculta_marcada=True | inyeccion_detectada=True
+xlsx04   partial       70ms | reg 12/12 campos 1.000 tot 3/3 texto 0.655 | valores_formula={'registros_marcados_formula': 12}
+xlsx05   complete      52ms | reg 0/12 campos 0.000 tot 0/3 texto 0.000
+xlsx08   complete      52ms | reg 12/12 campos 1.000 tot 3/3 texto 0.655
+xlsx10   partial     2616ms | truncado_avisado=True (XLSX_ROWS_TRUNCATED, OUTPUT_TRUNCATED)
+xlsx11   failed        41ms | rechazo_controlado=True (estado=failed; ZIP inválido: no se encontró el directorio central.)
+xls01    complete      58ms | reg 12/12 campos 1.000 tot 3/3 texto 0.655 | valores_formula={'registros_marcados_formula': 12}
+xls02    complete      55ms | reg 12/12 campos 1.000 tot 3/3 texto 0.655 | fila_total_excluida=True
+xls05    complete      57ms | reg 12/12 campos 1.000 tot 3/3 texto 1.000
+xls03    complete     162ms | cadenas_exactas=True (3000/3000 cadenas idénticas)
+xls04    complete      58ms | reg 12/12 campos 1.000 tot 3/3 texto 0.655
+xls06    failed        28ms | rechazo_controlado=True (estado=failed; El archivo de Office antiguo está dañado o su estructura interna es incoherente (cadena de sectores no válida). Ábrelo en Microsoft Excel y guárdalo como Libro de Excel (*.xlsx).)
+docx10   complete      66ms | campos 7/7 recall 1.000 CER 0.000 | tabla 1.00
+pdf03    complete     208ms | campos 7/7 recall 1.000 CER 0.109 | tabla 0.81
+htm10    complete      53ms | reg 12/12 campos 1.000 tot 3/3 texto 0.741
+html12   complete      47ms | campos 7/7 recall 1.000 CER 0.000 | tabla 1.00
+pdf01    complete     287ms | campos 7/7 recall 1.000 CER 0.000 | tabla 1.00
+pdf05    complete     231ms | contiguos 0/6 orden False | sin_tablas_falsas=False (1 tabla(s) detectada(s))
+pdf07    complete     228ms | varias_facturas=False (texto: 3/3 números presentes; documento.numero_documento='A-2025/0301'; importes.inferidos.total=121; operaciones=0)
+pdf08    partial      280ms | contiene_en_algun_sitio=True | contiene_en_algun_sitio=True | contiene_en_algun_sitio=True | contiene_en_algun_sitio=True
+pdf10    complete     244ms | campos 7/7 recall 1.000 CER 0.339 | inyeccion_detectada=True | inyeccion_detectada=True | oculto_marcado=False
+pdf11a   failed       157ms | rechazo_controlado=True (estado=failed; No password given)
+pdf11b   complete     232ms | campos 7/7 recall 1.000 CER 0.000
+pdf12    failed       154ms | rechazo_controlado=True (estado=failed; Invalid PDF structure.)
+pdf13    complete     229ms | campos 0/7 recall 0.198 CER 0.823
+pdf14    failed        27ms | campos 0/7 recall 0.000 CER 1.000
+pdf02    complete     262ms | campos 7/7 recall 1.000 CER 0.000 | tabla 1.00
+pdf04    complete     224ms | reg 12/12 campos 1.000 tot 3/3 texto 1.000
+pdf06    complete     340ms | reg 60/60 campos 1.000 tot 3/3
+png01    complete    1198ms | campos 7/7 recall 0.926 CER 0.045 D7 1.00 | tabla 0.00
+jpg02    complete    1195ms | campos 7/7 recall 0.901 CER 0.068 D7 1.00 | tabla 0.00
+jpeg03   complete    1344ms | campos 7/7 recall 0.827 CER 0.147 D7 0.83 | tabla 0.00
+png04    complete    2392ms | reg 0/12 campos 0.000 tot 0/3 texto 0.022
+png05    complete    1269ms | campos 0/7 recall 0.025 CER 0.858 D7 0.00
+png06    failed        29ms | rechazo_controlado=True (estado=failed; La imagen tiene 13.020.000 píxeles y supera el límite de 12.000.000.)
+png07    complete    1170ms | campos 7/7 recall 0.914 CER 0.039 D7 1.00
+jpg08    complete    9062ms | campos 0/7 recall 0.012 CER 1.081 D7 0.00
+pdfE1    complete    1078ms | campos 7/7 recall 0.889 CER 0.090 D7 1.00 | tabla 0.00
+pdfE2    complete    1936ms | campos 7/7 recall 0.778 CER 0.167 D7 0.50 | tabla 0.00
+pdfE3    complete    5986ms | reg 0/12 campos 0.000 tot 0/3 texto 0.029
+pdf09    complete     231ms | campos 0/7 recall 0.025 CER 0.885
+html13   complete      35ms
+pdf15    complete     621ms
+pdfE4    complete    4348ms
+docx13   complete      68ms | inyeccion_detectada=True
+png09    complete    2603ms | reg 0/12 campos 0.000 tot 0/3 texto 0.971

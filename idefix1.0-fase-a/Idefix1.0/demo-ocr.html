@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Idefix1.0 — demostración de OCR local en español con Tesseract.js 7.0.0.
+     Misma CSP que la aplicación: nada sale de este ordenador (connect-src 'self') y los workers solo
+     pueden crearse desde blob: con bytes verificados. Envíala también como cabecera HTTP (lo hacen
+     servidor-local.ps1 y servidor-local.py). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' blob:; worker-src blob:; connect-src 'self'; style-src 'self'; img-src 'none'; font-src 'none'; media-src 'none'; manifest-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Idefix1.0 · Demo OCR local</title>
+<link rel="stylesheet" href="demo-ocr.css" integrity="sha256-i2MCf3zwKpaFzBQ6pTpzLjmZPQ6wnOUEs2Su4Ud4MuU=">
+</head>
+<body>
+<main class="demo">
+  <header class="demo-cab">
+    <h1>Idefix1.0 · OCR local en español</h1>
+    <p>Tesseract.js 7.0.0 ejecutado en este navegador. La imagen no sale de tu ordenador.</p>
+  </header>
+
+  <!-- Visible hasta que la demo arranca. Si sigue visible, la página no se ha podido iniciar. -->
+  <section id="sin-arrancar" class="aviso">
+    <strong>La demostración no se ha iniciado.</strong>
+    <p>Si has abierto este archivo con doble clic (la barra de direcciones empieza por <code>file://</code>), Chrome y Edge
+       no permiten cargar así Tesseract, su núcleo WebAssembly ni los modelos de idioma. Arranca el servidor local
+       (<code>iniciar-idefix.bat</code>, <code>servidor-local.ps1</code> o <code>servidor-local.py</code>) y abre
+       <code>http://localhost:8080/demo-ocr.html</code>.</p>
+  </section>
+
+  <section class="tarjeta" id="panel" hidden>
+    <div class="estado-fila">
+      <span id="estado-origen" class="pastilla">—</span>
+      <span id="estado-motor" class="pastilla">Motor OCR: sin cargar</span>
+    </div>
+
+    <div id="zona" class="zona" tabindex="0" role="button" aria-label="Elegir o arrastrar una imagen PNG o JPEG">
+      <span class="zona-icono" aria-hidden="true">⇧</span>
+      <span class="zona-texto">Arrastra aquí una imagen o haz clic para elegirla</span>
+      <span class="zona-tipos">PNG o JPEG · máx. 30 MB</span>
+    </div>
+    <input id="archivo" type="file" accept="image/png,image/jpeg,.png,.jpg,.jpeg" hidden>
+
+    <div class="vista" id="vista" hidden>
+      <canvas id="lienzo" aria-label="Vista previa de la imagen"></canvas>
+      <div class="vista-datos" id="vista-datos"></div>
+    </div>
+
+    <div class="acciones">
+      <button id="reconocer" type="button" class="btn btn-primario" disabled>Reconocer texto (español)</button>
+      <button id="cancelar" type="button" class="btn" disabled>Cancelar</button>
+      <button id="copiar" type="button" class="btn" disabled>Copiar texto</button>
+    </div>
+    <div id="mensaje" class="mensaje" role="status" aria-live="polite"></div>
+    <div class="progreso" id="progreso" hidden><span></span></div>
+
+    <label class="etiqueta" for="resultado">Texto reconocido</label>
+    <textarea id="resultado" rows="12" readonly spellcheck="false" placeholder="Aquí aparecerá el texto reconocido."></textarea>
+    <details class="lineas">
+      <summary>Líneas y confianza</summary>
+      <table id="tabla-lineas"><thead><tr><th>#</th><th>Texto</th><th>Confianza</th></tr></thead><tbody></tbody></table>
+    </details>
+  </section>
+
+  <section class="tarjeta" id="red" hidden>
+    <h2>Comprobación de red</h2>
+    <p class="nota">Lista cada recurso que ha pedido esta página (Resource Timing) y cada intento bloqueado por la CSP.
+       Las peticiones que hacen los workers no aparecen aquí: compruébalas en DevTools → Red (ver instrucciones).</p>
+    <div id="red-resumen" class="red-resumen">—</div>
+    <table id="tabla-red"><thead><tr><th>Recurso</th><th>Origen</th></tr></thead><tbody></tbody></table>
+    <div id="red-csp" class="nota"></div>
+  </section>
+</main>
+<script src="analizador-archivos.js" integrity="sha256-HcN60aer4OthmjR1XLOMWXZwp6Nxhy4GUN3eNOlEjKU=" data-autoarranque="false"></script>
+<script src="demo-ocr.js" integrity="sha256-owz2pJpN7clCrCbdi/Ngc9+JRBXQbS23qKVJE/nGJzk="></script>
+</body>
+</html>

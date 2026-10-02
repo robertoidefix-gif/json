@@ -12,6 +12,15 @@ Lo que SÍ hace falta:
 
 Leyenda: ✅ comprobado aquí · ⚠️ NO VERIFICADO aquí (lo explico en cada caso).
 
+FASE A (2 de octubre de 2026; carpeta idefix1.0-fase-a/ del repositorio). Cambios que afectan a estos pasos:
+  - Paso 2.2: los TRES núcleos *-lstm.wasm.js son obligatorios (antes «como mínimo» dos: con solo esos dos,
+    Chrome y Edge actuales no podían arrancar la aplicación).
+  - Paso 2.3 y paso 6: idiomas por defecto spa, cat, eus, eng y fra; chi_sim y chi_tra, solo para documentos
+    en chino (cargados con los demás, el OCR perdía las líneas de las tablas y era mucho más lento).
+  - Si falta algo del OCR, la aplicación arranca sin OCR y lo avisa en el panel «Idiomas del OCR»; un archivo
+    manipulado (que no coincide con el manifiesto) sigue impidiendo el arranque, ahora con el motivo.
+  - Paso 4.4: SHA256_MANIFIESTO_INTEGRIDAD está en la línea 466.
+
 
 -----------------------------------------------------------------------------------------------------
 A. VIABILIDAD REAL EN CHROME Y EDGE (comprobado antes de escribir el código)
@@ -103,22 +112,27 @@ PASO 2 · Descargar Tesseract.js 7.0.0, su núcleo y los modelos de idioma (una 
       b) Abre:  https://registry.npmjs.org/tesseract.js-core/-/tesseract.js-core-<VERSIÓN>.tgz
          (comprueba la integridad igual que en 2.1 b con https://registry.npmjs.org/tesseract.js-core/<VERSIÓN>).
       c) tar -xzf tesseract.js-core-<VERSIÓN>.tgz
-      d) Copia a C:\Idefix1.0\vendor\tesseract-core\ todos los archivos package\tesseract-core*.wasm.js
-         (y los package\tesseract-core*.wasm, si vienen). Como mínimo hacen falta:
-           tesseract-core-simd-lstm.wasm.js   (navegadores con SIMD: Chrome y Edge actuales)
-           tesseract-core-lstm.wasm.js        (sin SIMD)
+      d) Copia a C:\Idefix1.0\vendor\tesseract-core\ estos TRES archivos de package\ (los tres son
+         obligatorios: Tesseract.js 7 elige uno según el navegador):
+           tesseract-core-relaxedsimd-lstm.wasm.js   (Chrome y Edge actuales: ✅ comprobado en Chromium 141)
+           tesseract-core-simd-lstm.wasm.js          (navegadores con SIMD, sin relaxed SIMD)
+           tesseract-core-lstm.wasm.js               (navegadores sin SIMD)
+         No hacen falta los .wasm sueltos ni los núcleos sin «-lstm» (los *.wasm.js llevan el WASM dentro).
+         Si los copias, no pasa nada: la herramienta del paso 4 avisa de que sobran. Si falta alguno de los
+         tres, la herramienta NO genera el manifiesto y te dice cuál falta.
 
   2.3 Modelos de idioma (.traineddata.gz)
-      La demo necesita solo el español (spa). La aplicación usa por defecto 7 idiomas: spa, cat, eus, eng,
-      fra, chi_sim y chi_tra. Si no quieres los 7, copia solo los que vayas a usar e indícalos en index.html
-      (ver paso 6).
+      La demo necesita solo el español (spa). La aplicación usa por defecto 5 idiomas: spa, cat, eus, eng y
+      fra (data-idiomas-ocr de index.html). chi_sim y chi_tra son opcionales: cópialos solo si vas a analizar
+      documentos en chino y márcalos entonces en el panel «Idiomas del OCR» (ver paso 6). Si no quieres los 5,
+      copia solo los que vayas a usar e indícalos en index.html.
       Opción A (formato que espera Tesseract.js): los paquetes @tesseract.js-data/<idioma> del registro npm.
         a) Abre https://registry.npmjs.org/@tesseract.js-data/spa y busca "dist-tags" → "latest" (versión) y,
            en esa versión, "tarball" (URL de descarga). Ábrela para descargar el .tgz.
         b) tar -xzf <archivo>.tgz y busca dentro spa.traineddata.gz (⚠️ su carpeta no verificada aquí;
            suele estar en una subcarpeta del tipo 4.0.0_best_int).
         c) Cópialo a C:\Idefix1.0\vendor\tessdata\spa.traineddata.gz
-        d) Repite con cat, eus, eng, fra, chi_sim y chi_tra si los quieres.
+        d) Repite con cat, eus, eng y fra (y chi_sim y chi_tra, solo si los necesitas).
       Opción B: los modelos oficiales de Tesseract (https://github.com/tesseract-ocr/tessdata_fast o
         tessdata_best), que vienen sin comprimir (spa.traineddata). Comprímelos con gzip; en PowerShell:
           $e=[IO.File]::OpenRead('spa.traineddata'); $s=[IO.File]::Create('spa.traineddata.gz')
@@ -147,7 +161,7 @@ PASO 4 · Sellar la integridad (cada vez que cambies algo en vendor/)
       C:\Idefix1.0\vendor\manifiesto-integridad.json (reemplaza el que hay).
   4.4 Vuelve a elegir la carpeta. En la fila «SHA256_MANIFIESTO_INTEGRIDAD» aparecerá en rojo el valor nuevo.
       Abre analizador-archivos.js con el Bloc de notas, busca (Ctrl+F) «const SHA256_MANIFIESTO_INTEGRIDAD»
-      (línea 443), sustituye el valor entre comillas por el nuevo y guarda.
+      (línea 466 desde la fase A), sustituye el valor entre comillas por el nuevo y guarda.
   4.5 Vuelve a elegir la carpeta. Ahora cambian los «integrity» de analizador-archivos.js: copia cada valor
       en rojo en index.html, index-sin-ocr.html y demo-ocr.html (atributo integrity="sha256-…" de la línea
       <script src="analizador-archivos.js" …>) y guarda.
@@ -160,9 +174,15 @@ PASO 5 · Demostración de OCR en español
 
 PASO 6 · La aplicación
   Abre http://localhost:8080/ (index.html, con OCR) o http://localhost:8080/index-sin-ocr.html.
-  - Si solo has copiado algunos idiomas, edita index.html y añade al <script> por ejemplo
+  - Idiomas del OCR: index.html trae data-idiomas-ocr="spa,cat,eus,eng,fra". Si solo has copiado algunos,
+    déjalo, por ejemplo, en
       data-idiomas-ocr="spa"    o    data-idiomas-ocr="spa,eng"
-    (editar index.html no cambia ningún valor de integridad).
+    (editar index.html no cambia ningún valor de integridad). Para un documento en chino, marca «Chino
+    simplificado» o «Chino tradicional» en el panel «Idiomas del OCR» (tienen que estar copiados y sellados) y
+    desmárcalos al terminar: junto a los demás idiomas, el OCR pierde las líneas de las tablas.
+  - Si el panel «Idiomas del OCR» muestra «⚠️ OCR NO DISPONIBLE», la aplicación funciona sin OCR: Excel, Word,
+    HTML y PDF con texto se analizan con normalidad; las imágenes y las páginas escaneadas quedan sin texto y
+    con un aviso. El panel dice el motivo. Si falta solo un idioma, desmárcalo en el panel y se reintentará.
   - En el panel del prompt hay una nueva cajetilla «Contexto del análisis»: escribe con tus palabras qué
     quieres que se analice. Va al prompt delimitado y marcado como texto no confiable. No va al JSON.
 
@@ -194,6 +214,8 @@ Hecha con Chromium 141 automatizado (Playwright) y servidor-local.py. Se registr
 del contexto del navegador, también las de los workers, con un interceptor que ABORTA cualquier petición que
 no vaya al servidor local (además de la CSP).
 
+  Nota (fase A): estas cifras son de antes de la fase A (2 núcleos y 7 idiomas). Con la fase A se cargan
+  3 núcleos y 5 idiomas; la ejecución de los 72 documentos de la auditoría hizo 143 peticiones, 0 externas.
   ⚠️ Importante: el OCR se ejecutó con un SUSTITUTO de Tesseract.js que imita su forma de cargar el núcleo
   (importScripts) y los modelos (fetch). Sin la librería real, el texto «reconocido» es fijo. Lo que se
   demuestra es la carga, la verificación y la red, no la calidad del reconocimiento. El sustituto intenta
@@ -225,10 +247,18 @@ E. PROBLEMAS FRECUENTES
       Has copiado archivos en vendor/ sin volver a sellar: paso 4.
   «Integridad fallida en … el archivo no coincide con el manifiesto»
       Un archivo de vendor/ ha cambiado después de sellar (o está dañado): vuelve a copiarlo y repite el paso 4.
+  «⚠️ OCR NO DISPONIBLE» en el panel «Idiomas del OCR» (la aplicación sí ha arrancado)
+      Lee el motivo que aparece debajo. Los más habituales son estos tres:
   «el idioma chi_tra … no figura en el manifiesto»
-      Falta ese modelo. Cópialo y sella, o quita el idioma con data-idiomas-ocr (paso 6).
-  «el manifiesto no contiene núcleos de Tesseract»
-      Faltan los tesseract-core*.wasm.js en vendor/tesseract-core (paso 2.2).
+      Falta ese modelo. Cópialo y sella, o desmárcalo en el panel / quítalo de data-idiomas-ocr (paso 6).
+  «faltan núcleos de Tesseract en el manifiesto: tesseract-core-relaxedsimd-lstm.wasm.js…»
+      Copia los tres *-lstm.wasm.js en vendor/tesseract-core (paso 2.2) y vuelve a sellar (paso 4).
+  «el motor OCR no terminó de iniciarse en 60 s»
+      Un modelo de idioma o un núcleo está dañado (por ejemplo, descarga incompleta). Vuelve a copiarlo desde
+      el paquete oficial y sella de nuevo.
+  «El analizador no se ha iniciado … Integridad fallida en …»
+      Un archivo de vendor/ no coincide con el manifiesto: se ha modificado o dañado después de sellar. Por
+      seguridad no se arranca. Vuelve a copiarlo del paquete oficial y repite el paso 4.
   El motor carga pero falla al reconocer
       Comprueba que tesseract.min.js, worker.min.js y el núcleo son de la misma versión (la que indica el
       package.json de tesseract.js 7.0.0).
@@ -246,9 +276,11 @@ F. QUÉ ESTÁ COMPROBADO Y QUÉ NO
   ✅ Ninguna petición externa en el flujo completo y en la demo (apartado D).
   ✅ «Contexto del análisis»: delimitado, no confiable, fuera del JSON y autorrevisado (prueba t-contexto).
   ✅ Regresión completa de la aplicación (17 páginas de prueba + 20 cajetillas × 8 comprobaciones).
-  ⚠️ Reconocimiento real con Tesseract.js 7.0.0 y sus modelos: no se ha podido descargar la librería aquí.
-     Si me adjuntas tesseract.min.js, worker.min.js, los tesseract-core*.wasm.js y spa.traineddata.gz,
-     lo pruebo de verdad con imágenes de facturas.
+  ✅ Reconocimiento real con Tesseract.js 7.0.0 y los modelos oficiales: auditado con 72 documentos
+     (auditoria-lectura-idefix/INFORME-AUDITORIA-LECTURA-IDEFIX1.0.txt).
+  ✅ Fase A (idefix1.0-fase-a/CAMBIOS-FASE-A.txt): con los 3 núcleos arranca en Chromium 141; con solo 2,
+     arranca sin OCR y lo avisa; idioma que falta → sin OCR, y al desmarcarlo en el panel el OCR funciona;
+     modelo o núcleo manipulado → no arranca y dice cuál; modelo dañado → sin OCR a los 60 s.
   ⚠️ servidor-local.ps1 e iniciar-idefix.bat: no ejecutados aquí (no hay PowerShell ni Windows).
   ⚠️ Chrome y Edge de marca: probado el motor Chromium 141, no los navegadores de marca.
 

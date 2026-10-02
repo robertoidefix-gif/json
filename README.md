@@ -20,6 +20,7 @@ Si su navegador tiene `file://` bloqueado por política de empresa, use el servi
 | [`INFORME-AUDITORIA-OCR-LOCAL.txt`](INFORME-AUDITORIA-OCR-LOCAL.txt) | Auditoría en 6 dimensiones, lista única priorizada, recomendación y fase de mejora |
 | [`verificacion/`](verificacion/) | Pruebas automáticas usadas (opcionales, no las necesita la aplicación) y sus resultados |
 | [`auditoria-lectura-idefix/`](auditoria-lectura-idefix/) | **Auditoría real de Idefix1.0**: calidad de lectura medida en cada formato (pdf, docx, xlsx, xls, html, htm, png, jpg, jpeg) con 72 documentos de verdad-terreno, valoración del código, lista priorizada y corpus reproducible |
+| [`idefix1.0-fase-a/`](idefix1.0-fase-a/) | **Idefix1.0 con la fase A aplicada**: los 17 archivos, el código completo en un único .txt, el diff y [`CAMBIOS-FASE-A.txt`](idefix1.0-fase-a/CAMBIOS-FASE-A.txt) (núcleos de Tesseract, idiomas del OCR, arranque sin OCR con aviso) |
 
 ## Estructura
 
@@ -28,6 +29,7 @@ ocr-local/            aplicación OCR (demo, motor, cargador verificado, paquete
 contexto-analisis/    cajetilla «Contexto del análisis» (módulo + demostración)
 verificacion/         pruebas, imágenes de prueba, capturas y resultados
 auditoria-lectura-idefix/  auditoría de lectura por formato de Idefix1.0 (informe, corpus, herramientas y resultados)
+idefix1.0-fase-a/          Idefix1.0 con la fase A aplicada (archivos, código completo .txt, diff y cambios)
 ```
 
 Bibliotecas de terceros (incluidas como paquetes verificados por SHA-256): Tesseract.js 7.0.0 y

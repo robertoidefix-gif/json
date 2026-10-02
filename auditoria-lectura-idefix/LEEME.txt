@@ -18,6 +18,10 @@ Contenido
                    consolidado.json: veredicto y nota por formato. eslint.json: análisis estático.
                    capturas/: interfaz tras analizar 9 archivos y caída con el despliegue mínimo de Tesseract.
 
+Fase A aplicada: ../idefix1.0-fase-a/ (apartado 12 del informe). Sus pruebas están en resultados/faseA/
+  (corpus completo), resultados/faseA-interfaz/ (escenarios por la interfaz e instalaciones defectuosas) y
+  resultados/capturas/faseA_*.png.
+
 Cómo repetirlo: apartado 11 del informe.
   Nota: herramientas/prueba-auditoria.html lleva el SRI del sellado usado en la auditoría; si sella su
   propia copia, cambie el atributo integrity por el que imprime sellar-idefix.py.

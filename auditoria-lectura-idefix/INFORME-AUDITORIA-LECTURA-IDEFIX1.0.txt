@@ -386,7 +386,7 @@ Punto | Estado | Archivo | Línea | Evidencia | Impacto | Corrección | Priorida
 -----------------------------------------------------------------------------------------------------
 9. FASE DE MEJORA (en este orden)
 -----------------------------------------------------------------------------------------------------
-  Fase A · Inmediata: configuración e instrucciones, casi sin tocar la lógica
+  Fase A · Inmediata: configuración e instrucciones, casi sin tocar la lógica  → ✅ APLICADA (apartado 12)
     A1 Instrucciones: copiar los 6 núcleos de tesseract.js-core 7.0.0 (*.wasm.js y *.wasm) y volver a sellar.
     A2 index.html: data-idiomas-ocr="spa" (o "spa,cat,eus,eng,fra"); chino solo si se necesita.
     A3 Que un fallo del OCR no impida arrancar: el analizador sin OCR y un aviso visible.
@@ -431,3 +431,20 @@ Punto | Estado | Archivo | Línea | Evidencia | Impacto | Corrección | Priorida
   prod (y spa, latinos); 6) python3 evaluar.py salida prod && python3 consolidar.py salida.
   Las herramientas de prueba usan Node/Python solo para GENERAR y MEDIR; Idefix se ejecuta tal cual en el
   navegador, sin Node ni frameworks.
+
+-----------------------------------------------------------------------------------------------------
+12. ANEXO · FASE A APLICADA (2026-10-02)
+-----------------------------------------------------------------------------------------------------
+  Entrega: idefix1.0-fase-a/ (los 17 archivos, el código completo en tu formato .txt, fase-a.diff y
+  CAMBIOS-FASE-A.txt con cada cambio, su línea y sus pruebas). Pruebas: resultados/faseA/,
+  resultados/faseA-interfaz/ y resultados/capturas/faseA_*.png.
+  Puntos de la lista priorizada resueltos: 1 (crítico) y 2 (alto).
+  Medido con el mismo corpus:
+    - 61 documentos sin OCR: resultado idéntico al original (sin regresiones).
+    - OCR de facturas: texto 70 % → 83–93 %, importes 3/6 → 5–6/6; tiempo total de OCR 55,9 s → 33,6 s.
+    - Arranque 1,30 s → 1,03 s. 0 peticiones externas.
+    - Solo núcleos simd-lstm y lstm: antes la aplicación no arrancaba; ahora arranca sin OCR y lo avisa.
+    - Modelo de idioma manipulado: antes, cuelgue sin límite; ahora no arranca en 1 s y dice qué archivo.
+    - Modelo dañado pero sellado: antes, cuelgue sin límite; ahora arranca sin OCR a los 60 s.
+  Las notas por formato del apartado 0 no cambian: los veredictos de imágenes y PDF escaneados dependen de
+  reconstruir tablas desde el OCR (fase B), que sigue pendiente.

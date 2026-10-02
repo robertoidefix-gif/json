@@ -1,0 +1,64 @@
+{
+ "escenario": "normal",
+ "errorArranque": null,
+ "panelInicial": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "abierto": false,
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "panelFinal": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "abierto": false,
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "documentos": [
+  {
+   "archivo": "xlsx01_libro_emitidas.xlsx",
+   "estado": "complete",
+   "ocr": "not-requested",
+   "registros": 12,
+   "total": null,
+   "avisos": []
+  },
+  {
+   "archivo": "png01_factura.png",
+   "estado": "complete",
+   "ocr": "complete",
+   "registros": 0,
+   "total": 1639.07,
+   "avisos": []
+  },
+  {
+   "archivo": "pdfE1_factura_escaneada.pdf",
+   "estado": "complete",
+   "ocr": "complete",
+   "registros": 0,
+   "total": 1639.07,
+   "avisos": []
+  },
+  {
+   "archivo": "docx01_factura.docx",
+   "estado": "complete",
+   "ocr": "not-requested",
+   "registros": 0,
+   "total": 1639.07,
+   "avisos": []
+  }
+ ],
+ "consola": [],
+ "externas": []
+}

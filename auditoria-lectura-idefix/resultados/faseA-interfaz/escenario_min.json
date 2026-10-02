@@ -1,0 +1,70 @@
+{
+ "escenario": "min",
+ "errorArranque": null,
+ "panelInicial": {
+  "resumen": "⚠️ OCR NO DISPONIBLE · Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "abierto": true,
+  "aviso": "⚠️ OCR NO DISPONIBLE: las imágenes (.png, .jpg, .jpeg) y las páginas escaneadas de los PDF se quedarán sin texto y se marcarán con un aviso. Excel, Word, HTML y PDF con texto se analizan con normalidad.\nMotivo: faltan núcleos de Tesseract en el manifiesto: tesseract-core-relaxedsimd-lstm.wasm.js. Hacen falta los tres *-lstm.wasm.js de tesseract.js-core 7.0.0: Tesseract elige uno según el navegador (Chrome y Edge actuales usan el de relaxed SIMD). Revisa vendor/tesseract, vendor/tesseract-core y vendor/tessdata (idiomas: spa, cat, eus, eng, fra) según el paso 2 de las instrucciones y vuelve a sellar con herramientas/generar-manifiesto.html, o desactiva el OCR con data-ocr=\"false\" en la etiqueta <script> (o { ocr: false } si creas el analizador por código).\nSi falta solo un idioma, desmárcalo aquí: el OCR se volverá a intentar con los idiomas marcados.",
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "panelFinal": {
+  "resumen": "⚠️ OCR NO DISPONIBLE · Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "abierto": true,
+  "aviso": "⚠️ OCR NO DISPONIBLE: las imágenes (.png, .jpg, .jpeg) y las páginas escaneadas de los PDF se quedarán sin texto y se marcarán con un aviso. Excel, Word, HTML y PDF con texto se analizan con normalidad.\nMotivo: faltan núcleos de Tesseract en el manifiesto: tesseract-core-relaxedsimd-lstm.wasm.js. Hacen falta los tres *-lstm.wasm.js de tesseract.js-core 7.0.0: Tesseract elige uno según el navegador (Chrome y Edge actuales usan el de relaxed SIMD). Revisa vendor/tesseract, vendor/tesseract-core y vendor/tessdata (idiomas: spa, cat, eus, eng, fra) según el paso 2 de las instrucciones y vuelve a sellar con herramientas/generar-manifiesto.html, o desactiva el OCR con data-ocr=\"false\" en la etiqueta <script> (o { ocr: false } si creas el analizador por código).\nSi falta solo un idioma, desmárcalo aquí: el OCR se volverá a intentar con los idiomas marcados.",
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "documentos": [
+  {
+   "archivo": "xlsx01_libro_emitidas.xlsx",
+   "estado": "complete",
+   "ocr": "not-requested",
+   "registros": 12,
+   "total": null,
+   "avisos": []
+  },
+  {
+   "archivo": "png01_factura.png",
+   "estado": "partial",
+   "ocr": "unavailable",
+   "registros": 0,
+   "total": null,
+   "avisos": [
+    "OCR_UNAVAILABLE: No hay OCR local disponible: faltan núcleos de Tesseract en el manifiesto: tesseract-core-relaxedsimd-lstm.wasm.js. Hacen falta los tres *-lstm.wasm.js de tesse"
+   ]
+  },
+  {
+   "archivo": "pdfE1_factura_escaneada.pdf",
+   "estado": "partial",
+   "ocr": "unavailable",
+   "registros": 0,
+   "total": null,
+   "avisos": [
+    "PDF_PAGE_OCR_INCOMPLETE: La página 1 requería OCR y no pudo completarse (faltan núcleos de Tesseract en el manifiesto: tesseract-core-relaxedsimd-lstm.wasm.js. Hacen falta los tres *-ls"
+   ]
+  },
+  {
+   "archivo": "docx01_factura.docx",
+   "estado": "complete",
+   "ocr": "not-requested",
+   "registros": 0,
+   "total": 1639.07,
+   "avisos": []
+  }
+ ],
+ "consola": [
+  "warning: AnalizadorArchivos: se arranca SIN OCR. faltan núcleos de Tesseract en el manifiesto: tesseract-core-relaxedsimd-lstm.wasm.js. Hacen falta los tres *-lstm.wasm.js de tesseract.js-core 7.0.0: Tesseract elige uno según el navegador (Chrome y Edge actuales usan el de relaxed SIMD). Revisa vendor/tesseract, vendor/tesseract-core y vendor/tessdata (idiomas: spa, cat, eus, eng, fra) según el paso 2 de l"
+ ],
+ "externas": []
+}

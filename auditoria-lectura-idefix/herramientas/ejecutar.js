@@ -31,7 +31,7 @@ fs.mkdirSync(DIR, { recursive: true });
     resumen.push({ id: d.id, ok: r.ok, ms: r.ms, error: r.error || null, estado: r.ok ? r.resultado?.processing?.status : null });
     console.log(d.id.padEnd(8), r.ok ? 'OK ' : 'ERR', String(r.ms).padStart(6), 'ms', r.ok ? (r.resultado?.processing?.status || '') : (r.error || '').slice(0, 140));
   }
-  const externas = peticiones.filter((x) => !/^(http:\/\/127\.0\.0\.1:809[01]\/|blob:|data:)/.test(x.url));
+  const externas = peticiones.filter((x) => !/^(http:\/\/127\.0\.0\.1:809[0-2]\/|blob:|data:)/.test(x.url));
   fs.writeFileSync(path.join(DIR, '_ejecucion.json'), JSON.stringify({ config: CONFIGS[CONFIG], msInicio, resumen, peticiones, externas, consola,
     navegador: b.version() }, null, 1));
   console.log('inicio(ms)', msInicio, 'peticiones', peticiones.length, 'externas', externas.length, 'consola', consola.length);

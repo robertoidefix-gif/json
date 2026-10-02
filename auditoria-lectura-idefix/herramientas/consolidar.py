@@ -13,6 +13,9 @@ import sys, os, json, statistics, re
 OUT = os.path.abspath(sys.argv[1])
 V = {d["id"]: d for d in json.load(open(os.path.join(OUT, "verdad.json"), encoding="utf-8"))}
 EV = {c: {e["id"]: e for e in json.load(open(os.path.join(OUT, f"evaluacion_{c}.json"), encoding="utf-8"))} for c in ("prod", "latinos", "spa")}
+PRINCIPAL = os.environ.get("PRINCIPAL", "prod")
+if PRINCIPAL != "prod":
+    EV[PRINCIPAL] = {e["id"]: e for e in json.load(open(os.path.join(OUT, f"evaluacion_{PRINCIPAL}.json"), encoding="utf-8"))}
 INY = json.load(open(os.path.join(OUT, "variantes_inyeccion.json"), encoding="utf-8"))
 
 TIPICOS = {"html01", "html02", "htm03", "htm04", "html12", "htm10", "docx01", "docx02", "docx03", "docx10", "docx11", "xlsx01", "xlsx02", "xlsx03",
@@ -72,7 +75,7 @@ def veredicto(e, d):
         return "❌", (f"{o['parrafos_contiguos']}/{o['parrafos']} párrafos legibles seguidos; las líneas de las dos columnas se intercalan"
                       f" · {checks[0]['detalle'] if checks else ''}")
     if d["id"] == "html05":
-        r = json.load(open(os.path.join(OUT, "resultados", "prod", "html05.json"), encoding="utf-8"))["resultado"]
+        r = json.load(open(os.path.join(OUT, "resultados", PRINCIPAL, "html05.json"), encoding="utf-8"))["resultado"]
         H = r["seguridad_contenido"]["patrones_sospechosos_detectados"]
         marcados = sorted({h["fragmento_seguro"][:4] for h in H if h["tipo"] == "texto_oculto_html"})
         inyec = sorted({h["fragmento_seguro"][:4] for h in H if h["tipo"] == "prompt_injection"})
@@ -101,7 +104,7 @@ def veredicto(e, d):
 
 salida = {"formatos": {}, "casos": []}
 for i, d in V.items():
-    e = EV["prod"].get(i)
+    e = EV[PRINCIPAL].get(i)
     if not e:
         continue
     v, txt = veredicto(e, d)
@@ -125,7 +128,7 @@ for fmt, miembros in FAMILIAS.items():
     salida["formatos"][fmt] = {"casos": len(cs), "✅": sum(c["veredicto"] == "✅" for c in cs), "⚠️": sum(c["veredicto"] == "⚠️" for c in cs),
                                "❌": sum(c["veredicto"] == "❌" for c in cs), "puntuacion": pt(cs), "puntuacion_tipicos": pt(tip),
                                "puntuacion_limite": pt(lim), "ms_mediana": statistics.median(ok) if ok else None, "ms_max": max(ok) if ok else None}
-json.dump(salida, open(os.path.join(OUT, "consolidado.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+json.dump(salida, open(os.path.join(OUT, "consolidado.json" if PRINCIPAL == "prod" else f"consolidado_{PRINCIPAL}.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 for fmt, r in salida["formatos"].items():
     print(f"{fmt:14} casos {r['casos']:2}  ✅{r['✅']:2} ⚠️{r['⚠️']:2} ❌{r['❌']:2}  nota {r['puntuacion']}  típicos {r['puntuacion_tipicos']}  límite {r['puntuacion_limite']}  ms mediana {r['ms_mediana']} máx {r['ms_max']}")
 print()

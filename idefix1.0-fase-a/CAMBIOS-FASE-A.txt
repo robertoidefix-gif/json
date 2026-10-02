@@ -1,0 +1,175 @@
+=====================================================================================================
+IDEFIX1.0 · FASE A APLICADA (auditoría de lectura) — CAMBIOS, PRUEBAS Y CÓMO INSTALARLO
+Fecha: 2026-10-02 · AnalizadorArchivos 6.14.0 (el esquema del JSON no cambia)
+=====================================================================================================
+
+Regla: todo lo que aquí se afirma se ha comprobado ejecutando el código entregado (Chromium 141, su
+servidor-local.py, PDF.js 6.2.108 y Tesseract.js 7.0.0 oficiales). Lo no comprobado se marca con ⚠️.
+
+-----------------------------------------------------------------------------------------------------
+0. RESUMEN
+-----------------------------------------------------------------------------------------------------
+  A1 Núcleos de Tesseract ...... Los tres *-lstm.wasm.js son obligatorios (antes «como mínimo» dos, con los
+                                 que Chrome y Edge actuales no podían arrancar la aplicación). Código,
+                                 herramienta de sellado, LEEME e instrucciones dicen lo mismo.
+  A2 Idiomas del OCR ........... Por defecto spa, cat, eus, eng y fra. El chino, solo para documentos en
+                                 chino (panel «Idiomas del OCR» o data-idiomas-ocr).
+  A3 OCR que no arranca ........ La aplicación arranca sin OCR y lo avisa (panel y cada archivo afectado).
+                                 Un archivo manipulado sigue impidiendo el arranque, ahora con su motivo.
+  Extra (de A3) ................ Corregido un cuelgue que ya existía en el original: con un modelo de idioma
+                                 manipulado o dañado, la aplicación se quedaba para siempre en «Cargando el
+                                 motor OCR local».
+
+  Resultado medido:
+    - Documentos sin OCR (61 de 72 del corpus): resultado IDÉNTICO al original (sin regresiones).
+    - Facturas escaneadas: texto leído 70 % → 83–93 %; importes 3/6 → 5–6/6.
+    - Tiempo total de OCR del corpus: 55,9 s → 33,6 s (−40 %). Arranque: 1,30 s → 1,03 s (−21 %).
+    - 0 peticiones fuera del propio servidor en todas las pruebas.
+    - Las notas por formato del informe NO cambian: los veredictos de imágenes y PDF escaneados dependen de
+      reconstruir tablas desde el OCR, que es la fase B.
+
+-----------------------------------------------------------------------------------------------------
+1. ARCHIVOS ENTREGADOS
+-----------------------------------------------------------------------------------------------------
+  Idefix1.0/                              los 17 archivos de tu paquete, con la fase A aplicada y sellados
+                                          igual que el original (manifiesto de PDF.js + LEEME; sin Tesseract)
+  Idefix1.0-faseA-codigo-completo.txt     el código completo en el MISMO formato que tu archivo
+                                          04f297ed-Idefix1.0-codigo-completo_1.txt. Comprobado: al extraerlo,
+                                          los 17 archivos salen idénticos byte a byte (SHA-256).
+  fase-a.diff                             diferencias exactas con tu original (diff -ruN)
+  CAMBIOS-FASE-A.txt                      este documento
+  ../Idefix1.0-instrucciones.txt          instrucciones actualizadas (pasos 2.2, 2.3, 4.4, 6, E y F)
+
+  Modificados (9): analizador-archivos.js, index.html, index-sin-ocr.html y demo-ocr.html (solo integrity),
+  herramientas/generar-manifiesto.js, herramientas/generar-manifiesto.html, vendor/manifiesto-integridad.json,
+  vendor/tesseract-core/LEEME.txt y vendor/tessdata/LEEME.txt.
+  Idénticos byte a byte al original (8): demo-ocr.js, demo-ocr.css, servidor-local.ps1, iniciar-idefix.bat,
+  servidor-local.py, herramientas/generar-manifiesto.css, herramientas/cabeceras-http-recomendadas.txt y
+  vendor/tesseract/LEEME.txt.
+
+  SHA-256 de los archivos modificados:
+    analizador-archivos.js ............. 1dc37ad1a7abe0eb619a34755cb38c597670a7a371872e0650ddde34e9448ca5
+    integrity (index, sin-ocr, demo) ... sha256-HcN60aer4OthmjR1XLOMWXZwp6Nxhy4GUN3eNOlEjKU=
+    vendor/manifiesto-integridad.json .. 335be27c28be311079b03bbeb5b88649c3744df58bde4cafbd73cbb62aab567c
+                                         (es el valor de SHA256_MANIFIESTO_INTEGRIDAD, línea 466)
+  El sellado se hizo con el mismo procedimiento que tu herramienta: antes se comprobó que reproduce tu
+  manifiesto, tu ancla (147f5435…) y tu integrity originales byte a byte.
+
+-----------------------------------------------------------------------------------------------------
+2. CAMBIOS (líneas del analizador-archivos.js NUEVO, 16.617 líneas)
+-----------------------------------------------------------------------------------------------------
+A1 · Núcleos de Tesseract
+  - 8162–8177 AA_ARCHIVOS_TESSERACT.nucleos: relaxedsimd-lstm, simd-lstm y lstm. Tesseract.js 7, con OEM
+    LSTM_ONLY (el que usa Idefix), elige exactamente uno de esos tres según el navegador (comprobado en el
+    código de worker.min.js 7.0.0). Chromium 141 pide el de relaxed SIMD.
+  - 7813–7823 crearWorkerTesseractLocal: antes de crear el worker comprueba que los tres están en el
+    manifiesto (sin manifiesto, con una petición HEAD al mismo origen) y dice cuál falta.
+  - 7824–7827: solo se verifican y cargan esos tres núcleos (antes los seis del manifiesto; los otros tres
+    no se usan con LSTM_ONLY). Menos trabajo al arrancar.
+  - herramientas/generar-manifiesto.js 43–45 y 139–165: si hay archivos de Tesseract y falta alguno de los
+    tres núcleos, NO genera el manifiesto y dice cuál falta; avisa de los archivos que sobran (núcleos sin
+    «-lstm» y .wasm sueltos) y de los idiomas de data-idiomas-ocr que no están en vendor/tessdata.
+  - herramientas/generar-manifiesto.html, vendor/tesseract-core/LEEME.txt e instrucciones (paso 2.2).
+
+A2 · Idiomas del OCR
+  - 360–363: idiomasTesseract por defecto ["spa", "cat", "eus", "eng", "fra"].
+  - index.html: data-idiomas-ocr="spa,cat,eus,eng,fra" y comentario con el motivo.
+  - El panel «Idiomas del OCR» sigue ofreciendo los siete (chino simplificado y tradicional desmarcados).
+  - Comentarios de autoarranque (16400–16404) y de despliegue (16613–16615), vendor/tessdata/LEEME.txt e
+    instrucciones (pasos 2.3 y 6).
+
+A3 · Si el OCR no arranca, el analizador sí
+  - 12834–12840 aaEsFalloIntegridad: distingue «un archivo no coincide con el manifiesto» (instalación
+    alterada) de «falta un archivo, un idioma o un núcleo».
+  - 12878–12898 crearAnalizadorArchivos: si falta algo, se arranca SIN OCR (antes se lanzaba un error y no
+    se podía analizar ni un Excel); si es un fallo de integridad, se detiene el arranque como antes.
+  - 12968–12971 constructor: el motivo queda en _errorOCR. Así cada imagen lleva OCR_UNAVAILABLE y cada
+    página escaneada PDF_PAGE_OCR_INCOMPLETE con el motivo (estado «partial»), mediante el código que ya
+    existía para eso.
+  - 13676–13723 panel «Idiomas del OCR»: título «⚠️ OCR NO DISPONIBLE · …» y aviso visible (role="alert",
+    clase .aa-aviso ya existente) con el motivo y qué sigue funcionando. Al cambiar los idiomas en el panel
+    se retira el aviso y el OCR se vuelve a intentar con los idiomas marcados (13741 y 15850).
+
+Extra (de A3) · Cuelgue con un modelo manipulado o dañado (ya existía en el original)
+  - 7835–7838: los idiomas se comprueban también en la página antes de crear el worker. Con un modelo
+    manipulado, el worker lo rechazaba, pero Tesseract.js 7 no rechazaba la creación del worker: la
+    aplicación se quedaba en «Cargando el motor OCR local» sin límite. Coste: los modelos se leen dos veces
+    del servidor local (unos 8,6 MB con los cinco idiomas); el arranque sigue siendo más rápido que antes.
+  - 8179–8184 y 7843–7873: tiempo máximo de 60 s para crear el worker de Tesseract. Si se agota (modelo
+    dañado pero sellado), el OCR se da por no disponible y la aplicación funciona sin él.
+
+-----------------------------------------------------------------------------------------------------
+3. PRUEBAS REALIZADAS (mismo código entregado; solo cambia el ancla del manifiesto de cada instalación)
+-----------------------------------------------------------------------------------------------------
+3.1 Regresión con el corpus de la auditoría (72 documentos, auditoria-lectura-idefix/corpus/)
+  - 61 documentos sin OCR (XLSX, XLS, DOCX, HTML, HTM, PDF digitales y dañados): JSON idéntico al de la
+    versión original, salvo las fechas de generación, la lista de idiomas declarada y el identificador
+    aleatorio de los documentos rechazados.
+  - 11 documentos con OCR: cambian, y mejoran:
+      Doc.     Antes (7 idiomas)                      Después (fase A)
+      png01    texto 70 % · importes 3/6 · 0,9 s       texto 93 % · importes 6/6 · 1,2 s
+      jpg02    texto 70 % · importes 3/6 · 0,7 s       texto 90 % · importes 6/6 · 1,2 s
+      jpeg03   texto 70 % · importes 3/6 · 0,6 s       texto 83 % · importes 5/6 · 1,3 s
+      png07    texto 70 % · importes 3/6 · 0,7 s       texto 91 % · importes 6/6 · 1,2 s
+      pdfE1    texto 69 % · importes 3/6 · 1,0 s       texto 89 % · importes 6/6 · 1,1 s
+      pdfE2    texto 77 % · importes 3/6 · 2,0 s       texto 78 % · importes 3/6 · 1,9 s
+      png04    libro: texto 11 % · 14,2 s              libro: texto 2 % · 2,4 s
+      pdfE3    libro: texto 4 % · 12,8 s               libro: texto 3 % · 6,0 s
+      jpg08    girada: texto 1 % · 14,2 s              girada: texto 1 % · 9,1 s
+      Total OCR del corpus: 55,9 s → 33,6 s.
+    ⚠️ En una página sencilla el OCR tarda unos 0,5 s más que antes, porque ahora sí lee las líneas de la
+    tabla. Los libros con cuadrícula, las fotos giradas y la baja resolución siguen sin leerse: son las
+    fases B y E del informe.
+  - Las notas por formato del informe no cambian (sus veredictos exigen tablas desde el OCR: fase B).
+
+3.2 Instalaciones defectuosas, por la interfaz real (index.html) — antes y después
+  Escenario                                       Antes (original)                       Después (fase A)
+  Instalación completa                            arranca                                arranca; OCR completo; 0 avisos
+  Solo núcleos simd-lstm y lstm                   «El analizador no se ha iniciado»;     arranca SIN OCR: título y aviso
+  (el mínimo de las instrucciones antiguas)       no se puede analizar nada              «⚠️ OCR NO DISPONIBLE» con el motivo
+                                                                                         (falta …relaxedsimd-lstm.wasm.js);
+                                                                                         XLSX 12/12 registros, DOCX completo;
+                                                                                         PNG y PDF escaneado «partial» con
+                                                                                         OCR_UNAVAILABLE / PDF_PAGE_OCR_INCOMPLETE
+  index.html pide chi_sim y no está copiado       no arranca                             arranca SIN OCR con el motivo; al
+                                                                                         desmarcar chi_sim en el panel, el
+                                                                                         aviso desaparece y jpg02 se lee
+                                                                                         completo (total 1.639,07)
+  spa.traineddata.gz manipulado tras sellar       se queda para siempre en «Cargando     NO arranca en 1 s: «Integridad
+                                                  el motor OCR local» (> 45 s probado)   fallida en …/spa.traineddata.gz»
+  Núcleo relaxedsimd-lstm manipulado tras sellar  —                                      NO arranca en 1 s: «Integridad
+                                                                                         fallida en …relaxedsimd-lstm…»
+  spa.traineddata.gz truncado pero sellado        se queda para siempre (> 150 s         arranca SIN OCR a los 61 s:
+                                                  probado)                               «el motor OCR no terminó de
+                                                                                         iniciarse en 60 s»
+  En todos: 0 peticiones fuera del servidor local.
+
+3.3 Otras comprobaciones
+  - Arranque (4 repeticiones): 1,27–1,33 s y 45 MB → 1,01–1,07 s y 37 MB.
+  - Herramienta de sellado: instalación completa → todas las filas «Coincide» (también confirma que el
+    sellado de la entrega es el de tu herramienta); solo dos núcleos → «No se genera el manifiesto» con el
+    núcleo que falta; index.html con chi_sim sin copiar → aviso del idioma que falta.
+  - demo-ocr.html: reconoce la factura completa (incluidas las líneas de la tabla y el total), 0 peticiones
+    externas.
+  - ESLint (misma configuración de la auditoría): 109 avisos antes y 109 después; ninguno nuevo.
+  - node --check: sintaxis correcta de analizador-archivos.js y generar-manifiesto.js.
+
+3.4 ⚠️ No demostrable aquí
+  - Chrome y Edge de marca en Windows (se usó Chromium 141 en Linux, el mismo motor).
+  - Navegadores sin relaxed SIMD: no se ha podido probar que pidan simd-lstm o lstm; se deduce del código
+    de worker.min.js 7.0.0, y por eso se exigen los tres.
+
+-----------------------------------------------------------------------------------------------------
+4. CÓMO INSTALARLO EN C:\Idefix1.0
+-----------------------------------------------------------------------------------------------------
+  1. Haz una copia de seguridad de C:\Idefix1.0.
+  2. Copia encima los 17 archivos de idefix1.0-fase-a/Idefix1.0/ (no toques vendor/pdfjs ni
+     vendor/pdfjs-legacy).
+  3. Sin OCR: ya está (abre index-sin-ocr.html). Con OCR: sigue el paso 2 de Idefix1.0-instrucciones.txt
+     (actualizado): tesseract.min.js y worker.min.js, los TRES *-lstm.wasm.js y spa, cat, eus, eng y fra.
+  4. Sella con herramientas/generar-manifiesto.html (paso 4): el ancla está ahora en la línea 466.
+     Repite hasta que todas las filas digan «Coincide». Si falta un núcleo, la herramienta lo dice.
+  5. Abre http://localhost:8080/. El panel «Idiomas del OCR» debe mostrar «Español, Catalán, Euskera,
+     Inglés, Francés» sin aviso.
+  Lo que NO cambia: el JSON, el prompt, las cajetillas, el formulario fiscal y la seguridad (CSP, SRI,
+  manifiesto, worker sin red).

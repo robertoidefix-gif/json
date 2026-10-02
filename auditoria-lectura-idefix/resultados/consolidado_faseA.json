@@ -1,0 +1,1143 @@
+{
+ "formatos": {
+  "pdf-digital": {
+   "casos": 15,
+   "✅": 7,
+   "⚠️": 5,
+   "❌": 3,
+   "puntuacion": 6.3,
+   "puntuacion_tipicos": 9.3,
+   "puntuacion_limite": 3.8,
+   "ms_mediana": 220.5,
+   "ms_max": 586
+  },
+  "pdf-escaneado": {
+   "casos": 5,
+   "✅": 1,
+   "⚠️": 2,
+   "❌": 2,
+   "puntuacion": 4.0,
+   "puntuacion_tipicos": 5.0,
+   "puntuacion_limite": 0.0,
+   "ms_mediana": 1962,
+   "ms_max": 6186
+  },
+  "pdf (global)": {
+   "casos": 20,
+   "✅": 8,
+   "⚠️": 7,
+   "❌": 5,
+   "puntuacion": 5.8,
+   "puntuacion_tipicos": 7.7,
+   "puntuacion_limite": 3.3,
+   "ms_mediana": 231,
+   "ms_max": 6186
+  },
+  "docx": {
+   "casos": 13,
+   "✅": 7,
+   "⚠️": 6,
+   "❌": 0,
+   "puntuacion": 7.7,
+   "puntuacion_tipicos": 9.0,
+   "puntuacion_limite": 6.9,
+   "ms_mediana": 120.5,
+   "ms_max": 302
+  },
+  "xlsx": {
+   "casos": 11,
+   "✅": 9,
+   "⚠️": 1,
+   "❌": 1,
+   "puntuacion": 8.6,
+   "puntuacion_tipicos": 10.0,
+   "puntuacion_limite": 7.0,
+   "ms_mediana": 93.0,
+   "ms_max": 3637
+  },
+  "xls": {
+   "casos": 6,
+   "✅": 6,
+   "⚠️": 0,
+   "❌": 0,
+   "puntuacion": 10.0,
+   "puntuacion_tipicos": 10.0,
+   "puntuacion_limite": 10.0,
+   "ms_mediana": 47,
+   "ms_max": 127
+  },
+  "html": {
+   "casos": 10,
+   "✅": 5,
+   "⚠️": 1,
+   "❌": 4,
+   "puntuacion": 5.5,
+   "puntuacion_tipicos": 10.0,
+   "puntuacion_limite": 3.6,
+   "ms_mediana": 71.0,
+   "ms_max": 158
+  },
+  "htm": {
+   "casos": 3,
+   "✅": 3,
+   "⚠️": 0,
+   "❌": 0,
+   "puntuacion": 10.0,
+   "puntuacion_tipicos": 10.0,
+   "puntuacion_limite": null,
+   "ms_mediana": 94,
+   "ms_max": 144
+  },
+  "html+htm (mismo lector)": {
+   "casos": 13,
+   "✅": 8,
+   "⚠️": 1,
+   "❌": 4,
+   "puntuacion": 6.5,
+   "puntuacion_tipicos": 10.0,
+   "puntuacion_limite": 3.6,
+   "ms_mediana": 81,
+   "ms_max": 158
+  },
+  "png": {
+   "casos": 6,
+   "✅": 1,
+   "⚠️": 2,
+   "❌": 3,
+   "puntuacion": 3.3,
+   "puntuacion_tipicos": 1.7,
+   "puntuacion_limite": 5.0,
+   "ms_mediana": 1281,
+   "ms_max": 2707
+  },
+  "jpg": {
+   "casos": 2,
+   "✅": 0,
+   "⚠️": 1,
+   "❌": 1,
+   "puntuacion": 2.5,
+   "puntuacion_tipicos": 5.0,
+   "puntuacion_limite": 0.0,
+   "ms_mediana": 5039.0,
+   "ms_max": 8824
+  },
+  "jpeg": {
+   "casos": 1,
+   "✅": 0,
+   "⚠️": 1,
+   "❌": 0,
+   "puntuacion": 5.0,
+   "puntuacion_tipicos": 5.0,
+   "puntuacion_limite": null,
+   "ms_mediana": 1375,
+   "ms_max": 1375
+  },
+  "imagenes png+jpg+jpeg (mismo OCR)": {
+   "casos": 9,
+   "✅": 1,
+   "⚠️": 4,
+   "❌": 4,
+   "puntuacion": 3.3,
+   "puntuacion_tipicos": 3.0,
+   "puntuacion_limite": 3.8,
+   "ms_mediana": 1328.0,
+   "ms_max": 8824
+  }
+ },
+ "casos": [
+  {
+   "id": "html01",
+   "formato": "html",
+   "archivo": "html01_factura.html",
+   "cajetilla": "otros",
+   "tipo": "típico",
+   "nota": "UTF-8, rótulos «Nombre: valor» y tabla de líneas",
+   "veredicto": "✅",
+   "resultado": "datos fiscales 7/7 · texto 100 % · tabla de líneas 100 %",
+   "estado": "complete",
+   "ms": 158
+  },
+  {
+   "id": "html02",
+   "formato": "html",
+   "archivo": "html02_libro_emitidas.html",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "típico",
+   "nota": "Tabla con thead/tbody",
+   "veredicto": "✅",
+   "resultado": "registros 12/12 · campos 100.0 % · totales 3/3",
+   "estado": "complete",
+   "ms": 81
+  },
+  {
+   "id": "htm03",
+   "formato": "htm",
+   "archivo": "htm03_latin1.htm",
+   "cajetilla": "otros",
+   "tipo": "típico",
+   "nota": "Declara iso-8859-1 y contiene € (0x80, windows-1252), como muchas páginas antiguas",
+   "veredicto": "✅",
+   "resultado": "datos fiscales 7/7 · texto 100 %",
+   "estado": "complete",
+   "ms": 144
+  },
+  {
+   "id": "htm04",
+   "formato": "htm",
+   "archivo": "htm04_cp1252_sin_meta.htm",
+   "cajetilla": "otros",
+   "tipo": "típico",
+   "nota": "Sin declaración de codificación, bytes windows-1252",
+   "veredicto": "✅",
+   "resultado": "datos fiscales 7/7 · texto 100 %",
+   "estado": "complete",
+   "ms": 94
+  },
+  {
+   "id": "html05",
+   "formato": "html",
+   "archivo": "html05_texto_oculto.html",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "8 variantes de texto oculto con una instrucción inyectada",
+   "veredicto": "✅",
+   "resultado": "datos fiscales 7/7 · texto 100 %",
+   "estado": "complete",
+   "ms": 81
+  },
+  {
+   "id": "html06",
+   "formato": "html",
+   "archivo": "html06_rowspan.html",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "límite",
+   "nota": "Columna Serie combinada verticalmente (rowspan=12), habitual en informes exportados",
+   "veredicto": "❌",
+   "resultado": "registros 12/12 · campos 19.4 % · totales 0/3",
+   "estado": "complete",
+   "ms": 61
+  },
+  {
+   "id": "html07",
+   "formato": "html",
+   "archivo": "html07_filas_onclick.html",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "límite",
+   "nota": "Cada fila <tr> lleva onclick (habitual en páginas guardadas de portales bancarios o ERP web)",
+   "veredicto": "❌",
+   "resultado": "registros 0/12 · campos 0.0 % · totales 0/3 · texto leído 1 %",
+   "estado": "partial",
+   "ms": 96
+  },
+  {
+   "id": "html08",
+   "formato": "html",
+   "archivo": "html08_fragmento_tabla.html",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "límite",
+   "nota": "Fragmento HTML que empieza por <table> (sin <html> ni DOCTYPE), típico de exportaciones «Excel» de bancos",
+   "veredicto": "❌",
+   "resultado": "registros 0/12 · campos 0.0 % · totales 0/3 · texto leído 0 %",
+   "estado": "failed",
+   "ms": 200
+  },
+  {
+   "id": "html09",
+   "formato": "html",
+   "archivo": "html09_meta_primero.html",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "límite",
+   "nota": "Empieza por <meta charset> sin <html>",
+   "veredicto": "❌",
+   "resultado": "registros 0/12 · campos 0.0 % · totales 0/3 · texto leído 0 %",
+   "estado": "failed",
+   "ms": 50
+  },
+  {
+   "id": "html11",
+   "formato": "html",
+   "archivo": "html11_entidades.html",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "Entidades HTML con nombre, numéricas, 0x80 y sin punto y coma",
+   "veredicto": "✅",
+   "resultado": "contiene=OK",
+   "estado": "complete",
+   "ms": 56
+  },
+  {
+   "id": "docx01",
+   "formato": "docx",
+   "archivo": "docx01_factura.docx",
+   "cajetilla": "otros",
+   "tipo": "típico",
+   "nota": "python-docx: párrafos + tabla de líneas",
+   "veredicto": "✅",
+   "resultado": "datos fiscales 7/7 · texto 100 % · tabla de líneas 100 %",
+   "estado": "complete",
+   "ms": 127
+  },
+  {
+   "id": "docx02",
+   "formato": "docx",
+   "archivo": "docx02_totales_en_tabla.docx",
+   "cajetilla": "otros",
+   "tipo": "típico",
+   "nota": "Base, IVA y total en una tabla de 2 columnas (maquetación muy habitual en facturas Word)",
+   "veredicto": "⚠️",
+   "resultado": "datos fiscales 4/7 · texto 96 % · tabla de líneas 100 %",
+   "estado": "complete",
+   "ms": 137
+  },
+  {
+   "id": "docx03",
+   "formato": "docx",
+   "archivo": "docx03_libro_emitidas.docx",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "típico",
+   "nota": "Tabla Word de 13×9",
+   "veredicto": "✅",
+   "resultado": "registros 12/12 · campos 100.0 % · totales 3/3",
+   "estado": "complete",
+   "ms": 134
+  },
+  {
+   "id": "docx04",
+   "formato": "docx",
+   "archivo": "docx04_listas_titulos.docx",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "Lista numerada automática (List Number), viñetas y títulos",
+   "veredicto": "⚠️",
+   "resultado": "contiene=OK; contiene=OK; contiene=OK; contiene=OK; contiene=OK; numeracion_lista=FALLA (0/3 con su número); titulos=OK (2 títulos)",
+   "estado": "complete",
+   "ms": 123
+  },
+  {
+   "id": "docx05",
+   "formato": "docx",
+   "archivo": "docx05_control_cambios.docx",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "Control de cambios sin aceptar: una eliminación y una inserción",
+   "veredicto": "⚠️",
+   "resultado": "contiene=OK; no_contiene=OK; aviso_esperado=FALLA",
+   "estado": "complete",
+   "ms": 302
+  },
+  {
+   "id": "docx06",
+   "formato": "docx",
+   "archivo": "docx06_texto_oculto.docx",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "Texto oculto de Word (w:vanish) con una instrucción inyectada",
+   "veredicto": "⚠️",
+   "resultado": "contiene=OK; oculto_marcado=FALLA",
+   "estado": "complete",
+   "ms": 92
+  },
+  {
+   "id": "docx07",
+   "formato": "docx",
+   "archivo": "docx07_cuadro_texto.docx",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "Cuadro de texto como lo guarda Word (mc:AlternateContent con Choice y Fallback VML)",
+   "veredicto": "⚠️",
+   "resultado": "contiene=OK; apariciones=FALLA (2 apariciones)",
+   "estado": "complete",
+   "ms": 85
+  },
+  {
+   "id": "docx08",
+   "formato": "docx",
+   "archivo": "docx08_celdas_combinadas.docx",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "Celda combinada vertical (vMerge) y horizontal (gridSpan)",
+   "veredicto": "⚠️",
+   "resultado": "celda_bajo_cabecera=FALLA (bajo «Total» hay «»); celda_bajo_cabecera=FALLA (bajo «Cuota» hay «1.633,50»); celda_bajo_cabecera=OK (bajo «Base» hay «100,00»)",
+   "estado": "partial",
+   "ms": 178
+  },
+  {
+   "id": "docx09",
+   "formato": "docx",
+   "archivo": "docx09_tabla_anidada.docx",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "Tabla dentro de una celda",
+   "veredicto": "✅",
+   "resultado": "contiene_en_algun_sitio=OK; contiene_en_algun_sitio=OK; contiene_en_algun_sitio=OK; contiene_en_algun_sitio=OK",
+   "estado": "complete",
+   "ms": 118
+  },
+  {
+   "id": "docx11",
+   "formato": "docx",
+   "archivo": "docx11_encabezado_pie.docx",
+   "cajetilla": "otros",
+   "tipo": "típico",
+   "nota": "Encabezado y pie de página",
+   "veredicto": "✅",
+   "resultado": "datos fiscales 7/7 · texto 100 %",
+   "estado": "complete",
+   "ms": 118
+  },
+  {
+   "id": "docx12",
+   "formato": "docx",
+   "archivo": "docx12_truncado.docx",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "ZIP truncado a la mitad",
+   "veredicto": "✅",
+   "resultado": "rechazo controlado: ZIP inválido: no se encontró el directorio central.",
+   "estado": "failed",
+   "ms": 156
+  },
+  {
+   "id": "xlsx01",
+   "formato": "xlsx",
+   "archivo": "xlsx01_libro_emitidas.xlsx",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "típico",
+   "nota": "Guardado por LibreOffice Calc: fechas reales, importes numéricos, cuota y total con fórmula (valor guardado)",
+   "veredicto": "✅",
+   "resultado": "registros 12/12 · campos 100.0 % · totales 3/3",
+   "estado": "complete",
+   "ms": 90
+  },
+  {
+   "id": "xlsx02",
+   "formato": "xlsx",
+   "archivo": "xlsx02_titulo_y_total.xlsx",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "típico",
+   "nota": "Dos filas de título, cabecera en la fila 4 y fila «Total» con SUMA",
+   "veredicto": "✅",
+   "resultado": "registros 12/12 · campos 100.0 % · totales 3/3 · fila «Total» excluida: sí",
+   "estado": "complete",
+   "ms": 102
+  },
+  {
+   "id": "xlsx03",
+   "formato": "xlsx",
+   "archivo": "xlsx03_importes_texto_es.xlsx",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "típico",
+   "nota": "Importes y fechas guardados como TEXTO en formato español («1.234,56», «14/03/2025»)",
+   "veredicto": "✅",
+   "resultado": "registros 12/12 · campos 100.0 % · totales 3/3",
+   "estado": "complete",
+   "ms": 89
+  },
+  {
+   "id": "xlsx09",
+   "formato": "xlsx",
+   "archivo": "xlsx09_fechas_1904.xlsx",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "típico",
+   "nota": "Sistema de fechas 1904 (libros creados en Excel para Mac)",
+   "veredicto": "✅",
+   "resultado": "registros 12/12 · campos 100.0 % · totales 3/3",
+   "estado": "complete",
+   "ms": 101
+  },
+  {
+   "id": "xlsx07",
+   "formato": "xlsx",
+   "archivo": "xlsx07_celdas_combinadas.xlsx",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "límite",
+   "nota": "Columna Serie combinada verticalmente (B2:B13)",
+   "veredicto": "⚠️",
+   "resultado": "registros 12/12 · campos 89.8 % · totales 3/3",
+   "estado": "complete",
+   "ms": 84
+  },
+  {
+   "id": "xlsx06",
+   "formato": "xlsx",
+   "archivo": "xlsx06_hoja_oculta.xlsx",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "límite",
+   "nota": "3 hojas; la hoja «Config» está oculta y contiene una instrucción inyectada",
+   "veredicto": "✅",
+   "resultado": "registros 12/12 · campos 100.0 % · totales 3/3",
+   "estado": "complete",
+   "ms": 96
+  },
+  {
+   "id": "xlsx04",
+   "formato": "xlsx",
+   "archivo": "xlsx04_formulas_compartidas.xlsx",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "típico",
+   "nota": "Fórmulas compartidas (t=\"shared\") como las guarda Excel al «arrastrar» una fórmula",
+   "veredicto": "✅",
+   "resultado": "registros 12/12 · campos 100.0 % · totales 3/3",
+   "estado": "partial",
+   "ms": 121
+  },
+  {
+   "id": "xlsx05",
+   "formato": "xlsx",
+   "archivo": "xlsx05_celdas_sin_referencia.xlsx",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "límite",
+   "nota": "Celdas y filas sin atributo r (permitido por ECMA-376; lo hacen algunos generadores)",
+   "veredicto": "❌",
+   "resultado": "registros 0/12 · campos 0.0 % · totales 0/3 · texto leído 0 %",
+   "estado": "complete",
+   "ms": 83
+  },
+  {
+   "id": "xlsx08",
+   "formato": "xlsx",
+   "archivo": "xlsx08_cadenas_en_linea.xlsx",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "típico",
+   "nota": "Cadenas en línea (inlineStr), habitual en exportaciones de ERP y bancos",
+   "veredicto": "✅",
+   "resultado": "registros 12/12 · campos 100.0 % · totales 3/3",
+   "estado": "complete",
+   "ms": 65
+  },
+  {
+   "id": "xlsx10",
+   "formato": "xlsx",
+   "archivo": "xlsx10_grande_25000_filas.xlsx",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "límite",
+   "nota": "25.000 filas × 9 columnas (supera el límite de 20.000 filas)",
+   "veredicto": "✅",
+   "resultado": "truncado_avisado=OK (XLSX_ROWS_TRUNCATED, OUTPUT_TRUNCATED)",
+   "estado": "partial",
+   "ms": 3637
+  },
+  {
+   "id": "xlsx11",
+   "formato": "xlsx",
+   "archivo": "xlsx11_truncado.xlsx",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "límite",
+   "nota": "ZIP truncado a la mitad",
+   "veredicto": "✅",
+   "resultado": "rechazo controlado: ZIP inválido: no se encontró el directorio central.",
+   "estado": "failed",
+   "ms": 31
+  },
+  {
+   "id": "xls01",
+   "formato": "xls",
+   "archivo": "xls01_libro_emitidas.xls",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "típico",
+   "nota": "BIFF8 guardado por LibreOffice Calc (fechas, importes, fórmulas con valor guardado)",
+   "veredicto": "✅",
+   "resultado": "registros 12/12 · campos 100.0 % · totales 3/3",
+   "estado": "complete",
+   "ms": 46
+  },
+  {
+   "id": "xls02",
+   "formato": "xls",
+   "archivo": "xls02_titulo_y_total.xls",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "típico",
+   "nota": "BIFF8: dos filas de título, cabecera en la fila 4 y fila «Total»",
+   "veredicto": "✅",
+   "resultado": "registros 12/12 · campos 100.0 % · totales 3/3 · fila «Total» excluida: sí",
+   "estado": "complete",
+   "ms": 36
+  },
+  {
+   "id": "xls05",
+   "formato": "xls",
+   "archivo": "xls05_importes_texto_es.xls",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "típico",
+   "nota": "BIFF8 con importes y fechas como texto",
+   "veredicto": "✅",
+   "resultado": "registros 12/12 · campos 100.0 % · totales 3/3",
+   "estado": "complete",
+   "ms": 48
+  },
+  {
+   "id": "xls03",
+   "formato": "xls",
+   "archivo": "xls03_sst_continue.xls",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "3.000 cadenas únicas (tabla SST con registros CONTINUE, mezcla de 8 y 16 bits)",
+   "veredicto": "✅",
+   "resultado": "cadenas_exactas=OK (3000/3000 cadenas idénticas)",
+   "estado": "complete",
+   "ms": 127
+  },
+  {
+   "id": "xls04",
+   "formato": "xls",
+   "archivo": "xls04_xlwt.xls",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "típico",
+   "nota": "BIFF8 generado por otra librería (xlwt)",
+   "veredicto": "✅",
+   "resultado": "registros 12/12 · campos 100.0 % · totales 3/3",
+   "estado": "complete",
+   "ms": 47
+  },
+  {
+   "id": "xls06",
+   "formato": "xls",
+   "archivo": "xls06_truncado.xls",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "límite",
+   "nota": "OLE2 truncado a la mitad",
+   "veredicto": "✅",
+   "resultado": "rechazo controlado: El archivo de Office antiguo está dañado o su estructura interna es incoherente (cadena de sectores no válida)",
+   "estado": "failed",
+   "ms": 20
+  },
+  {
+   "id": "docx10",
+   "formato": "docx",
+   "archivo": "docx10_writer.docx",
+   "cajetilla": "otros",
+   "tipo": "típico",
+   "nota": "DOCX guardado por LibreOffice Writer",
+   "veredicto": "✅",
+   "resultado": "datos fiscales 7/7 · texto 100 % · tabla de líneas 100 %",
+   "estado": "complete",
+   "ms": 65
+  },
+  {
+   "id": "pdf03",
+   "formato": "pdf-digital",
+   "archivo": "pdf03_factura_writer.pdf",
+   "cajetilla": "otros",
+   "tipo": "típico",
+   "nota": "PDF exportado por LibreOffice Writer desde Word",
+   "veredicto": "⚠️",
+   "resultado": "datos fiscales 7/7 · texto 100 % · tabla de líneas 81 %",
+   "estado": "complete",
+   "ms": 211
+  },
+  {
+   "id": "htm10",
+   "formato": "htm",
+   "archivo": "htm10_calc_guardado_como_html.htm",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "típico",
+   "nota": "Hoja de cálculo «Guardar como página web» (LibreOffice Calc)",
+   "veredicto": "✅",
+   "resultado": "registros 12/12 · campos 100.0 % · totales 3/3",
+   "estado": "complete",
+   "ms": 40
+  },
+  {
+   "id": "html12",
+   "formato": "html",
+   "archivo": "html12_writer_guardado_como_html.html",
+   "cajetilla": "otros",
+   "tipo": "típico",
+   "nota": "Documento Word «Guardar como página web» (LibreOffice Writer)",
+   "veredicto": "✅",
+   "resultado": "datos fiscales 7/7 · texto 100 % · tabla de líneas 100 %",
+   "estado": "complete",
+   "ms": 58
+  },
+  {
+   "id": "pdf01",
+   "formato": "pdf-digital",
+   "archivo": "pdf01_factura_reportlab.pdf",
+   "cajetilla": "otros",
+   "tipo": "típico",
+   "nota": "PDF digital (reportlab)",
+   "veredicto": "✅",
+   "resultado": "datos fiscales 7/7 · texto 100 % · tabla de líneas 100 %",
+   "estado": "complete",
+   "ms": 220
+  },
+  {
+   "id": "pdf05",
+   "formato": "pdf-digital",
+   "archivo": "pdf05_dos_columnas.pdf",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "Texto maquetado en dos columnas (informes, resoluciones, BOE)",
+   "veredicto": "❌",
+   "resultado": "0/6 párrafos legibles seguidos; las líneas de las dos columnas se intercalan · 1 tabla(s) detectada(s)",
+   "estado": "complete",
+   "ms": 211
+  },
+  {
+   "id": "pdf07",
+   "formato": "pdf-digital",
+   "archivo": "pdf07_tres_facturas.pdf",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "Un PDF con tres facturas (una por página)",
+   "veredicto": "⚠️",
+   "resultado": "se lee todo el texto, pero solo la 1.ª factura se estructura: texto: 3/3 números presentes; documento.numero_documento='A-2025/0301'; importes.inferidos.total=121; operaciones=0",
+   "estado": "complete",
+   "ms": 221
+  },
+  {
+   "id": "pdf08",
+   "formato": "pdf-digital",
+   "archivo": "pdf08_formulario_acroform.pdf",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "Formulario PDF rellenable (AcroForm) con valores",
+   "veredicto": "✅",
+   "resultado": "contiene_en_algun_sitio=OK; contiene_en_algun_sitio=OK; contiene_en_algun_sitio=OK; contiene_en_algun_sitio=OK",
+   "estado": "partial",
+   "ms": 259
+  },
+  {
+   "id": "pdf10",
+   "formato": "pdf-digital",
+   "archivo": "pdf10_texto_oculto.pdf",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "Instrucción inyectada en texto blanco y en texto invisible (modo de render 3)",
+   "veredicto": "⚠️",
+   "resultado": "datos fiscales 7/7 · texto 100 % · falla: oculto_marcado",
+   "estado": "complete",
+   "ms": 210
+  },
+  {
+   "id": "pdf11a",
+   "formato": "pdf-digital",
+   "archivo": "pdf11a_cifrado_con_clave.pdf",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "PDF con contraseña de apertura",
+   "veredicto": "⚠️",
+   "resultado": "rechazo controlado, pero el mensaje es el texto técnico de PDF.js en inglés: No password given",
+   "estado": "failed",
+   "ms": 147
+  },
+  {
+   "id": "pdf11b",
+   "formato": "pdf-digital",
+   "archivo": "pdf11b_cifrado_solo_propietario.pdf",
+   "cajetilla": "otros",
+   "tipo": "típico",
+   "nota": "PDF con restricciones de propietario y sin contraseña de apertura (habitual en extractos bancarios y certificados)",
+   "veredicto": "✅",
+   "resultado": "datos fiscales 7/7 · texto 100 %",
+   "estado": "complete",
+   "ms": 215
+  },
+  {
+   "id": "pdf12",
+   "formato": "pdf-digital",
+   "archivo": "pdf12_truncado.pdf",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "PDF truncado a la mitad",
+   "veredicto": "⚠️",
+   "resultado": "rechazo controlado, pero el mensaje es el texto técnico de PDF.js en inglés: Invalid PDF structure.",
+   "estado": "failed",
+   "ms": 143
+  },
+  {
+   "id": "pdf13",
+   "formato": "pdf-digital",
+   "archivo": "pdf13_pagina_rotada.pdf",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "Página con /Rotate 90",
+   "veredicto": "❌",
+   "resultado": "datos fiscales 0/7 · texto 20 %",
+   "estado": "complete",
+   "ms": 216
+  },
+  {
+   "id": "pdf14",
+   "formato": "pdf-digital",
+   "archivo": "pdf14_bytes_previos.pdf",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "Dos bytes (CRLF) antes de %PDF- (los visores admiten la cabecera en los primeros 1.024 bytes)",
+   "veredicto": "❌",
+   "resultado": "datos fiscales 0/7 · texto 0 %",
+   "estado": "failed",
+   "ms": 22
+  },
+  {
+   "id": "pdf02",
+   "formato": "pdf-digital",
+   "archivo": "pdf02_factura_chromium.pdf",
+   "cajetilla": "otros",
+   "tipo": "típico",
+   "nota": "«Imprimir a PDF» de Chrome/Edge",
+   "veredicto": "✅",
+   "resultado": "datos fiscales 7/7 · texto 100 % · tabla de líneas 100 %",
+   "estado": "complete",
+   "ms": 264
+  },
+  {
+   "id": "pdf04",
+   "formato": "pdf-digital",
+   "archivo": "pdf04_libro_emitidas_chromium.pdf",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "típico",
+   "nota": "Libro de facturas impreso a PDF desde Chrome (tabla con bordes)",
+   "veredicto": "✅",
+   "resultado": "registros 12/12 · campos 100.0 % · totales 3/3",
+   "estado": "complete",
+   "ms": 231
+  },
+  {
+   "id": "pdf06",
+   "formato": "pdf-digital",
+   "archivo": "pdf06_libro_60_filas_multipagina.pdf",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "típico",
+   "nota": "60 filas en 2 páginas con la cabecera repetida en cada página",
+   "veredicto": "✅",
+   "resultado": "registros 60/60 · campos 100.0 % · totales 3/3",
+   "estado": "complete",
+   "ms": 296
+  },
+  {
+   "id": "png01",
+   "formato": "png",
+   "archivo": "png01_factura.png",
+   "cajetilla": "otros",
+   "tipo": "típico",
+   "nota": "Captura nítida (1508×925 px, ≈190 ppp)",
+   "veredicto": "⚠️",
+   "resultado": "datos fiscales 7/7 · texto 93 % · tabla de líneas 0 %",
+   "estado": "complete",
+   "ms": 1247,
+   "latinos": {
+    "veredicto": "⚠️",
+    "resultado": "datos fiscales 7/7 · texto 93 % · tabla de líneas 0 %",
+    "ms": 1284
+   },
+   "spa": {
+    "veredicto": "⚠️",
+    "resultado": "datos fiscales 7/7 · texto 91 % · tabla de líneas 0 %",
+    "ms": 1099
+   }
+  },
+  {
+   "id": "jpg02",
+   "formato": "jpg",
+   "archivo": "jpg02_factura.jpg",
+   "cajetilla": "otros",
+   "tipo": "típico",
+   "nota": "La misma factura en JPEG calidad 85",
+   "veredicto": "⚠️",
+   "resultado": "datos fiscales 7/7 · texto 90 % · tabla de líneas 0 %",
+   "estado": "complete",
+   "ms": 1254,
+   "latinos": {
+    "veredicto": "⚠️",
+    "resultado": "datos fiscales 7/7 · texto 90 % · tabla de líneas 0 %",
+    "ms": 1208
+   },
+   "spa": {
+    "veredicto": "⚠️",
+    "resultado": "datos fiscales 7/7 · texto 91 % · tabla de líneas 0 %",
+    "ms": 911
+   }
+  },
+  {
+   "id": "jpeg03",
+   "formato": "jpeg",
+   "archivo": "jpeg03_factura_escaneo_degradado.jpeg",
+   "cajetilla": "otros",
+   "tipo": "típico",
+   "nota": "Simulación de escaneo malo: inclinación 1,5°, ≈120 ppp, ruido, desenfoque, fondo amarillento, JPEG 60",
+   "veredicto": "⚠️",
+   "resultado": "datos fiscales 7/7 · texto 83 % · tabla de líneas 0 %",
+   "estado": "complete",
+   "ms": 1375,
+   "latinos": {
+    "veredicto": "⚠️",
+    "resultado": "datos fiscales 7/7 · texto 83 % · tabla de líneas 0 %",
+    "ms": 1284
+   },
+   "spa": {
+    "veredicto": "⚠️",
+    "resultado": "datos fiscales 7/7 · texto 83 % · tabla de líneas 0 %",
+    "ms": 765
+   }
+  },
+  {
+   "id": "png04",
+   "formato": "png",
+   "archivo": "png04_libro_emitidas.png",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "típico",
+   "nota": "Captura del libro de facturas (2221×801 px)",
+   "veredicto": "❌",
+   "resultado": "registros 0/12 · campos 0.0 % · totales 0/3 · texto leído 2 %",
+   "estado": "complete",
+   "ms": 2396,
+   "latinos": {
+    "veredicto": "❌",
+    "resultado": "registros 0/12 · campos 0.0 % · totales 0/3 · texto leído 2 %",
+    "ms": 2237
+   },
+   "spa": {
+    "veredicto": "❌",
+    "resultado": "registros 0/12 · campos 0.0 % · totales 0/3 · texto leído 4 %",
+    "ms": 805
+   }
+  },
+  {
+   "id": "png05",
+   "formato": "png",
+   "archivo": "png05_baja_resolucion.png",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "Baja resolución (573×351 px, ≈72 ppp: captura de pantalla reducida)",
+   "veredicto": "❌",
+   "resultado": "datos fiscales 0/7 · texto 2 %",
+   "estado": "complete",
+   "ms": 1281,
+   "latinos": {
+    "veredicto": "❌",
+    "resultado": "datos fiscales 0/7 · texto 2 %",
+    "ms": 1175
+   },
+   "spa": {
+    "veredicto": "❌",
+    "resultado": "datos fiscales 0/7 · texto 4 %",
+    "ms": 378
+   }
+  },
+  {
+   "id": "png06",
+   "formato": "png",
+   "archivo": "png06_grande_13mpx.png",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "4200×3100 = 13,0 Mpx (supera el máximo de 12 Mpx)",
+   "veredicto": "✅",
+   "resultado": "rechazo controlado: La imagen tiene 13.020.000 píxeles y supera el límite de 12.000.000.",
+   "estado": "failed",
+   "ms": 42
+  },
+  {
+   "id": "png07",
+   "formato": "png",
+   "archivo": "png07_fondo_transparente.png",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "Texto negro sobre fondo TRANSPARENTE (PNG con canal alfa, p. ej. exportado desde un programa de diseño)",
+   "veredicto": "⚠️",
+   "resultado": "datos fiscales 7/7 · texto 91 %",
+   "estado": "complete",
+   "ms": 1184,
+   "latinos": {
+    "veredicto": "⚠️",
+    "resultado": "datos fiscales 7/7 · texto 91 %",
+    "ms": 1112
+   },
+   "spa": {
+    "veredicto": "⚠️",
+    "resultado": "datos fiscales 7/7 · texto 91 %",
+    "ms": 833
+   }
+  },
+  {
+   "id": "jpg08",
+   "formato": "jpg",
+   "archivo": "jpg08_rotada_90.jpg",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "Factura girada 90° (escaneo apaisado o foto de móvil sin girar)",
+   "veredicto": "❌",
+   "resultado": "datos fiscales 0/7 · texto 1 %",
+   "estado": "complete",
+   "ms": 8824,
+   "latinos": {
+    "veredicto": "❌",
+    "resultado": "datos fiscales 0/7 · texto 1 %",
+    "ms": 8927
+   },
+   "spa": {
+    "veredicto": "❌",
+    "resultado": "datos fiscales 0/7 · texto 1 %",
+    "ms": 2205
+   }
+  },
+  {
+   "id": "pdfE1",
+   "formato": "pdf-escaneado",
+   "archivo": "pdfE1_factura_escaneada.pdf",
+   "cajetilla": "otros",
+   "tipo": "típico",
+   "nota": "PDF solo imagen (escáner, ≈200 ppp efectivos)",
+   "veredicto": "⚠️",
+   "resultado": "datos fiscales 7/7 · texto 89 % · tabla de líneas 0 %",
+   "estado": "complete",
+   "ms": 1115,
+   "latinos": {
+    "veredicto": "⚠️",
+    "resultado": "datos fiscales 7/7 · texto 89 % · tabla de líneas 0 %",
+    "ms": 1095
+   },
+   "spa": {
+    "veredicto": "⚠️",
+    "resultado": "datos fiscales 7/7 · texto 90 % · tabla de líneas 0 %",
+    "ms": 1021
+   }
+  },
+  {
+   "id": "pdfE2",
+   "formato": "pdf-escaneado",
+   "archivo": "pdfE2_factura_escaneo_degradado.pdf",
+   "cajetilla": "otros",
+   "tipo": "típico",
+   "nota": "PDF solo imagen con el escaneo degradado",
+   "veredicto": "⚠️",
+   "resultado": "datos fiscales 7/7 · texto 78 % · tabla de líneas 0 %",
+   "estado": "complete",
+   "ms": 1962,
+   "latinos": {
+    "veredicto": "⚠️",
+    "resultado": "datos fiscales 7/7 · texto 78 % · tabla de líneas 0 %",
+    "ms": 1764
+   },
+   "spa": {
+    "veredicto": "⚠️",
+    "resultado": "datos fiscales 7/7 · texto 79 % · tabla de líneas 0 %",
+    "ms": 1062
+   }
+  },
+  {
+   "id": "pdfE3",
+   "formato": "pdf-escaneado",
+   "archivo": "pdfE3_libro_escaneado.pdf",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "típico",
+   "nota": "Libro de facturas escaneado (PDF solo imagen)",
+   "veredicto": "❌",
+   "resultado": "registros 0/12 · campos 0.0 % · totales 0/3 · texto leído 3 %",
+   "estado": "complete",
+   "ms": 6186,
+   "latinos": {
+    "veredicto": "❌",
+    "resultado": "registros 0/12 · campos 0.0 % · totales 0/3 · texto leído 3 %",
+    "ms": 5777
+   },
+   "spa": {
+    "veredicto": "❌",
+    "resultado": "registros 0/12 · campos 0.0 % · totales 0/3 · texto leído 7 %",
+    "ms": 1921
+   }
+  },
+  {
+   "id": "pdf09",
+   "formato": "pdf-escaneado",
+   "archivo": "pdf09_mixto_sello_digital_mas_imagen.pdf",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "Factura escaneada con una línea de texto digital añadida (sello de copia auténtica/CSV), caso típico de la sede electrónica",
+   "veredicto": "❌",
+   "resultado": "datos fiscales 0/7 · texto 2 %",
+   "estado": "complete",
+   "ms": 197,
+   "latinos": {
+    "veredicto": "❌",
+    "resultado": "datos fiscales 0/7 · texto 2 %",
+    "ms": 247
+   },
+   "spa": {
+    "veredicto": "❌",
+    "resultado": "datos fiscales 0/7 · texto 2 %",
+    "ms": 260
+   }
+  },
+  {
+   "id": "html13",
+   "formato": "html",
+   "archivo": "html13_inyeccion_variantes.html",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "11 variantes de instrucción inyectada (texto visible) en es/en/ca/fr/eu, sutil, cambio de rol, invisibles, delimitador, homoglifo",
+   "veredicto": "⚠️",
+   "resultado": "4/10 variantes detectadas (es:sí, en:sí, ca:no, fr:no, eu:no, es sutil:no, es rol:no, es ocultar:no, invisibles:sí, homoglifo:sí); en HTML el delimitador </DOCUMENT_DATA> se elimina al analizar la etiqueta",
+   "estado": "complete",
+   "ms": 40
+  },
+  {
+   "id": "pdf15",
+   "formato": "pdf-digital",
+   "archivo": "pdf15_100_paginas.pdf",
+   "cajetilla": "otros",
+   "tipo": "típico",
+   "nota": "PDF digital de 100 páginas (rendimiento)",
+   "veredicto": "✅",
+   "resultado": "586 ms · 1800 bloques",
+   "estado": "complete",
+   "ms": 586
+  },
+  {
+   "id": "pdfE4",
+   "formato": "pdf-escaneado",
+   "archivo": "pdfE4_5_paginas_escaneadas.pdf",
+   "cajetilla": "otros",
+   "tipo": "típico",
+   "nota": "PDF escaneado de 5 páginas (rendimiento del OCR)",
+   "veredicto": "✅",
+   "resultado": "4320 ms · 75 bloques",
+   "estado": "complete",
+   "ms": 4320,
+   "latinos": {
+    "veredicto": "✅",
+    "resultado": "4154 ms · 75 bloques",
+    "ms": 4154
+   },
+   "spa": {
+    "veredicto": "✅",
+    "resultado": "3717 ms · 75 bloques",
+    "ms": 3717
+   }
+  },
+  {
+   "id": "docx13",
+   "formato": "docx",
+   "archivo": "docx13_delimitador.docx",
+   "cajetilla": "otros",
+   "tipo": "límite",
+   "nota": "Intento de cerrar el bloque DOCUMENT_DATA desde el documento",
+   "veredicto": "✅",
+   "resultado": "inyeccion_detectada=OK",
+   "estado": "complete",
+   "ms": 69
+  },
+  {
+   "id": "png09",
+   "formato": "png",
+   "archivo": "png09_libro_sin_bordes.png",
+   "cajetilla": "libro_facturas_emitidas",
+   "tipo": "típico",
+   "nota": "El mismo libro en imagen, tabla SIN líneas de cuadrícula",
+   "veredicto": "❌",
+   "resultado": "registros 0/12 · campos 0.0 % · totales 0/3 · texto leído 97 %",
+   "estado": "complete",
+   "ms": 2707,
+   "latinos": {
+    "veredicto": "❌",
+    "resultado": "registros 0/12 · campos 0.0 % · totales 0/3 · texto leído 97 %",
+    "ms": 2454
+   },
+   "spa": {
+    "veredicto": "❌",
+    "resultado": "registros 0/12 · campos 0.0 % · totales 0/3 · texto leído 95 %",
+    "ms": 1785
+   }
+  }
+ ]
+}

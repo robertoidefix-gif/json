@@ -1,0 +1,5 @@
+Copia aquí un archivo <idioma>.traineddata.gz por cada idioma del OCR:
+  spa.traineddata.gz (obligatorio; también para la demo)
+  cat, eus, eng, fra (los otros idiomas que usa la aplicación por defecto)
+  chi_sim, chi_tra (opcionales: solo para documentos en chino; se activan en el panel «Idiomas del OCR» o con data-idiomas-ocr)
+Instrucciones: Idefix1.0-instrucciones.txt, paso 2.

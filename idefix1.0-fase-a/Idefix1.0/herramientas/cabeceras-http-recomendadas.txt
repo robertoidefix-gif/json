@@ -1,0 +1,120 @@
+CABECERAS HTTP RECOMENDADAS — Idefix1.0 (AnalizadorArchivos 6.14.0) (§94)
+=========================================================================
+
+servidor-local.ps1 y servidor-local.py (en la raíz) ya envían todas estas cabeceras.
+
+La aplicación funciona 100 % en el navegador y se sirve como archivos
+estáticos. La CSP de index.html (<meta>) protege la página y, desde la v6.11.0,
+también a los workers, porque se crean desde URL blob: y heredan la política
+de la página. Aun así conviene enviar la política como CABECERA HTTP:
+
+  - frame-ancestors solo funciona como cabecera (en <meta> se ignora);
+  - una cabecera no puede quitarse editando el HTML servido;
+  - las demás cabeceras de esta lista no existen en forma de <meta>.
+
+No hace falta ningún servidor de procesamiento: son solo cabeceras del
+servidor de archivos estáticos.
+
+
+1) Para index.html (y cualquier otra página de la aplicación)
+-------------------------------------------------------------
+
+Content-Security-Policy: default-src 'none'; script-src 'self' 'wasm-unsafe-eval' blob:; worker-src blob:; connect-src 'self'; style-src 'self'; img-src 'none'; font-src 'none'; media-src 'none'; manifest-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+X-Content-Type-Options: nosniff
+Referrer-Policy: no-referrer
+Permissions-Policy: camera=(), microphone=(), geolocation=(), usb=(), serial=(), payment=(), clipboard-read=()
+Cache-Control: no-store
+
+Nota: clipboard-write se deja permitido porque el botón «Copiar prompt» lo usa.
+
+
+2) Para vendor/ y los scripts de la aplicación
+----------------------------------------------
+
+X-Content-Type-Options: nosniff
+Cross-Origin-Resource-Policy: same-origin
+Cache-Control: no-cache
+
+Tipos MIME correctos (la aplicación comprueba el SHA-256 de todo lo que
+ejecuta, pero un tipo incorrecto puede impedir que funcione):
+
+  .js   → text/javascript
+  .mjs  → text/javascript
+  .wasm → application/wasm
+  .json → application/json
+  .css  → text/css
+
+
+3) Ejemplo para nginx
+---------------------
+
+location / {
+    add_header Content-Security-Policy "default-src 'none'; script-src 'self' 'wasm-unsafe-eval' blob:; worker-src blob:; connect-src 'self'; style-src 'self'; img-src 'none'; font-src 'none'; media-src 'none'; manifest-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" always;
+    add_header Cross-Origin-Opener-Policy "same-origin" always;
+    add_header Cross-Origin-Resource-Policy "same-origin" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "no-referrer" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), usb=(), serial=(), payment=(), clipboard-read=()" always;
+}
+types { text/javascript mjs; application/wasm wasm; }
+
+
+4) Ejemplo para Apache (.htaccess, con mod_headers)
+---------------------------------------------------
+
+Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'wasm-unsafe-eval' blob:; worker-src blob:; connect-src 'self'; style-src 'self'; img-src 'none'; font-src 'none'; media-src 'none'; manifest-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+Header always set Cross-Origin-Opener-Policy "same-origin"
+Header always set Cross-Origin-Resource-Policy "same-origin"
+Header always set X-Content-Type-Options "nosniff"
+Header always set Referrer-Policy "no-referrer"
+AddType text/javascript .mjs
+AddType application/wasm .wasm
+
+
+5) Por qué cada directiva
+-------------------------
+
+default-src 'none'      Todo prohibido salvo lo que se permite abajo.
+script-src 'self' blob: Scripts de la propia aplicación y URL blob: creadas por
+                        ella con bytes verificados. Sin 'unsafe-inline' ni
+                        'unsafe-eval': ningún código se crea a partir de texto.
+'wasm-unsafe-eval'      PDF.js compila en su worker los decodificadores de
+                        imágenes JPX/JBIG2 (WASM verificado).
+worker-src blob:        Solo workers creados desde blob: (bytes verificados).
+                        Ningún worker se carga por URL.
+connect-src 'self'      La aplicación descarga del propio servidor el
+                        manifiesto, el MARCO_FISCAL_LOCAL y las librerías de
+                        vendor/ para verificarlos. Los documentos NUNCA se
+                        envían: no hay ninguna petición con su contenido.
+img-src 'none'          La interfaz no carga imágenes.
+frame-ancestors 'none'  La aplicación no puede incrustarse en otra página.
+
+
+6) Abrir la aplicación como archivo (file://)
+---------------------------------------------
+
+No funciona en Chrome ni en Edge, y no hay forma segura de evitarlo. Comprobado en Chromium 141 (el motor de
+Chrome y Edge) con una página abierta como archivo:
+
+  fetch() de un archivo local ............ bloqueado («URL scheme "file" is not supported»)
+  XMLHttpRequest de un archivo local ..... bloqueado por CORS (origen «null»)
+  new Worker("archivo.js") ............... bloqueado (SecurityError, origen «null»)
+  WebAssembly.instantiateStreaming(fetch)  bloqueado (depende de fetch)
+  <script src> con integrity ............. NO se ejecuta: la comprobación de integridad exige CORS
+  <script src> sin integrity ............. funciona
+  Worker desde blob: + importScripts ..... funciona
+  WebAssembly desde bytes en memoria ..... funciona
+
+Con la opción de arranque --allow-file-access-from-files, XMLHttpRequest y new Worker pasan a funcionar,
+pero fetch sigue bloqueado. Además esa opción abre a cualquier página local la lectura de tus archivos:
+no se recomienda.
+
+Tesseract.js descarga los modelos de idioma con fetch y la aplicación verifica cada archivo leyéndolo
+con fetch, así que en file:// no pueden funcionar. La alternativa es un servidor estático local que solo
+escucha en este ordenador:
+
+  Windows, sin instalar nada:  iniciar-idefix.bat  (o servidor-local.ps1 con PowerShell)
+  Con Python 3:                python servidor-local.py
+Después abre http://localhost:8080/ en Chrome o Edge.

@@ -1,0 +1,22 @@
+Arranques con instalaciones defectuosas (ver_arranque.js, Chromium 141). Formato: segundos -> estado de la página
+
+== ORIGINAL · spa.traineddata.gz manipulado tras sellar (puerto 8096)
+45 s -> Preparando el analizador… / Cargando el motor OCR local
+pageerror: TypeError: Integridad fallida en http://127.0.0.1:8096/vendor/tessdata/spa.traineddata.gz: el archivo de idioma no coincide con el manifiesto.
+
+== FASE A · spa.traineddata.gz manipulado tras sellar (puerto 8095)
+1 s -> El analizador no se ha iniciado / Integridad fallida en http://127.0.0.1:8095/vendor/tessdata/spa.traineddata.gz: el archivo no coincide con el manifiesto. Revisa vendor/tesseract, vendor/tesseract-core y vendor/tessdata (idiomas: spa, cat, eus, eng, fra) según el paso 2 de las instrucciones y vuelve a sellar con herramientas/generar-manifiesto.html, o desactiva el OCR con data-ocr="false" en la etiqueta <script> (o { ocr: false } si creas el analizador por código). / No se ha procesado ningún a
+
+
+== FASE A · núcleo relaxedsimd-lstm manipulado tras sellar (puerto 8097)
+1 s -> El analizador no se ha iniciado / Integridad fallida en http://127.0.0.1:8097/vendor/tesseract-core/tesseract-core-relaxedsimd-lstm.wasm.js: el archivo no coincide con el manifiesto. Revisa vendor/tesseract, vendor/tesseract-core y vendor/tessdata (idiomas: spa, cat, eus, eng, fra) según el paso 2 de las instrucciones y vuelve a sellar con herramientas/generar-manifiesto.html, o desactiva el OCR con data-ocr="false" en la etiqueta <script> (o { ocr: false } si creas el analizador por código). / 
+
+
+== ORIGINAL · spa.traineddata.gz truncado pero sellado (puerto 8099)
+151 s -> Preparando el analizador… / Cargando el motor OCR local
+pageerror: Error: invalid code length: 10
+
+== FASE A · spa.traineddata.gz truncado pero sellado (puerto 8098)
+61 s -> UI CARGADA
+pageerror: Error: invalid code length: 10
+warning: AnalizadorArchivos: se arranca SIN OCR. el motor OCR no terminó de iniciarse en 60 s. Revisa vendor/tesseract, vendor/tesseract-core y vendor/tessdata (idiomas: spa, cat, eus, eng, fra) según el paso 2 de las instrucciones y vuelve a sellar con herramientas/generar-manifiesto.html, o desactiva el OC

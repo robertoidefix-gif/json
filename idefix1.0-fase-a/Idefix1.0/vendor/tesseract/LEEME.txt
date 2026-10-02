@@ -1,0 +1,4 @@
+Copia aquí los dos archivos de la carpeta dist del paquete tesseract.js 7.0.0:
+  tesseract.min.js
+  worker.min.js
+Instrucciones: Idefix1.0-instrucciones.txt, paso 2.

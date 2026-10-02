@@ -1,0 +1,6 @@
+Copia aquí estos TRES archivos del paquete tesseract.js-core 7.0.0 (el que indica el package.json de tesseract.js 7.0.0):
+  tesseract-core-relaxedsimd-lstm.wasm.js   (Chrome y Edge actuales)
+  tesseract-core-simd-lstm.wasm.js          (navegadores con SIMD, sin relaxed SIMD)
+  tesseract-core-lstm.wasm.js               (navegadores sin SIMD)
+Los tres son obligatorios: Tesseract elige uno según el navegador. No hacen falta los .wasm sueltos ni los núcleos sin «-lstm».
+Instrucciones: Idefix1.0-instrucciones.txt, paso 2.

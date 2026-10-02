@@ -1,0 +1,442 @@
+diff -ruN Idefix1.0-original/analizador-archivos.js Idefix1.0/analizador-archivos.js
+--- Idefix1.0-original/analizador-archivos.js	2026-10-02 09:37:22.740561997 +0000
++++ Idefix1.0/analizador-archivos.js	2026-10-02 11:24:53.276711685 +0000
+@@ -2,6 +2,27 @@
+    IDEFIX1.0 — AnalizadorArchivos 6.14.0 (esquema del JSON 6.14.0)
+    Archivo único: JavaScript, interfaz, hoja de estilos, worker núcleo y MARCO_FISCAL_LOCAL.
+ 
++   Fase A (auditoría de lectura de 2026-10-02), sin cambios en el JSON:
++   - Núcleos de Tesseract: con OEM LSTM_ONLY, Tesseract.js 7 elige uno de
++     tres núcleos según el navegador (relaxed SIMD → SIMD → sin SIMD). Los
++     tres *-lstm.wasm.js son obligatorios (Chrome y Edge actuales piden el de
++     relaxed SIMD) y solo se verifican y cargan esos tres. Si falta alguno en
++     el manifiesto, se dice cuál antes de crear el worker.
++   - Idiomas del OCR por defecto: spa, cat, eus, eng y fra. Cargados junto a
++     los demás, los modelos de chino hacían que Tesseract descartara las
++     líneas de las tablas (texto leído 70 % frente a 91–93 %) y multiplicaban
++     el tiempo (hasta 18 veces). Siguen disponibles en el panel «Idiomas del
++     OCR» y con data-idiomas-ocr para documentos en chino.
++   - Si el OCR no puede iniciarse (falta un archivo, un idioma o un núcleo),
++     el analizador arranca igualmente sin OCR y lo dice en el panel del OCR y
++     en cada imagen o PDF escaneado; antes la aplicación entera se detenía.
++     Un fallo de INTEGRIDAD (un archivo que no coincide con el manifiesto)
++     sigue deteniendo el arranque, ahora con su motivo: los idiomas se
++     comprueban también antes de crear el worker (con un modelo manipulado,
++     Tesseract.js 7 no rechazaba la creación y la aplicación se quedaba para
++     siempre en «Cargando el motor OCR local»). Además, si el worker no se
++     crea en 60 s, el OCR se da por no disponible.
++
+    Novedades de Idefix1.0 respecto a v6.13.0:
+    - Cajetilla de texto «Contexto del análisis» en el panel del prompt: el
+      usuario explica libremente qué quiere que se analice. Va al prompt como
+@@ -336,8 +357,10 @@
+   // funciona en modo estricto: solo se ejecutan y se usan bytes verificados.
+   ocr: false,
+   ocrMotor: "tesseract", // "tesseract" | "none"
+-  // Los siete idiomas configurados (cat, chi_sim, chi_tra, eng, eus, fra, spa); el español va primero.
+-  idiomasTesseract: Object.freeze(["spa", "cat", "eus", "eng", "fra", "chi_sim", "chi_tra"]),
++  // Fase A: por defecto español, catalán, euskera, inglés y francés (el español va primero). Los dos chinos
++  // (chi_sim, chi_tra) se marcan en el panel «Idiomas del OCR» o con data-idiomas-ocr solo para documentos en
++  // chino: cargados junto a los demás, Tesseract descartaba las líneas de las tablas y era mucho más lento.
++  idiomasTesseract: Object.freeze(["spa", "cat", "eus", "eng", "fra"]),
+   maxPaginasOCRPdf: 1000,
+ 
+   // Seguridad
+@@ -440,7 +463,7 @@
+   "wasm/openjpeg.wasm": "004a0e62db930ba9ff2a22212f4554d0bb57a0635a8287caf70f98117cee14ba",
+   "wasm/jbig2.wasm": "e6bee67724a7b5436fe8162638e3708cfc8d52b6342db69a49715e30ff27cfdc"
+ });
+-const SHA256_MANIFIESTO_INTEGRIDAD = "147f54353b138d1eb3659be8ea9b42b59967743d2bd91c27215ec157c7a1f6b2";
++const SHA256_MANIFIESTO_INTEGRIDAD = "335be27c28be311079b03bbeb5b88649c3744df58bde4cafbd73cbb62aab567c";
+ /*
+  * ARCHIVO ÚNICO (desde v6.13.0). En la distribución, el script de construcción sustituye
+  * el bloque entre las dos marcas por el código del worker núcleo, la hoja de
+@@ -7787,9 +7810,19 @@
+   const baseNucleo = aaResolverURLLocal(cfg.corePath, { directorio: true });
+   const baseIdiomas = aaResolverURLLocal(cfg.langPath, { directorio: true });
+   let workerPath = urlWorker;
++  // Fase A: los tres núcleos entre los que elige Tesseract.js (AA_ARCHIVOS_TESSERACT.nucleos), en la carpeta
++  // configurada. Si falta el que pide el navegador, el worker fallaría con un mensaje poco claro: se comprueba
++  // antes (sin manifiesto, con una petición HEAD al mismo origen).
++  const nucleos = AA_ARCHIVOS_TESSERACT.nucleos.map(r => `${baseNucleo}${r.slice(r.lastIndexOf("/") + 1)}`);
++  const faltanNucleos = [];
++  for (const u of nucleos) if (!await aaExisteRecurso(u, integridad)) faltanNucleos.push(u.slice(u.lastIndexOf("/") + 1));
++  if (faltanNucleos.length) {
++    throw new Error(`faltan núcleos de Tesseract${integridad?.activo ? " en el manifiesto" : ""}: ${faltanNucleos.join(", ")}. ` +
++      "Hacen falta los tres *-lstm.wasm.js de tesseract.js-core 7.0.0: Tesseract elige uno según el navegador " +
++      "(Chrome y Edge actuales usan el de relaxed SIMD)");
++  }
+   if (integridad?.activo) {
+-    const nucleos = [...integridad.hashes.keys()].filter(u => u.startsWith(baseNucleo) && /\.js$/.test(u));
+-    if (!nucleos.length) throw new Error(`el manifiesto no contiene núcleos de Tesseract en ${baseNucleo}`);
++    // Solo se verifican y cargan los tres núcleos que puede pedir Tesseract (los demás no se usan con LSTM_ONLY).
+     const blobs = {};
+     for (const u of nucleos) blobs[u] = await integridad.urlVerificada(u);
+     const hashes = {};
+@@ -7799,11 +7832,17 @@
+       if (!h) throw new Error(`el idioma ${idioma} (${AA_IDIOMAS_TESSERACT[idioma]}) no figura en el manifiesto: copia ${idioma}.traineddata.gz en vendor/tessdata/ y vuelve a sellar`);
+       hashes[u] = h;
+     }
++    // Fase A: los idiomas se comprueban también aquí, antes de crear el worker. Si uno no coincide con el
++    // manifiesto, el worker lo rechaza (aaShimWorkerTesseract), pero Tesseract.js 7 no rechaza entonces la
++    // creación del worker y la aplicación se quedaba esperando para siempre sin explicar el motivo.
++    for (const u of Object.keys(hashes)) await integridad.obtenerVerificado(u);
+     const bytesWorker = await integridad.obtenerVerificado(urlWorker);
+     workerPath = URL.createObjectURL(new Blob([aaShimWorkerTesseract(blobs, hashes), "\n", bytesWorker], { type: "text/javascript" }));
+   }
++  let temporizador = null;
++  let vencido = false;
+   try {
+-    return await T.createWorker(
++    const creacion = T.createWorker(
+     [...idiomas],
+     T.OEM?.LSTM_ONLY ?? 1,
+     {
+@@ -7818,7 +7857,17 @@
+       gzip: true
+     }
+   );
++    // Fase A: si el worker llega a crearse después del tiempo máximo, se termina (nadie lo usará).
++    creacion.then(w => { if (vencido) w?.terminate?.(); }, () => {});
++    const limite = new Promise((_, rechazar) => {
++      temporizador = setTimeout(() => {
++        vencido = true;
++        rechazar(new Error(`el motor OCR no terminó de iniciarse en ${AA_MAX_MS_ARRANQUE_OCR / 1000} s`));
++      }, AA_MAX_MS_ARRANQUE_OCR);
++    });
++    return await Promise.race([creacion, limite]);
+   } finally {
++    clearTimeout(temporizador);
+     // El worker ya ha cargado su código (o ha fallado): la URL blob: de esta instancia no se reutiliza.
+     if (workerPath !== urlWorker) URL.revokeObjectURL(workerPath);
+   }
+@@ -8113,14 +8162,27 @@
+ /**
+  * Archivos de Tesseract.js que deben copiarse en vendor/ (y sellarse en el manifiesto) para activar el OCR.
+  * Los núcleos *.wasm.js llevan el WASM incrustado: no hace falta ningún .wasm suelto.
++ * Fase A: con OEM LSTM_ONLY, Tesseract.js 7 elige uno de estos TRES núcleos según lo que admita el navegador
++ * (relaxed SIMD → SIMD → sin SIMD; Chrome y Edge actuales piden el primero). Los tres son obligatorios.
+  */
+ const AA_ARCHIVOS_TESSERACT = Object.freeze({
+   script: "vendor/tesseract/tesseract.min.js",
+   worker: "vendor/tesseract/worker.min.js",
+-  nucleos: Object.freeze(["vendor/tesseract-core/tesseract-core-simd-lstm.wasm.js", "vendor/tesseract-core/tesseract-core-lstm.wasm.js"]),
++  nucleos: Object.freeze([
++    "vendor/tesseract-core/tesseract-core-relaxedsimd-lstm.wasm.js",
++    "vendor/tesseract-core/tesseract-core-simd-lstm.wasm.js",
++    "vendor/tesseract-core/tesseract-core-lstm.wasm.js"
++  ]),
+   idiomas: Object.freeze(Object.keys(AA_IDIOMAS_TESSERACT).map(c => `vendor/tessdata/${c}.traineddata.gz`))
+ });
+ 
++/**
++ * Fase A: tiempo máximo para crear el worker de Tesseract (núcleo e idiomas). Con los cinco idiomas por defecto
++ * tarda alrededor de 1 s; si Tesseract.js se queda esperando (por ejemplo, con un modelo dañado), el OCR se da
++ * por no disponible en lugar de dejar la aplicación detenida en «Cargando el motor OCR local».
++ */
++const AA_MAX_MS_ARRANQUE_OCR = 60000;
++
+ /** @param {string[]} idiomas códigos de AA_IDIOMAS_TESSERACT, sin repetir */
+ function aaValidarIdiomasTesseract(idiomas) {
+   if (!Array.isArray(idiomas) || !idiomas.length || idiomas.length > Object.keys(AA_IDIOMAS_TESSERACT).length ||
+@@ -12769,6 +12831,14 @@
+ 
+ const TOKEN_DEPENDENCIAS = Symbol("aa.dependencias");
+ 
++/**
++ * Fase A: ¿el fallo del OCR se debe a un archivo que no coincide con el manifiesto (instalación alterada)?
++ * Esos fallos detienen el arranque; la falta de un archivo, idioma o núcleo solo desactiva el OCR.
++ */
++function aaEsFalloIntegridad(error) {
++  return /Integridad fallida|no coincide con el (?:manifiesto|SHA-256)/i.test(String(error?.message || error));
++}
++
+ async function crearAnalizadorArchivos(config = {}, { onProgreso = null } = {}) {
+   const paso = texto => { try { onProgreso?.(texto); } catch { /* la UI no bloquea el arranque */ } };
+ 
+@@ -12806,22 +12876,27 @@
+   const pdf = await cargarPDFJSLocal(integridad);
+ 
+   let tesseractWorker = null;
++  let errorOCR = null;
+   if (aaOcrActivo(cfg)) {
+     paso("Cargando el motor OCR local");
+     try {
+       tesseractWorker = await crearWorkerTesseractLocal(cfg.idiomasTesseract, integridad);
+     } catch (error) {
+-      throw new Error(
+-        `${String(error?.message || error).replace(/\.+$/, "")}. Copia los archivos de Tesseract (${AA_ARCHIVOS_TESSERACT.script}, ${AA_ARCHIVOS_TESSERACT.worker}, ` +
+-        `vendor/tesseract-core/*.wasm.js y vendor/tessdata/<idioma>.traineddata.gz para ${cfg.idiomasTesseract.join(", ")}), ` +
+-        "vuelve a sellar el manifiesto con herramientas/generar-manifiesto.html, o desactiva el OCR con data-ocr=\"false\" en la " +
+-        "etiqueta <script> (o { ocr: false } si creas el analizador por código)."
+-      );
++      const motivo = `${String(error?.message || error).replace(/\.+$/, "")}. Revisa vendor/tesseract, vendor/tesseract-core y ` +
++        `vendor/tessdata (idiomas: ${cfg.idiomasTesseract.join(", ")}) según el paso 2 de las instrucciones y vuelve a sellar con ` +
++        "herramientas/generar-manifiesto.html, o desactiva el OCR con data-ocr=\"false\" en la etiqueta <script> " +
++        "(o { ocr: false } si creas el analizador por código).";
++      // Un archivo que NO coincide con el manifiesto es una instalación alterada: se detiene todo, como antes.
++      if (aaEsFalloIntegridad(error)) throw new Error(motivo);
++      // Fase A: si falta algo del OCR, se arranca sin OCR. Excel, Word, HTML y PDF con texto se analizan con
++      // normalidad; el panel del OCR y cada imagen o página escaneada lo dicen (OCR_UNAVAILABLE).
++      errorOCR = motivo;
++      try { console.warn(`AnalizadorArchivos: se arranca SIN OCR. ${motivo}`); } catch { /* sin consola */ }
+     }
+   }
+ 
+   try {
+-    return new AnalizadorArchivos(config, { [TOKEN_DEPENDENCIAS]: true, pdf, tesseractWorker, integridad, marco });
++    return new AnalizadorArchivos(config, { [TOKEN_DEPENDENCIAS]: true, pdf, tesseractWorker, integridad, marco, errorOCR });
+   } catch (error) {
+     await tesseractWorker?.terminate?.();
+     throw error;
+@@ -12890,7 +12965,10 @@
+     this._eventController = new AbortController();
+     this._proveedorOCR = null;
+     this._promesaProveedorOCR = null;
+-    this._errorOCR = null;
++    // Fase A: si el OCR no pudo iniciarse al arrancar, el motivo queda aquí: cada imagen o página escaneada lleva
++    // el aviso OCR_UNAVAILABLE y el panel del OCR lo muestra. Cambiar los idiomas en el panel lo vuelve a intentar.
++    this._errorOCR = typeof deps.errorOCR === "string" && deps.errorOCR ? deps.errorOCR : null;
++    this._avisoOCR = null;
+     this._renderizadorPDF = null;
+     this._serviciosExtraccion = Object.freeze({
+       analizarPDF: item => this._analizarPDF(item),
+@@ -13583,10 +13661,9 @@
+      IDIOMAS DEL OCR (Tesseract): cat, chi_sim, chi_tra, eng, eus, fra y spa
+      ------------------------------------------------------------------------ */
+ 
+-  /** Panel con los siete idiomas del OCR; si el OCR está desactivado, explica cómo activarlo. */
++  /** Panel con los siete idiomas del OCR (avisa si el OCR no está disponible); si está desactivado, explica cómo activarlo. */
+   _crearPanelOCR(el) {
+     const det = el("details", "aa-ocr");
+-    const nombres = () => this._idiomasOCR.map(c => AA_IDIOMAS_TESSERACT[c]).join(", ");
+     const resumen = el("summary", "aa-ocr-titulo", "");
+     det.append(resumen);
+     if (!aaOcrActivo(this.config)) {
+@@ -13596,7 +13673,13 @@
+         "(tesseract, tesseract-core y tessdata), sella el manifiesto y usa data-ocr=\"true\" en la etiqueta <script>."));
+       return det;
+     }
+-    const pintar = () => { resumen.textContent = `Idiomas del OCR: ${nombres()}`; };
++    // Fase A: aviso visible cuando el OCR no está disponible (el resto del analizador funciona); el título
++    // del panel también lo dice, para que se vea aunque el panel esté cerrado.
++    const pintar = () => this._pintarAvisoOCR();
++    this._avisoOCR = el("p", "aa-aviso");
++    this._avisoOCR.setAttribute("role", "alert");
++    this._avisoOCR.hidden = true;
++    det.append(this._avisoOCR);
+     const caja = el("div", "aa-fs-opciones");
+     for (const [codigo, nombre] of Object.entries(AA_IDIOMAS_TESSERACT)) {
+       const lab = el("label", "aa-fs-opcion");
+@@ -13618,6 +13701,27 @@
+     return det;
+   }
+ 
++  /** Fase A: muestra (o retira) el aviso de OCR no disponible en el panel del OCR. */
++  _pintarAvisoOCR() {
++    const aviso = this._avisoOCR;
++    if (!aviso) return;
++    const det = aviso.closest("details");
++    const resumen = det?.querySelector("summary");
++    const nombres = this._idiomasOCR.map(c => AA_IDIOMAS_TESSERACT[c]).join(", ");
++    if (resumen) resumen.textContent = this._errorOCR ? `⚠️ OCR NO DISPONIBLE · Idiomas del OCR: ${nombres}` : `Idiomas del OCR: ${nombres}`;
++    if (this._errorOCR) {
++      aviso.textContent = "⚠️ OCR NO DISPONIBLE: las imágenes (.png, .jpg, .jpeg) y las páginas escaneadas de los PDF se " +
++        "quedarán sin texto y se marcarán con un aviso. Excel, Word, HTML y PDF con texto se analizan con normalidad.\n" +
++        `Motivo: ${this._errorOCR}\n` +
++        "Si falta solo un idioma, desmárcalo aquí: el OCR se volverá a intentar con los idiomas marcados.";
++      aviso.hidden = false;
++      if (det) det.open = true;
++    } else {
++      aviso.textContent = "";
++      aviso.hidden = true;
++    }
++  }
++
+   /** Cambia los idiomas del OCR: el worker de Tesseract se recrea con ellos en el siguiente OCR. */
+   _cambiarIdiomasOCR(lista) {
+     aaValidarIdiomasTesseract(lista);
+@@ -13634,6 +13738,7 @@
+     this._errorOCR = null;
+     this._tesseractWorkerPrecargado = null;
+     for (const c of [p?.close?.(), w?.terminate?.()]) if (c && typeof c.catch === "function") c.catch(() => {});
++    this._pintarAvisoOCR();
+   }
+ 
+   /* ------------------------------------------------------------------------
+@@ -15742,6 +15847,7 @@
+           return this._proveedorOCR;
+         } catch (error) {
+           this._errorOCR = error?.message || String(error);
++          this._pintarAvisoOCR();
+           return null;
+         }
+       })();
+@@ -16291,11 +16397,11 @@
+    en la etiqueta <script>:
+      data-autoarranque="false"   no arrancar automáticamente
+      data-contenedor="miId"      id del contenedor a usar
+-     data-ocr="true"             activar el OCR (Tesseract local, 7 idiomas)
++     data-ocr="true"             activar el OCR (Tesseract local)
+      data-ocr="false"            desactivar el OCR (valor por defecto)
+-     data-idiomas-ocr="spa,eng"  idiomas del OCR (por defecto los 7: spa, cat, eus,
+-                                 eng, fra, chi_sim, chi_tra); solo hace falta copiar
+-                                 en vendor/tessdata los que se indiquen
++     data-idiomas-ocr="spa,eng"  idiomas del OCR (por defecto spa, cat, eus, eng y fra;
++                                 chi_sim y chi_tra solo para documentos en chino);
++                                 solo hace falta copiar en vendor/tessdata los que se usen
+    Contenedor por defecto, por orden: [data-analizador-archivos],
+    #analizadorArchivos, #demoAnalizadorArchivos; si no hay ninguno se crea
+    uno al final de <body>.
+@@ -16504,7 +16610,8 @@
+     vendor/pdfjs/                             (pdfjs-6.2.108-dist.zip descomprimido tal cual)
+     vendor/pdfjs-legacy/                      (opcional: pdfjs-6.2.108-legacy-dist.zip)
+     vendor/tesseract/tesseract.min.js, worker.min.js     (tesseract.js 7.0.0, solo con OCR)
+-    vendor/tesseract-core/                    (tesseract.js-core: archivos *.wasm.js, solo con OCR)
+-    vendor/tessdata/{spa,cat,eus,eng,fra,chi_sim,chi_tra}.traineddata.gz   (solo con OCR)
++    vendor/tesseract-core/                    (tesseract.js-core 7.0.0, solo con OCR; obligatorios los tres
++                                              tesseract-core-{relaxedsimd-lstm,simd-lstm,lstm}.wasm.js)
++    vendor/tessdata/{spa,cat,eus,eng,fra}.traineddata.gz   (solo con OCR; chi_sim y chi_tra, opcionales)
+   Sin OCR (data-ocr="false") basta con PDF.js y el manifiesto.
+ */
+diff -ruN Idefix1.0-original/demo-ocr.html Idefix1.0/demo-ocr.html
+--- Idefix1.0-original/demo-ocr.html	2026-10-02 09:37:22.742100979 +0000
++++ Idefix1.0/demo-ocr.html	2026-10-02 11:24:53.284011483 +0000
+@@ -71,7 +71,7 @@
+     <div id="red-csp" class="nota"></div>
+   </section>
+ </main>
+-<script src="analizador-archivos.js" integrity="sha256-A6yagfrDn2DagtlOTHSQ0p9mQfcyhavNyT4qLbHgjZ8=" data-autoarranque="false"></script>
++<script src="analizador-archivos.js" integrity="sha256-HcN60aer4OthmjR1XLOMWXZwp6Nxhy4GUN3eNOlEjKU=" data-autoarranque="false"></script>
+ <script src="demo-ocr.js" integrity="sha256-owz2pJpN7clCrCbdi/Ngc9+JRBXQbS23qKVJE/nGJzk="></script>
+ </body>
+ </html>
+diff -ruN Idefix1.0-original/herramientas/generar-manifiesto.html Idefix1.0/herramientas/generar-manifiesto.html
+--- Idefix1.0-original/herramientas/generar-manifiesto.html	2026-10-02 09:37:22.742484495 +0000
++++ Idefix1.0/herramientas/generar-manifiesto.html	2026-10-02 11:13:29.189405908 +0000
+@@ -26,6 +26,9 @@
+     <li>Vuelve a elegir la carpeta: si <code>analizador-archivos.js</code> ha cambiado, copia en <code>index.html</code>
+         el nuevo valor de <code>integrity</code>. Repite hasta que todo esté en verde.</li>
+   </ol>
++  <p class="nota">Con OCR, <code>vendor/tesseract-core</code> debe tener los tres núcleos
++     <code>tesseract-core-relaxedsimd-lstm.wasm.js</code>, <code>tesseract-core-simd-lstm.wasm.js</code> y
++     <code>tesseract-core-lstm.wasm.js</code>: si falta alguno, no se genera el manifiesto.</p>
+   <p class="nota">Hazlo cada vez que actualices una librería de <code>vendor</code> o el MARCO_FISCAL_LOCAL
+      (en el archivo único, el bloque <code>marco:</code> de <code>analizador-archivos.js</code>; en la versión de
+      desarrollo, <code>vendor/marco-fiscal/marco-fiscal-local.json</code>), por ejemplo al incorporar reglas de tu fuente normativa.
+diff -ruN Idefix1.0-original/herramientas/generar-manifiesto.js Idefix1.0/herramientas/generar-manifiesto.js
+--- Idefix1.0-original/herramientas/generar-manifiesto.js	2026-10-02 09:37:22.742551803 +0000
++++ Idefix1.0/herramientas/generar-manifiesto.js	2026-10-02 11:13:29.188818957 +0000
+@@ -40,6 +40,9 @@
+     [/(^|\/)web\/iccs\//i, "perfiles ICC"],
+     [/\.pdf$/i, "documentos PDF de ejemplo"]
+   ];
++  // Fase A: núcleos de Tesseract.js 7 que pueden pedirse con OEM LSTM_ONLY e idiomas por defecto del OCR.
++  const NUCLEOS_OCR = ["tesseract-core-relaxedsimd-lstm.wasm.js", "tesseract-core-simd-lstm.wasm.js", "tesseract-core-lstm.wasm.js"];
++  const IDIOMAS_POR_DEFECTO = ["spa", "cat", "eus", "eng", "fra"];
+   // Código ejecutable de PDF.js 6.2.108 (build 0365cbde0) con el que se probó
+   // esta versión. Otro contenido en estas rutas no se acepta.
+   const PDFJS_6_2_108 = {
+@@ -132,6 +135,34 @@
+       salida[ruta] = h;
+     }
+     for (const texto of innecesarios) item(avisos, `Se incluyen ${texto}. No son necesarios: puedes borrarlos y volver a comprobar.`);
++
++    // Fase A: con Tesseract copiado, los tres núcleos *-lstm.wasm.js son obligatorios. Tesseract.js 7 elige
++    // uno según el navegador (Chrome y Edge actuales piden el de relaxed SIMD); sin él, el OCR no arranca.
++    const conOCR = Object.keys(salida).some(r => /^vendor\/(?:tesseract|tesseract-core|tessdata)\//.test(r) && !/\/LEEME\.txt$/i.test(r));
++    if (conOCR) {
++      const faltanNucleos = NUCLEOS_OCR.filter(n => !salida[`vendor/tesseract-core/${n}`]);
++      if (faltanNucleos.length) {
++        item(errores, `Faltan en vendor/tesseract-core: ${faltanNucleos.join(", ")}. Tesseract.js 7 usa uno de los tres ` +
++          "*-lstm.wasm.js según el navegador (Chrome y Edge actuales, el de relaxed SIMD): cópialos los tres del paquete " +
++          "tesseract.js-core 7.0.0 (paso 2.2 de las instrucciones).");
++        bloqueado = true;
++      }
++      const sobran = Object.keys(salida).filter(r => r.startsWith("vendor/tesseract-core/") && /\.wasm(?:\.js)?$/.test(r) &&
++        !NUCLEOS_OCR.some(n => r === `vendor/tesseract-core/${n}`));
++      if (sobran.length) {
++        item(avisos, `vendor/tesseract-core contiene ${sobran.length} archivo(s) que la aplicación no usa (núcleos sin «-lstm» y .wasm sueltos; ` +
++          "los *.wasm.js llevan el WASM incrustado). Puedes borrarlos y volver a comprobar.");
++      }
++      const htmlIndex = await porRuta.get("index.html").text();
++      const atributo = /data-idiomas-ocr="([^"]*)"/.exec(htmlIndex);
++      const idiomas = atributo ? atributo[1].split(",").map(x => x.trim()).filter(Boolean) : IDIOMAS_POR_DEFECTO;
++      const faltanIdiomas = idiomas.filter(c => !salida[`vendor/tessdata/${c}.traineddata.gz`]);
++      if (faltanIdiomas.length) {
++        item(avisos, `index.html usa los idiomas ${idiomas.join(", ")}, pero faltan en vendor/tessdata: ` +
++          `${faltanIdiomas.map(c => `${c}.traineddata.gz`).join(", ")}. Cópialos o quítalos de data-idiomas-ocr; si no, la aplicación ` +
++          "arrancará sin OCR (y lo avisará).");
++      }
++    }
+     const js = await porRuta.get("analizador-archivos.js").text();
+     // Archivo único: worker incrustado entre estas dos marcas (las escribe la distribución).
+     const MARCA_WORKER = "worker: function __aaFuenteWorkerNucleo() {\n";
+diff -ruN Idefix1.0-original/index-sin-ocr.html Idefix1.0/index-sin-ocr.html
+--- Idefix1.0-original/index-sin-ocr.html	2026-10-02 09:37:22.742046924 +0000
++++ Idefix1.0/index-sin-ocr.html	2026-10-02 11:24:53.281485081 +0000
+@@ -15,6 +15,6 @@
+ <!-- Archivo único. integrity: SHA-256 del archivo (recalcúlalo con herramientas/generar-manifiesto.html si lo cambias).
+      Sin OCR: las imágenes y los PDF escaneados no se leen. Con Tesseract copiado en vendor/, usa index.html.
+      Solo algunos idiomas (y copiar solo esos): añade, por ejemplo, data-idiomas-ocr="spa" o data-idiomas-ocr="spa,eng". -->
+-<script src="analizador-archivos.js" integrity="sha256-A6yagfrDn2DagtlOTHSQ0p9mQfcyhavNyT4qLbHgjZ8=" data-ocr="false"></script>
++<script src="analizador-archivos.js" integrity="sha256-HcN60aer4OthmjR1XLOMWXZwp6Nxhy4GUN3eNOlEjKU=" data-ocr="false"></script>
+ </body>
+ </html>
+diff -ruN Idefix1.0-original/index.html Idefix1.0/index.html
+--- Idefix1.0-original/index.html	2026-10-02 09:37:22.741979669 +0000
++++ Idefix1.0/index.html	2026-10-02 11:24:53.279391283 +0000
+@@ -13,9 +13,11 @@
+ <body>
+ <div id="analizadorArchivos"></div>
+ <!-- Archivo único. integrity: SHA-256 del archivo (recalcúlalo con herramientas/generar-manifiesto.html si lo cambias).
+-     OCR con los 7 idiomas (spa, cat, eus, eng, fra, chi_sim, chi_tra): requiere vendor/tesseract*, vendor/tessdata.
+-     Sin esos archivos, usa data-ocr="false".
+-     Solo algunos idiomas (y copiar solo esos): añade, por ejemplo, data-idiomas-ocr="spa" o data-idiomas-ocr="spa,eng". -->
+-<script src="analizador-archivos.js" integrity="sha256-A6yagfrDn2DagtlOTHSQ0p9mQfcyhavNyT4qLbHgjZ8=" data-ocr="true"></script>
++     OCR: requiere vendor/tesseract, vendor/tesseract-core (los tres *-lstm.wasm.js) y vendor/tessdata.
++     Sin esos archivos, usa data-ocr="false" (si falta alguno, la aplicación arranca sin OCR y lo avisa).
++     Idiomas (fase A): español, catalán, euskera, inglés y francés. Añade chi_sim o chi_tra solo para documentos
++     en chino: junto a los demás, el OCR pierde las líneas de las tablas y es mucho más lento (también pueden
++     marcarse en el panel «Idiomas del OCR»). Copia en vendor/tessdata solo los idiomas que indiques. -->
++<script src="analizador-archivos.js" integrity="sha256-HcN60aer4OthmjR1XLOMWXZwp6Nxhy4GUN3eNOlEjKU=" data-ocr="true" data-idiomas-ocr="spa,cat,eus,eng,fra"></script>
+ </body>
+ </html>
+diff -ruN Idefix1.0-original/vendor/manifiesto-integridad.json Idefix1.0/vendor/manifiesto-integridad.json
+--- Idefix1.0-original/vendor/manifiesto-integridad.json	2026-10-02 09:37:22.742921309 +0000
++++ Idefix1.0/vendor/manifiesto-integridad.json	2026-10-02 11:24:53.286174650 +0000
+@@ -388,8 +388,8 @@
+   "vendor/pdfjs/web/wasm/LICENSE_PDFJS_OPENJPEG": "717fc62da03292dbb4dd0c8280bd4ce7bb8550dcf31d772bc93455fb50313425",
+   "vendor/pdfjs/web/wasm/jbig2.wasm": "e6bee67724a7b5436fe8162638e3708cfc8d52b6342db69a49715e30ff27cfdc",
+   "vendor/pdfjs/web/wasm/openjpeg.wasm": "004a0e62db930ba9ff2a22212f4554d0bb57a0635a8287caf70f98117cee14ba",
+-  "vendor/tessdata/LEEME.txt": "546b70be6e98e0d3d84c1430d57357641f7cd92a9a7994d78f3ff60bdd8ced6a",
+-  "vendor/tesseract-core/LEEME.txt": "336b9176b6dd5672e5a5793b0a87ee41537c569229046c1c23a9dfa9709b5871",
++  "vendor/tessdata/LEEME.txt": "0ce9102bcd9063e60a3b12dd0131364e42b8e2880ea968ca938c94d4a1c2f31c",
++  "vendor/tesseract-core/LEEME.txt": "0f6dc8e3c15843c7fcfb4ea3e22b2617f3e3c30e3ef981ffe901e91072d04fae",
+   "vendor/tesseract/LEEME.txt": "a5cb5839662405409709c8797d8e9ad8e9386604d7b4c452378bb04649ecfd23"
+  }
+ }
+\ No newline at end of file
+diff -ruN Idefix1.0-original/vendor/tessdata/LEEME.txt Idefix1.0/vendor/tessdata/LEEME.txt
+--- Idefix1.0-original/vendor/tessdata/LEEME.txt	2026-10-02 09:37:22.743139823 +0000
++++ Idefix1.0/vendor/tessdata/LEEME.txt	2026-10-02 11:13:42.367835647 +0000
+@@ -1,4 +1,5 @@
+ Copia aquí un archivo <idioma>.traineddata.gz por cada idioma del OCR:
+-  spa.traineddata.gz (obligatorio para la demo)
+-  cat, eus, eng, fra, chi_sim, chi_tra (los otros seis idiomas de la aplicación)
++  spa.traineddata.gz (obligatorio; también para la demo)
++  cat, eus, eng, fra (los otros idiomas que usa la aplicación por defecto)
++  chi_sim, chi_tra (opcionales: solo para documentos en chino; se activan en el panel «Idiomas del OCR» o con data-idiomas-ocr)
+ Instrucciones: Idefix1.0-instrucciones.txt, paso 2.
+diff -ruN Idefix1.0-original/vendor/tesseract-core/LEEME.txt Idefix1.0/vendor/tesseract-core/LEEME.txt
+--- Idefix1.0-original/vendor/tesseract-core/LEEME.txt	2026-10-02 09:37:22.743097378 +0000
++++ Idefix1.0/vendor/tesseract-core/LEEME.txt	2026-10-02 11:13:42.367481501 +0000
+@@ -1,3 +1,6 @@
+-Copia aquí los archivos tesseract-core*.wasm.js (y, si vienen, tesseract-core*.wasm) del paquete tesseract.js-core
+-que indica el package.json de tesseract.js 7.0.0.
++Copia aquí estos TRES archivos del paquete tesseract.js-core 7.0.0 (el que indica el package.json de tesseract.js 7.0.0):
++  tesseract-core-relaxedsimd-lstm.wasm.js   (Chrome y Edge actuales)
++  tesseract-core-simd-lstm.wasm.js          (navegadores con SIMD, sin relaxed SIMD)
++  tesseract-core-lstm.wasm.js               (navegadores sin SIMD)
++Los tres son obligatorios: Tesseract elige uno según el navegador. No hacen falta los .wasm sueltos ni los núcleos sin «-lstm».
+ Instrucciones: Idefix1.0-instrucciones.txt, paso 2.

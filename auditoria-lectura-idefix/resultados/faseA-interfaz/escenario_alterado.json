@@ -1,0 +1,6 @@
+{
+ "escenario": "alterado",
+ "errorArranque": "El analizador no se ha iniciado\nIntegridad fallida en http://127.0.0.1:8095/vendor/tessdata/spa.traineddata.gz: el archivo no coincide con el manifiesto. Revisa vendor/tesseract, vendor/tesseract-core y vendor/tessdata (idiomas: spa, cat, eus, eng, fra) según el paso 2 de las instrucciones y vuelve a sellar con herramientas/generar-manifiesto.html, o desactiva el OCR con data-ocr=\"false\" en la etiqueta <script> (o { ocr: false } si creas el analizador por código).\nNo se ha procesado ningún archivo. Corrige la causa indicada y recarga la página.",
+ "consola": [],
+ "externas": []
+}
