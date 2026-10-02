@@ -3,10 +3,20 @@ IDEFIX1.0 — INSTALACIÓN Y USO 100 % LOCAL EN GOOGLE CHROME Y MICROSOFT EDGE
 (AnalizadorArchivos 6.14.0 · OCR con Tesseract.js 7.0.0 · 2 de octubre de 2026)
 =====================================================================================================
 
+>>> VERSIÓN SIN SERVIDOR (2 de octubre de 2026, carpeta idefix1.0-sin-servidor/ del repositorio) — RECOMENDADA
+    Doble clic en idefix1.0-sin-servidor/Idefix1.0/index.html (Chrome o Edge). Eso es todo: sin servidor,
+    sin Node.js, sin descargar nada y sin sellar nada. Las librerías oficiales ya van en vendor-paquetes/
+    (cargadas con <script> y comprobadas por SHA-256 antes de usarse). Cambios y pruebas en
+    idefix1.0-sin-servidor/CAMBIOS-SIN-SERVIDOR.txt.
+    El resto de este documento describe la instalación CON servidor (fase A), que se conserva para quien la
+    prefiera. Su apartado A explica por qué ESA instalación no funcionaba con file://; la versión sin
+    servidor lo resuelve sin fetch, sin workers de tipo módulo y sin el atributo integrity.
+
 Lo que NO hace falta: Node.js, npm, compilar nada, un backend o un CDN.
-Lo que SÍ hace falta:
+Lo que SÍ hace falta (instalación con servidor):
   - Chrome o Edge en una versión reciente.
-  - Un servidor estático LOCAL (incluido). Abrir los archivos con doble clic (file://) no funciona: ver apartado A.
+  - Un servidor estático LOCAL (incluido). Abrir los archivos con doble clic (file://) no funciona con esta
+    instalación: ver apartado A (o usa la versión sin servidor).
   - Una conexión a Internet UNA SOLA VEZ, para descargar Tesseract.js y los modelos de idioma (paso 2).
     Después todo funciona sin conexión.
 
@@ -40,10 +50,11 @@ A.1 Página abierta como archivo (file://)
   Con la opción --allow-file-access-from-files: XMLHttpRequest y new Worker pasan a funcionar, pero fetch
   sigue bloqueado. Además esa opción deja leer tus archivos a cualquier página local: no la uses.
 
-A.2 Conclusión
-  Tesseract.js descarga los modelos de idioma (.traineddata.gz) con fetch. Además, la aplicación lee cada
-  archivo con fetch para comprobar su SHA-256 antes de ejecutarlo. Por eso en file:// NO es viable: ni
-  Tesseract, ni su núcleo WebAssembly, ni los modelos, ni PDF.js.
+A.2 Conclusión (para la instalación con servidor)
+  Tesseract.js descarga los modelos de idioma (.traineddata.gz) con fetch. Además, esta instalación lee cada
+  archivo con fetch para comprobar su SHA-256 antes de ejecutarlo. Por eso, TAL COMO ESTÁ, en file:// no es
+  viable. La versión sin servidor (idefix1.0-sin-servidor/) evita fetch: las librerías llegan en <script>
+  clásicos (que file:// sí permite), se comprueban por SHA-256 y se ejecutan desde blob:.
   Alternativa exacta: un servidor estático local que solo escuche en este ordenador (http://localhost).
   Desde http://localhost todo lo anterior funciona (✅ comprobado): fetch, workers, WebAssembly e integrity.
 

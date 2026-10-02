@@ -1,0 +1,30 @@
+herramientas/sin-servidor/ — cómo se construyó y se comprobó la versión sin servidor
+=====================================================================================
+Idefix se ejecuta tal cual en el navegador. Python y Node.js (Playwright) solo GENERAN y MIDEN aquí; no
+hacen falta para usar Idefix.
+
+Construcción
+  empaquetar-idefix.py          vendor oficial → vendor-paquetes/*.paquete.js + tabla AA_PAQUETES.
+  editar-sin-servidor.py        analizador-archivos.js de la fase A + tabla → versión sin servidor
+                                (sustituciones exactas, cada una con su recuento comprobado).
+  codigo-completo-sin-servidor.py  genera Idefix1.0-sin-servidor-codigo-completo.txt y comprueba la ida
+                                y vuelta byte a byte.
+
+Viabilidad de file:// (Chromium 141)
+  sondas-file/sonda*.html/js    import() de blob:, worker de módulo frente a worker clásico, worker de PDF.js
+                                adaptado. generar_sondas.py crea sus datos; sonda_file.js las abre como
+                                file://. Resultado: resultados/sinServidor-escenarios/sondas_file.log.
+
+PDF extra
+  generar_pdf_extra.py          cmap_chino.pdf (CMaps) y jpx_escaneada.pdf (WASM openjpeg); están en corpus/.
+
+Pruebas (Playwright + Chromium 141, página abierta como file://)
+  ../ejecutar.js                corpus completo (BASE=file://…/ ETIQUETA=… node ejecutar.js salida prod).
+  escenario_ss.js               un escenario por la interfaz (archivos, idiomas, script previo opcional).
+  init_nosimd.js / init_cola.js navegador sin SIMD (simulado) / ataque a la cola de paquetes.
+  demo_ss.js                    demo-ocr.html con una imagen.
+  medir_ss.js / memoria_ss.js / memoria2.js   arranque y memoria.
+  verificacion_final.sh         todo lo anterior sobre una copia exacta de la entrega (rutas de este
+                                entorno: ajústalas antes de usarlo).
+Resultados: resultados/sinServidor/ (corpus), resultados/sinServidor-escenarios/ y
+resultados/capturas/sinServidor_*.png.

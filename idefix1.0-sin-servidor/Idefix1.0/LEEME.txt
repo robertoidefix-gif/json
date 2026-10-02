@@ -1,0 +1,30 @@
+Idefix1.0 · versión SIN SERVIDOR
+================================
+
+CÓMO SE ABRE
+  Doble clic en index.html. Se abre en Chrome o Edge y funciona tal cual: sin servidor, sin Node.js,
+  sin instalar nada y sin configurar ni sellar nada. Funciona sin conexión a Internet.
+
+  Si Windows lo abre con otro navegador: clic derecho en index.html → Abrir con → Google Chrome o
+  Microsoft Edge.
+
+QUÉ HAY EN LA CARPETA (cópiala completa; no separes los archivos)
+  index.html             la aplicación, con OCR (imágenes y PDF escaneados) en español, catalán,
+                         euskera, inglés y francés; el chino se activa en el panel «Idiomas del OCR».
+  index-sin-ocr.html     la aplicación sin OCR (arranca antes; no lee imágenes ni PDF escaneados).
+  demo-ocr.html          demostración: reconocer el texto de una imagen PNG o JPEG.
+  analizador-archivos.js la aplicación (archivo único: código, interfaz, estilos y marco fiscal).
+  demo-ocr.js / .css     lógica y estilos de la demostración.
+  vendor-paquetes/       PDF.js 6.2.108, Tesseract.js 7.0.0, su núcleo y los modelos de idioma:
+                         archivos oficiales sin modificar, en base64 (ver vendor-paquetes/LEEME.txt).
+
+SEGURIDAD
+  - Nada sale de este ordenador: la página no puede hacer peticiones de red (CSP connect-src 'none').
+  - Antes de usar cada librería se comprueban su tamaño y su SHA-256 (fijados en analizador-archivos.js).
+    Si alguien cambia un paquete, la aplicación no lo usa y dice cuál es.
+  - Todo el análisis se hace en Web Workers aislados, sin acceso a la red.
+  - Con doble clic no se puede usar el atributo integrity (Chrome y Edge no cargarían el script): la raíz
+    de confianza es analizador-archivos.js. Guarda la carpeta donde solo tú puedas modificarla.
+
+NAVEGADORES
+  Comprobado en Chromium 141 (el motor de Chrome y Edge). Firefox y Safari no se han probado.

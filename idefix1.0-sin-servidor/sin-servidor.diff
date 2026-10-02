@@ -1,0 +1,1090 @@
+--- fase-a/Idefix1.0/analizador-archivos.js
++++ sin-servidor/Idefix1.0/analizador-archivos.js
+@@ -2,12 +2,29 @@
+    IDEFIX1.0 — AnalizadorArchivos 6.14.0 (esquema del JSON 6.14.0)
+    Archivo único: JavaScript, interfaz, hoja de estilos, worker núcleo y MARCO_FISCAL_LOCAL.
+ 
++   Versión SIN SERVIDOR (2026-10-02): se abre con doble clic (file://) en
++   Chrome y Edge, sin servidor, sin Node.js y sin nada que configurar ni
++   sellar.
++   - Las librerías oficiales (PDF.js, Tesseract.js, su núcleo y los modelos
++     de idioma) van en vendor-paquetes/*.paquete.js: <script> clásicos con el
++     archivo oficial en base64. Antes de usar cada archivo se comprueban su
++     tamaño y su SHA-256, fijados en AA_PAQUETES. No hay manifiesto, ni
++     fetch, ni servidor (con file:// Chrome y Edge bloquean fetch, los
++     workers creados desde archivos y los atributos integrity).
++   - El worker de PDF.js 6 es un módulo ES y con file:// solo se admiten
++     workers clásicos: se ejecuta como worker clásico tras dos cambios exactos
++     y comprobados sobre el archivo oficial verificado (aaWorkerPDFClasico).
++   - Tesseract.js: el núcleo WebAssembly, el worker y los modelos de idioma
++     van en un único blob: (con file://, un worker blob: no puede importar
++     otra URL blob:). La aplicación elige el núcleo (relaxed SIMD → SIMD →
++     sin SIMD) entre los disponibles y los idiomas se sirven desde memoria.
++   - El modo con servidor y manifiesto (origenLibrerias: "vendor") se
++     conserva para quien lo prefiera.
++
+    Fase A (auditoría de lectura de 2026-10-02), sin cambios en el JSON:
+-   - Núcleos de Tesseract: con OEM LSTM_ONLY, Tesseract.js 7 elige uno de
+-     tres núcleos según el navegador (relaxed SIMD → SIMD → sin SIMD). Los
+-     tres *-lstm.wasm.js son obligatorios (Chrome y Edge actuales piden el de
+-     relaxed SIMD) y solo se verifican y cargan esos tres. Si falta alguno en
+-     el manifiesto, se dice cuál antes de crear el worker.
++   - Núcleos de Tesseract: la aplicación elige el núcleo y lo mete en el
++     worker (ver arriba), así que basta con uno compatible; antes Tesseract.js
++     pedía el de relaxed SIMD y, si faltaba, la aplicación no arrancaba.
+    - Idiomas del OCR por defecto: spa, cat, eus, eng y fra. Cargados junto a
+      los demás, los modelos de chino hacían que Tesseract descartara las
+      líneas de las tablas (texto leído 70 % frente a 91–93 %) y multiplicaban
+@@ -252,14 +269,15 @@
+    real que termina los workers, manifiesto de integridad SHA-256 y
+    selección automática de PDF.js moderno/legacy.
+ 
+-   CSP DE REFERENCIA (la de index.html; conviene enviarla también como
+-   cabecera HTTP, porque frame-ancestors no funciona en <meta>; ver
+-   herramientas/cabeceras-http-recomendadas.txt). Los workers se crean desde
+-   URL blob: de bytes verificados y heredan esta política:
++   CSP DE REFERENCIA (la de index.html). Versión sin servidor: connect-src
++   'none', porque las librerías llegan por <script> y no hace falta ninguna
++   petición. Si se sirve por HTTP, conviene enviarla también como cabecera
++   (frame-ancestors no funciona en <meta>). Los workers se crean desde URL
++   blob: de bytes verificados y heredan esta política:
+      default-src 'none';
+      script-src 'self' 'wasm-unsafe-eval' blob:;
+      worker-src blob:;
+-     connect-src 'self';
++     connect-src 'none';
+      style-src 'self';
+      img-src 'none'; font-src 'none'; media-src 'none'; manifest-src 'none';
+      object-src 'none';
+@@ -365,6 +383,10 @@
+ 
+   // Seguridad
+   modoSeguridad: "estricto", // "estricto" | "compatible"
++  // Versión sin servidor: "paquetes" (por defecto) lee las librerías de vendor-paquetes/*.paquete.js con
++  // <script> y comprueba su SHA-256 con AA_PAQUETES (funciona con doble clic, file://). "vendor" usa la
++  // instalación anterior: vendor/ + manifiesto sellado, servida por http://localhost.
++  origenLibrerias: "paquetes",
+   rechazarEjecucionEnIframe: true,
+   rechazarWindowOpener: true,
+   rechazarScriptsTerceros: true,
+@@ -7393,14 +7415,307 @@
+ /** URL blob: → SHA-256 contra el que se verificaron sus bytes (null: sin verificar). */
+ const __aaHashDeURLBlob = new Map();
+ 
++/* --------------------------------------------------------------------------
++   2b) LIBRERÍAS EN PAQUETES <script> (versión sin servidor)
++   Con file:// Chrome y Edge bloquean fetch(), los workers creados desde un
++   archivo y los atributos integrity, pero ejecutan <script src> clásicos.
++   Cada archivo oficial va en vendor-paquetes/*.paquete.js en base64 y se
++   apunta en la cola self.IdefixPaquetes. Antes de usarlo se comprueban su
++   tamaño y su SHA-256 contra AA_PAQUETES (fijados aquí): no hay manifiesto
++   que generar ni nada que sellar. Las páginas pueden cargar los paquetes con
++   etiquetas <script>; si falta alguno, se inserta su etiqueta al necesitarlo.
++   -------------------------------------------------------------------------- */
++
++/** Ruta oficial → [SHA-256, tamaño en bytes, paquete de vendor-paquetes/ que la contiene]. */
++const AA_PAQUETES = Object.freeze({
++  "vendor/pdfjs-legacy/build/pdf.mjs": Object.freeze(["0c43f0f1b4f6bce98af889eda3adff7ac8c991a0a43408709be9287aecc4ac14", 1032996, "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js"]),
++  "vendor/pdfjs-legacy/build/pdf.worker.mjs": Object.freeze(["b4e582882f5e811f4d1b7b511f68d9a0c3209141e6f68856f01408c5cc155131", 2383409, "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/78-EUC-H.bcmap": Object.freeze(["d92a261336dc18b8c03a46eb4d462382d33f4338fa195d303256b2031434c874", 2404, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/78-EUC-V.bcmap": Object.freeze(["61670bebc4e4827b67230c054fd0d820d6e30c3584d02e386804e62bbedc032a", 173, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/78-H.bcmap": Object.freeze(["ece6415b853d61e1b2560165151407d35cf16e6556932b85a13ea75276b77402", 2379, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/78-RKSJ-H.bcmap": Object.freeze(["696b1f973c97623496703809eaaa5f9b40696c77540057413f4b826a08edfa7b", 2398, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/78-RKSJ-V.bcmap": Object.freeze(["53cb6d560ab377da48cf65d6dcacb0bdb31f13fab7066c580de38c12a73a7ff9", 173, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/78-V.bcmap": Object.freeze(["289000f02fd34872b6975503217f33abae6bee676e7d28f640473a67c8db1712", 169, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/78ms-RKSJ-H.bcmap": Object.freeze(["a2442595218f5f8bd8e1b42188e368587d876cfe0cc4cd87196f077c878f72e2", 2651, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/78ms-RKSJ-V.bcmap": Object.freeze(["f8ddceba96bfd9d3740bd1789ee30d1f47c78371520a8084f71f7df58f19be0b", 290, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/83pv-RKSJ-H.bcmap": Object.freeze(["44040051ec818fe09b9703472bea72efd2759d5eeb5ff0d77c718d6bb5e6d1df", 905, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/90ms-RKSJ-H.bcmap": Object.freeze(["c13e043e85ff715b75bb03801e8fd0fb8f3a75e4a48496faa6baaf92b5b48ba1", 721, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/90ms-RKSJ-V.bcmap": Object.freeze(["499bb916ce1adbe4289b6e5811f4dc20eb238cdc2ffad20cf26ae56716885bab", 290, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/90msp-RKSJ-H.bcmap": Object.freeze(["7b8b3b8bbf821702e9a4df9f3596ce292380c8c1b0925dedadbb4e4b2d80498b", 715, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/90msp-RKSJ-V.bcmap": Object.freeze(["6296c2b5c07dca8128e96d5296d621a3268803d4fa0e5812a21e52fe2802aacb", 291, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/90pv-RKSJ-H.bcmap": Object.freeze(["fb5103f03d3a34547e18d316e52b6d9b26e485c662999222f84d2ba54c2e4fa8", 982, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/90pv-RKSJ-V.bcmap": Object.freeze(["7bcb5ad2ba55b9662ce379e16c2d9cc2b82d621a579807353741172e4af615c2", 260, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Add-H.bcmap": Object.freeze(["a2ffab28b990998181bcca9b0e914bb2207820f100ae31d5c469444892e5ad8e", 2419, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Add-RKSJ-H.bcmap": Object.freeze(["b29f4b52e2465d0485856d5e69f1ba69927deb2848d8fd328c8035583b35bb7e", 2413, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Add-RKSJ-V.bcmap": Object.freeze(["2aa2232c283a3f5d0997c2834a36cead0b79ce2657944cfeed08140c293460ff", 287, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Add-V.bcmap": Object.freeze(["25125d3b1be64e86b2df5b3344170b45a42bcaa0b46e43a34314ef73c166e542", 282, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-CNS1-0.bcmap": Object.freeze(["8c65be9d51a9f269a547dc12460707aaf4031ab67ebe8a2900f4b4cc6b3e450e", 317, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-CNS1-1.bcmap": Object.freeze(["73152bc1a59cc594b414ac6068be48e5512b96ae85920c40e32a99269fdb0c04", 371, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-CNS1-2.bcmap": Object.freeze(["a1b8d353bdef9584c820464e8f1c9e2013d64ebf433cba0aa831dddf515818c2", 376, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-CNS1-3.bcmap": Object.freeze(["2ffc0c75c79fafde506163d3c08c390d183251009f3fbf6ae50d1167d14b9570", 401, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-CNS1-4.bcmap": Object.freeze(["98a1f470c878c6b9691a4d7aef776af8ac9b55f5587c9fafa00547f3bf655716", 405, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-CNS1-5.bcmap": Object.freeze(["ddd6e29955eb8cb545f2ebd09c628c3bbda5023256eda1b728f743c75fb77829", 406, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-CNS1-6.bcmap": Object.freeze(["317bb2db71e0e5b7b0c47b75de1da915c2e22f65f0c0861507f9ca7ba238f8a2", 406, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-CNS1-UCS2.bcmap": Object.freeze(["e665837f2197c6bd08cd8955ad4d6932cee2398e2e328b25b00e6bfb3bd72af9", 41193, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-GB1-0.bcmap": Object.freeze(["8b81cce8a11d510e505704953cfa4e4ab080c1a0cab991145a3512ee433946b9", 217, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-GB1-1.bcmap": Object.freeze(["0426983081788ec7202703e71f1efa4b860f75b936994236010b39d89251a81e", 250, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-GB1-2.bcmap": Object.freeze(["e67b37a83b160ab3831306a71a605893b24454ee81ac9b6123bf2d3984d268d5", 465, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-GB1-3.bcmap": Object.freeze(["aa299afc3e12a28726147305f191be28c7498078c8b182ece7886ac79cd99078", 470, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-GB1-4.bcmap": Object.freeze(["8fbd7d74c2ddb1350c1cecce54a73fde3f5453093d4bed445283ec0033d2097f", 601, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-GB1-5.bcmap": Object.freeze(["c22cb2fcff24112fa31dab2111bdc51957006576d31aad5a25e67793ac01428c", 625, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-GB1-UCS2.bcmap": Object.freeze(["20507620260c0c935c35afc1e70e5888aa7125d5ec7ffc03cef1959feb2c1641", 33974, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-Japan1-0.bcmap": Object.freeze(["464f08905236f5703b1f5cf8358767c8b18e6bcc808840d081f1de2c7ab38134", 225, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-Japan1-1.bcmap": Object.freeze(["4c823848722187d1ffe75ae3f5f9126ccd2d7895a05fad14c919fb119e037008", 226, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-Japan1-2.bcmap": Object.freeze(["7810fb808e367e70429e90a9478fe6a3fdc3e214f25c7582ce9c2da6a242315c", 233, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-Japan1-3.bcmap": Object.freeze(["84deb1828711ad3d390c9899c38abce1bf619d65ff7bf1a326ec95acc45f08f8", 242, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-Japan1-4.bcmap": Object.freeze(["3f8a4f974919c2b8bae5d10175ffa2673be140481e00840542c85d48ef184067", 337, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-Japan1-5.bcmap": Object.freeze(["1d3ce4ff28d977f8cf37a912ae4ec811f4175c3167b1ec0b2567feec3e79e1db", 430, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-Japan1-6.bcmap": Object.freeze(["5609797b9401b30be72ef9645da62a87829f058c3be4b5c623383119f584b1d9", 485, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-Japan1-UCS2.bcmap": Object.freeze(["66c5d0dc4964f4093e77b194023f3a0f689324028ec8330e1e1d0570bcba7c2f", 40951, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-Korea1-0.bcmap": Object.freeze(["dfb8c3874f0e5a8c3acf597d2c12d2b63e90bc5e4f0fce990ec4c56077d80b32", 241, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-Korea1-1.bcmap": Object.freeze(["62f277b7b1c441c007797ae707d5c37258d029ce4661a2b911e2e1ee35e6adc1", 386, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-Korea1-2.bcmap": Object.freeze(["1d77068af462f96d7ad28ad7e7d43eef6423c685b479d7dc25ff5df38db0380d", 391, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Adobe-Korea1-UCS2.bcmap": Object.freeze(["857b723088be97255053562bfa41bd1075a7f7910d3bab59a0645c8bbc7060ff", 23293, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/B5-H.bcmap": Object.freeze(["718ad0ffbef4c34f8f3f31292c462e519cd567a5511fc8b346c60010d64f4ef9", 1086, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/B5-V.bcmap": Object.freeze(["b5c37383517477620ced927b6b4ffd4f4cc6230d8051b5b46a21d6768e07f7d8", 142, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/B5pc-H.bcmap": Object.freeze(["bab6028aead1d6149400e904ab10cfd319082d826473ed4c582c8eeed920f17e", 1099, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/B5pc-V.bcmap": Object.freeze(["41543142b9767f3b76133899fc8453282b01ad3c653acaeea42d78c5a7d08c63", 144, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/CNS-EUC-H.bcmap": Object.freeze(["e8f89cd61e6486b948205da46499d659ed0aed949b7095fd3c8e95ffe2b0e7a9", 1780, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/CNS-EUC-V.bcmap": Object.freeze(["cae422bec2ac6dbe86bf921cec942bacd2d0b733ffcca5f91b3ba14e917025a0", 1920, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/CNS1-H.bcmap": Object.freeze(["e8487971ab20cd16f3de3e8ac56ec994b72b658ad113f2818239dfd5108f501a", 706, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/CNS1-V.bcmap": Object.freeze(["42df8076aaa7574505e7304af83a3323ec032c4177d64b1309db8c043d594a8a", 143, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/CNS2-H.bcmap": Object.freeze(["bc6024d274d440f0625c69e25f37036ef6cb6689432ceaa160d3432a2a716ca7", 504, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/CNS2-V.bcmap": Object.freeze(["2e4f70a8afd23a121030fc2e5b5f3816e903b11e7ba8b8c09654b31c80399c38", 93, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/ETHK-B5-H.bcmap": Object.freeze(["d2f10fa519336bc4efcc7b6deb9604b75429946b40d82e311cb3a97a1994c89a", 4426, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/ETHK-B5-V.bcmap": Object.freeze(["1fea3fd0d9f0f679f80505800851ef2e4131d81127e18c006938ffa2f4c8b247", 158, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/ETen-B5-H.bcmap": Object.freeze(["87ee6b3f5bfda5fe26fa35431264c7d73070d10dbbf398a75185d63ae322c18d", 1125, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/ETen-B5-V.bcmap": Object.freeze(["47dc0d2c21e3bde317947aec1675ceabc1d5460a60bf9c24334b8c407a17172c", 158, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/ETenms-B5-H.bcmap": Object.freeze(["d5f5a73da4173b7da9a3a20e16f26f9cd5d12deb1553409919e0cec6fd37fdee", 101, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/ETenms-B5-V.bcmap": Object.freeze(["18252fca90f472f479af1bddd60d6ab51c8e1b55dcf6845951426504934543e0", 172, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/EUC-H.bcmap": Object.freeze(["f9939cd57fccdc65c5d9f4c205fd497ebdbd283643308da5663801a8c1d9c595", 578, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/EUC-V.bcmap": Object.freeze(["1283a50a706507c4436da83ede9ad7a4440be25378f2e96f6c81a430081426a3", 170, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Ext-H.bcmap": Object.freeze(["4000ed4e61a1c668ef453bbd0603cfa383defa793abd46a57ed870d7f527350b", 2536, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Ext-RKSJ-H.bcmap": Object.freeze(["e0d2f0df337660e73813238dd4a725f11f0621b90f3273857db253d0e7694caa", 2542, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Ext-RKSJ-V.bcmap": Object.freeze(["f617a22b6d67febb187990952006c91a9f5a4db21155d268c656252d0c21985d", 218, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Ext-V.bcmap": Object.freeze(["c2087fb845a9e3acea0c2922cd40e6af67e11957bec74dcd597f1285edd490ce", 215, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/GB-EUC-H.bcmap": Object.freeze(["928bad06fd84a48f5ba7150d7716609119fb660f2aaa73eccad81ddab9b9d203", 549, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/GB-EUC-V.bcmap": Object.freeze(["a9ad88ac2479da529b16dc48abc5952332e27bc355335f91df5729a587533324", 179, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/GB-H.bcmap": Object.freeze(["1018c777a8910b5bb46d7d54a4aee9d51ca5cff8addb2b41c969d9101cb3fd1c", 528, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/GB-V.bcmap": Object.freeze(["0b96789143c0bbf9f1641ae7165b3456dccd14dabffcbb0bd654d5bf6f94f863", 175, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/GBK-EUC-H.bcmap": Object.freeze(["2103fed28650ede096a2281104a1a8a4304dae0db414342c636867522307123b", 14692, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/GBK-EUC-V.bcmap": Object.freeze(["a7fd35dd14d9dbdb955f34e6c0630618b6620dfd09d4283b2f65a65ce77fcaea", 180, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/GBK2K-H.bcmap": Object.freeze(["3d919ae72af16c5cc6846ec87a4326a9f125e493c59d3628429d35c2c95fe8c4", 19662, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/GBK2K-V.bcmap": Object.freeze(["b927fdfd595c07ce9158bf2ec13f4641b2e83b01c70989dadfabd6ed7c6ac2dc", 219, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/GBKp-EUC-H.bcmap": Object.freeze(["d15ebd8e81fb4fe8a244f1b1e877922e03500ac69eddf5001093e502430451d2", 14686, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/GBKp-EUC-V.bcmap": Object.freeze(["fdc736d46e642625dccc8ad8c59f2c69fc7db7a13f2e799c6c6b779e707bb97a", 181, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/GBT-EUC-H.bcmap": Object.freeze(["dc5f44e48a39f3367ae28665027d8ab1d8cedb5a9dcc5068a900acd6709f60f9", 7290, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/GBT-EUC-V.bcmap": Object.freeze(["a1ad24e63653b8aa388c18fa5e498f007564e43dde699a9f91ccb4645c999be8", 180, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/GBT-H.bcmap": Object.freeze(["8afda745a505763f3ff54c8126eeb48ef376ea9ed07d9f42ff9a22c5c547ec57", 7269, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/GBT-V.bcmap": Object.freeze(["cdc2ec5c3c7c7033290c9a8894878202f08674eb9b1ae7d36218430326768771", 176, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/GBTpc-EUC-H.bcmap": Object.freeze(["7b23e2f7bfdb6c918f567b7324bf858f398bd8cd5f268d74ece19a3c91bf4f32", 7298, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/GBTpc-EUC-V.bcmap": Object.freeze(["d7a1b13ead9ab511cf2cd01de6ce8b02aa8e8767e84895337d7a3b67f039f93b", 182, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/GBpc-EUC-H.bcmap": Object.freeze(["3c4a4eb82f05abe51f6650985c630e180438bfdd491318f5d20d2ec29236e1c3", 557, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/GBpc-EUC-V.bcmap": Object.freeze(["215bdfa2842705624b4cf4cd29b8e3c720f1e192365e0305c11030a424c84d7c", 181, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/H.bcmap": Object.freeze(["a0233e21047ec00b852125b243cbcf30abee511155b6d8159c24f944384bc9ee", 553, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/HKdla-B5-H.bcmap": Object.freeze(["5242bce18fb13ab4cc59b146a03eba36e4ce42667eeff09e10981a9d2aa4996b", 2654, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/HKdla-B5-V.bcmap": Object.freeze(["2e0537f786c0791d41a925f72bad2d4e7268aa6cbf15a1400a722672cec38e2c", 148, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/HKdlb-B5-H.bcmap": Object.freeze(["fdc8159984bf5dbe475c0d5dfcb621ecee4dea07c38c668bd77f4c679e23b9b3", 2414, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/HKdlb-B5-V.bcmap": Object.freeze(["b249eb9dcb915ab45057c5d4d7aa55ef88d0efbb092af6bae0b2d4705d139abf", 148, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/HKgccs-B5-H.bcmap": Object.freeze(["ab64c7fc5e9b2e97750cc4f269b0da14fd8649e49151b7598c8df86599bac591", 2292, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/HKgccs-B5-V.bcmap": Object.freeze(["02ebdf7cdffb5395fb21091cd58a013a18ae5388922822f9dc6292ef16b98956", 149, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/HKm314-B5-H.bcmap": Object.freeze(["bfd8bbde6b36a9da4c1c902c74121a30d9807a7079a00eeea218be6adc223cef", 1772, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/HKm314-B5-V.bcmap": Object.freeze(["2a64a815cfb6fdd480674a868762e3d161fda17543b20c9209978559f0667164", 149, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/HKm471-B5-H.bcmap": Object.freeze(["49d7c037758826b5b6c0fa329c35bbf25d3943197754e72ecd30c6fb04d745e6", 2171, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/HKm471-B5-V.bcmap": Object.freeze(["be24c109e78aa4fe3c1f27d30aab3ed0741e783fa1b6b6c2719741072b54b132", 149, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/HKscs-B5-H.bcmap": Object.freeze(["08599378f41d96b40537adef6e6edcc4a787bc63f5accf47c026df4905a13914", 4437, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/HKscs-B5-V.bcmap": Object.freeze(["d073542b7dad1c4cbf01c1af5f0cd13218d1281a491956e310c55702fc8705c4", 159, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Hankaku.bcmap": Object.freeze(["b454701f7aecd7856769016dfd04ca64280a060f2c67a2466d50b4395d24974e", 132, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Hiragana.bcmap": Object.freeze(["2ed669394756dd9458651cd9995ab29ab691ecb7686659003306cdf22767a414", 124, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/KSC-EUC-H.bcmap": Object.freeze(["6784e16dbc5861c036c23d3e55f0d4ba0975a3e464da0ee8e49bcfff0be070c4", 1848, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/KSC-EUC-V.bcmap": Object.freeze(["fdb36bad85e9924823d49db374067988e024cf80fc894711f2c9178951cbbe95", 164, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/KSC-H.bcmap": Object.freeze(["c1f6d61f1d3304fd539a65ae72624fa567ecc3853bf52e283958a7a2515b3eee", 1831, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/KSC-Johab-H.bcmap": Object.freeze(["939993d213f68db763bf156217c217ae23af082b91a0eacecf3d11eb4ff8ef8c", 16791, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/KSC-Johab-V.bcmap": Object.freeze(["5d61967aac0e666def721e8b8d0fed8f95a879a14f2e76ce516c3d11c621e519", 166, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/KSC-V.bcmap": Object.freeze(["d7da5afd9f1fe74816d79c9325f0139a4efb6438664ebfdf9a7aa92f3034360f", 160, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/KSCms-UHC-H.bcmap": Object.freeze(["5b70d8f6a4fa9e2283dc649f0ff95d906d56efbee50a20e8d2faec3a8fed078e", 2787, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/KSCms-UHC-HW-H.bcmap": Object.freeze(["a5e6ba22aceb02fdedee11bfb9ed138463d89e85b87810b9f075b469d936f8ec", 2789, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/KSCms-UHC-HW-V.bcmap": Object.freeze(["890332a6a26880d463a12f2a6ff048bf9cf7e45077cfb1ca8815b89baa7bf411", 169, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/KSCms-UHC-V.bcmap": Object.freeze(["1631b531c9a40c8cbe24c2317dba107362e49fa6e18af620414d627c111d570c", 166, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/KSCpc-EUC-H.bcmap": Object.freeze(["709480682c55cedbb0124b9960d78e28febeee0df2e34607d61aac6601647ec7", 2024, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/KSCpc-EUC-V.bcmap": Object.freeze(["031707887d6fc2378a36cdb6775334fd7a236c3f95048d8436abf43fe26fc49d", 166, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Katakana.bcmap": Object.freeze(["3b6ca6642fbf8822da00d5e58a8aa275216d5c32dbf2bd73e934197fc9fc5c53", 100, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/NWP-H.bcmap": Object.freeze(["286c6c9e335da330928a01edc3c97a3a623f1f7f3c42762b0a7dc2f651b1a78f", 2765, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/NWP-V.bcmap": Object.freeze(["3a75fb7b59adfb172710758c425d8ac6c93fd5360a64dd4afd5dd04e60ab4b4d", 252, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/RKSJ-H.bcmap": Object.freeze(["a70de61a22a898f693f02cc011c3e3cff2e10aaa7cddb4661e456a21ae859f78", 534, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/RKSJ-V.bcmap": Object.freeze(["68c1a64506471a524ea5cfc3b3a9f8f70031989a6bd95427b1351f33ccf50b06", 170, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/Roman.bcmap": Object.freeze(["1c6b3ef9d9e5cb1aa329142ce9414b90f9b6d7f9182a2a9e927378dab8f0d43f", 96, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniCNS-UCS2-H.bcmap": Object.freeze(["779428116752f34e2490a1941d24e4634c71e3c22d053b811d2090ae2fb3c704", 48280, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniCNS-UCS2-V.bcmap": Object.freeze(["1e5cc184b850ea44abc2df8ae5674279df668e8edf5e2a1a2ea2bd77adbd280f", 156, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniCNS-UTF16-H.bcmap": Object.freeze(["32ff139b3c7b91d6ad25f994701f3ce7b242906022c418fd73e6493fc228bfe5", 50419, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniCNS-UTF16-V.bcmap": Object.freeze(["278eb1e68d1a236c60ef59472cf0176ee0d45f364285e76ca12419a08d46fb9a", 156, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniCNS-UTF32-H.bcmap": Object.freeze(["bf26eb67fe19ee5ba915799e80ca72408400aa8342fdf6a244a4f44de8f97336", 52679, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniCNS-UTF32-V.bcmap": Object.freeze(["f7da3caf83ceb1cb37936fa10700d9ba6e9c3f72c5bc9724e3ac79bff0c0179e", 160, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniCNS-UTF8-H.bcmap": Object.freeze(["2f2a742bcd1a84a148a4a518b9eed51a8f9c6ca5ed3bc5e2e41fff97de5dc2d8", 53629, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniCNS-UTF8-V.bcmap": Object.freeze(["b7c3f10780a8c62dd1c8ff6c30dc1e4e23b6cdc87c3a96fcd514cc98ffd3af9d", 157, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniGB-UCS2-H.bcmap": Object.freeze(["9201569b402e81ad8860650bd86350c4fa28e5dd5971f05fcacaf40f51de18ed", 43366, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniGB-UCS2-V.bcmap": Object.freeze(["f10282335e4d64203bc2a653a3a47d745ec76c8ae04549f4d50180c1899be216", 193, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniGB-UTF16-H.bcmap": Object.freeze(["386fd39581245c034da016a92d23f3df1117d169f996100050b264fc09a84e35", 44086, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniGB-UTF16-V.bcmap": Object.freeze(["0473cfbba612b92dd9918f0ff8aee9112897c48e0ffdc0eb82da3144ed8ea84a", 178, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniGB-UTF32-H.bcmap": Object.freeze(["f48a145dc4e3ed1dca1dde7111716a72306a2a4191ab05c6bae3a5c3a961cd2f", 45738, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniGB-UTF32-V.bcmap": Object.freeze(["106acc49b7118bdef944e32107b4f348238f3929a0a15d3b7aab7b9101535993", 182, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniGB-UTF8-H.bcmap": Object.freeze(["f217b439c80ee5fa1bc2cf6d1defcc319f8d84483d166a00ee199e05a68588df", 46837, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniGB-UTF8-V.bcmap": Object.freeze(["a64df947632878eacc532fa193c735c92a383b7d66e6f8374ac193af7c64fc63", 181, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJIS-UCS2-H.bcmap": Object.freeze(["ad2352f40870880fbf7f8ee5abadff743fbd025fbf9830b8ada472d1c5e4da0b", 25439, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJIS-UCS2-HW-H.bcmap": Object.freeze(["16e87edca954177c0881c874859d6783220925d821b5cdfb8755b61ebd93f9ce", 119, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJIS-UCS2-HW-V.bcmap": Object.freeze(["1973457e2c0192819947e56068625b34fb9a72ecc8a476ce6d7eaae5f73e2e5c", 680, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJIS-UCS2-V.bcmap": Object.freeze(["42a133d8e2ce9dd6d2288018e01592d2bf2435b326d39b94ea0b6e6a44ac33d3", 664, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJIS-UTF16-H.bcmap": Object.freeze(["f6a89c5688978548c83fcee990e205bc63c74274d5c69b49032a3bd4c49a05ee", 39443, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJIS-UTF16-V.bcmap": Object.freeze(["c67126fc7c73850855186bb0d6482ac0a365057e0b58778c4ab9f234683fef53", 643, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJIS-UTF32-H.bcmap": Object.freeze(["96195950ce0fe24443d8eb426fa6b88534ec421d7bef9046f0b2362809cfba73", 40539, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJIS-UTF32-V.bcmap": Object.freeze(["ed4dafda402bdd19c4d5d8bf2ab41473c0f86f384552b4c7b963d6627daedeb1", 677, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJIS-UTF8-H.bcmap": Object.freeze(["798fb0bf06ab0788d1f6a91c2db7de581612eef03c628f10e8f7ecd8f70ab448", 41695, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJIS-UTF8-V.bcmap": Object.freeze(["1021611424f913b2df0bfdbe94bd327c04e224ec89d8e821c6501ea3d21f4265", 678, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJIS2004-UTF16-H.bcmap": Object.freeze(["710a32d7cb43fd6bd9dbf30da5971f8c941590f74441e208d852c2be0e74cc97", 39534, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJIS2004-UTF16-V.bcmap": Object.freeze(["3b149aff5c5707b57fb3215d1775852c8b1f413ec0f679ea628f25cf87fe098d", 647, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJIS2004-UTF32-H.bcmap": Object.freeze(["8d2658e18741af7937d586a57c89729a6fec0d86121197c1f8518aa58b29cdfb", 40630, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJIS2004-UTF32-V.bcmap": Object.freeze(["6dd475782f2897648a683c48b2fa015a15b8f06856760bddc8a17a63f418bacb", 681, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJIS2004-UTF8-H.bcmap": Object.freeze(["691c614ce432b3e62486efb54e5c84c6da5afe9b51b21253bde4758feb484183", 41779, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJIS2004-UTF8-V.bcmap": Object.freeze(["40a8c7ea2d46711c5f78fc9a878a7db68b1543ba5cd60ecf14f519a2deb829b7", 682, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJISPro-UCS2-HW-V.bcmap": Object.freeze(["6826f94d789d7bf1960668c1c5819c34c9585c1b23152fbc19ee81c7df08524b", 705, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJISPro-UCS2-V.bcmap": Object.freeze(["493de9fd1a08f7946065d8ab58f0c3c9fe489f5a0f109f2d05a3169b4bd5789f", 689, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJISPro-UTF8-V.bcmap": Object.freeze(["6181d382cf736c5e09492e8be9f26f31fa25b7462253f23ab16646af432cad81", 726, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJISX0213-UTF32-H.bcmap": Object.freeze(["692044e1fb33445668632bc9fe7386805c624864be1ddeb29d65bb0c99fc630c", 40517, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJISX0213-UTF32-V.bcmap": Object.freeze(["dd54e16ca7bffb3a886242549b2bf7d78a277087f7c60d2636f118c21a5b0646", 684, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJISX02132004-UTF32-H.bcmap": Object.freeze(["f80ea5a989be30ccda5a8804baef6d3b4b044d2b339bf8b31c671b2466171cf6", 40608, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniJISX02132004-UTF32-V.bcmap": Object.freeze(["94c22bd99e771c5fbe0dd8dc39850570d4db0075074aca13e272813edd7cc57f", 688, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniKS-UCS2-H.bcmap": Object.freeze(["a1081396ab4adb6f4a5b6c15f896963c244c1c9bcb65ce5616d06096a1b9811c", 25783, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniKS-UCS2-V.bcmap": Object.freeze(["6cab547431958fbdc1d401d06ebd4dd61a73f5509a10f974df32bcbca11a2e43", 178, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniKS-UTF16-H.bcmap": Object.freeze(["42d35b396286499dfae1737a07adb3a64500df37b426580bfb1d3ea872938519", 26327, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniKS-UTF16-V.bcmap": Object.freeze(["5bdb7390c80dcc136cb47d41dc7460082560969c17322ee739fe3020fb642410", 164, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniKS-UTF32-H.bcmap": Object.freeze(["3a01ec51ed1b828101351e337ffb8250abe11880032e5210f881170fed2588de", 26451, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniKS-UTF32-V.bcmap": Object.freeze(["dfda895eceaed081af030dbbb962b49629eea817fc3c02bae15db93d0c68acd7", 168, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniKS-UTF8-H.bcmap": Object.freeze(["3fac9c65145f72d7d42157a3b9c5ed6904632184e6a0888f2b828699afd2002f", 27790, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/UniKS-UTF8-V.bcmap": Object.freeze(["9ecc6cf30dd354b9778ddba163b6cc7302b087ce9f39d1ba73472d2b75ed13ca", 169, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/V.bcmap": Object.freeze(["b9ad1c0c09ff14bca52f9a28a9767eb857ad0e8946e64ba14c7387a7eb69866a", 166, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/cmaps/WP-Symbol.bcmap": Object.freeze(["543923bead225732aba30976690ee89095a19628277b5863efecc2c728d5d7bf", 179, "pdfjs-6.2.108-legacy-cmaps.paquete.js"]),
++  "vendor/pdfjs-legacy/web/standard_fonts/FoxitDingbats.pfb": Object.freeze(["845c752392b6c914fb989c75a08b7792b88f542d2499042ef2889f8c814a16ed", 29513, "pdfjs-6.2.108-legacy-fuentes.paquete.js"]),
++  "vendor/pdfjs-legacy/web/standard_fonts/FoxitFixed.pfb": Object.freeze(["b6c8fe53f134b8b6d4578cd2d544df4cee9624c4efa8d51a560fb40ea296101b", 17597, "pdfjs-6.2.108-legacy-fuentes.paquete.js"]),
++  "vendor/pdfjs-legacy/web/standard_fonts/FoxitFixedBold.pfb": Object.freeze(["f1b7159702973f54fc86254ea38bcf3712b2a736eb3a0995751e9f4bb45ad603", 18055, "pdfjs-6.2.108-legacy-fuentes.paquete.js"]),
++  "vendor/pdfjs-legacy/web/standard_fonts/FoxitFixedBoldItalic.pfb": Object.freeze(["8a000945843bd31add06aee63bf9fd41b7578b4f3242a4b7cd46349ad9d24d4d", 19151, "pdfjs-6.2.108-legacy-fuentes.paquete.js"]),
++  "vendor/pdfjs-legacy/web/standard_fonts/FoxitFixedItalic.pfb": Object.freeze(["5007faf8320fa1fcc08b8894b356ad976f60b992ba29ee5272578bbdebaf3876", 18746, "pdfjs-6.2.108-legacy-fuentes.paquete.js"]),
++  "vendor/pdfjs-legacy/web/standard_fonts/FoxitSerif.pfb": Object.freeze(["4f57d2b9d884af8f907bf22df6019b52d86cbf6214fdbd02b1ae05472a543f35", 19469, "pdfjs-6.2.108-legacy-fuentes.paquete.js"]),
++  "vendor/pdfjs-legacy/web/standard_fonts/FoxitSerifBold.pfb": Object.freeze(["0bdf4b04e964139818d51eda03d566ba999fc3ba2421b1c6c51f9dc969022e80", 19395, "pdfjs-6.2.108-legacy-fuentes.paquete.js"]),
++  "vendor/pdfjs-legacy/web/standard_fonts/FoxitSerifBoldItalic.pfb": Object.freeze(["a406cac82583bf98175cb62c87ed5e95c45fbb34eece63a10b0a13e793cb2e10", 20733, "pdfjs-6.2.108-legacy-fuentes.paquete.js"]),
++  "vendor/pdfjs-legacy/web/standard_fonts/FoxitSerifItalic.pfb": Object.freeze(["610ae0687198045c4db5d1a6650fd5e92536631706382eb8b72e38df578d0ae9", 21227, "pdfjs-6.2.108-legacy-fuentes.paquete.js"]),
++  "vendor/pdfjs-legacy/web/standard_fonts/FoxitSymbol.pfb": Object.freeze(["47967d055530e7357088a08403115425643ec2cdfd6201ba8af0fbd7116c1539", 16729, "pdfjs-6.2.108-legacy-fuentes.paquete.js"]),
++  "vendor/pdfjs-legacy/web/standard_fonts/LiberationSans-Bold.ttf": Object.freeze(["361c61b82d575c5c35fd9157fda8b0194bcfcd0d88ea8521a4fb5dd53d33dddc", 137052, "pdfjs-6.2.108-legacy-fuentes.paquete.js"]),
++  "vendor/pdfjs-legacy/web/standard_fonts/LiberationSans-BoldItalic.ttf": Object.freeze(["a224075ac17495ad0a3af3bc0a419ac0704a8b3fd1095456201fb9b095fc281d", 135124, "pdfjs-6.2.108-legacy-fuentes.paquete.js"]),
++  "vendor/pdfjs-legacy/web/standard_fonts/LiberationSans-Italic.ttf": Object.freeze(["832b4406dbef23628800d3aaad21048534ac84d7e3ad955be83b8172ed8ef512", 162036, "pdfjs-6.2.108-legacy-fuentes.paquete.js"]),
++  "vendor/pdfjs-legacy/web/standard_fonts/LiberationSans-Regular.ttf": Object.freeze(["f8ace1f892b2bd9dc1792ba7f097fa7588f84fed48321480e04de5390828221f", 139512, "pdfjs-6.2.108-legacy-fuentes.paquete.js"]),
++  "vendor/pdfjs-legacy/web/wasm/jbig2.wasm": Object.freeze(["e6bee67724a7b5436fe8162638e3708cfc8d52b6342db69a49715e30ff27cfdc", 104852, "pdfjs-6.2.108-legacy-wasm.paquete.js"]),
++  "vendor/pdfjs-legacy/web/wasm/openjpeg.wasm": Object.freeze(["004a0e62db930ba9ff2a22212f4554d0bb57a0635a8287caf70f98117cee14ba", 252032, "pdfjs-6.2.108-legacy-wasm.paquete.js"]),
++  "vendor/tessdata/cat.traineddata.gz": Object.freeze(["1003ea7490d8c88b9308ed5dead936910a662fc9a4222cd536b92a17178e41eb", 639438, "tessdata-cat.traineddata.gz.paquete.js"]),
++  "vendor/tessdata/chi_sim.traineddata.gz": Object.freeze(["b8a23f10c7de500891eb458a8adc9cc58ab7f242f08b7d149f5e9aea4ad5db7c", 1718768, "tessdata-chi_sim.traineddata.gz.paquete.js"]),
++  "vendor/tessdata/chi_tra.traineddata.gz": Object.freeze(["11fe2610dab05d8a880d02f193ce70203f4c4bbe061b987d5529a2c038a22743", 1656239, "tessdata-chi_tra.traineddata.gz.paquete.js"]),
++  "vendor/tessdata/eng.traineddata.gz": Object.freeze(["45b4cb346724ac1774f1c36f42f182b887bcdb28ebe63e6fff90ac41f3fcff91", 2952873, "tessdata-eng.traineddata.gz.paquete.js"]),
++  "vendor/tessdata/eus.traineddata.gz": Object.freeze(["e5a4ba32654272462f3a87965ae9812a98b787f4d437dd63914b85b1c2bf8ea7", 2240649, "tessdata-eus.traineddata.gz.paquete.js"]),
++  "vendor/tessdata/fra.traineddata.gz": Object.freeze(["d611139672b3752c7097e671e4a1d9209dfd37f2aeb081ef6487fba3351e9255", 707406, "tessdata-fra.traineddata.gz.paquete.js"]),
++  "vendor/tessdata/spa.traineddata.gz": Object.freeze(["40be52f97b5d4eb7460073dc1f94cd546b27150333c0bf854ed7e7132db6bceb", 2100190, "tessdata-spa.traineddata.gz.paquete.js"]),
++  "vendor/tesseract-core/tesseract-core-lstm.wasm.js": Object.freeze(["eef5f8b2f8e20e150680b20adaec4a60babafee3adbe8a94583c81fee46e8680", 3896484, "tesseract-core-7.0.0-lstm.wasm.js.paquete.js"]),
++  "vendor/tesseract-core/tesseract-core-simd-lstm.wasm.js": Object.freeze(["c58b46a4c796c0b8afccf77591d5b875b6896b45d402bbce8caa6f5362447b38", 3899472, "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js"]),
++  "vendor/tesseract/tesseract.min.js": Object.freeze(["000c27d9cd0def655f77b36c72a389c0ab13793aa31cb4d7aab56d09c0afbc7e", 62961, "tesseract-7.0.0.min.js.paquete.js"]),
++  "vendor/tesseract/worker.min.js": Object.freeze(["576b7df7e3393e137e51849357c9adb53fe7ac1bb69bfa06cf3d61520f182c6d", 111307, "tesseract-7.0.0-worker.min.js.paquete.js"])
++});
++
++const AA_CARPETA_PAQUETES = "./vendor-paquetes/";
++const AA_MS_MAX_CARGA_PAQUETE = 60000;
++const __aaCargasPaquete = new Map();
++
++function aaBase64ABytes(base64) {
++  if (typeof Uint8Array.fromBase64 === "function") return Uint8Array.fromBase64(base64);
++  const binario = atob(base64);
++  const bytes = new Uint8Array(binario.length);
++  for (let i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
++  return bytes;
++}
++
++function aaBytesABase64(bytes) {
++  if (typeof bytes.toBase64 === "function") return bytes.toBase64();
++  let s = "";
++  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
++  return btoa(s);
++}
++
++/** Saca de la cola self.IdefixPaquetes el contenido de una ruta (si hay varios, se usará el que coincida). */
++function aaTomarDeColaPaquetes(ruta) {
++  const cola = globalThis.IdefixPaquetes;
++  if (!Array.isArray(cola)) return [];
++  const encontrados = [];
++  for (let i = cola.length - 1; i >= 0; i--) {
++    const entrada = cola[i];
++    if (Array.isArray(entrada) && entrada[0] === ruta && typeof entrada[1] === "string") {
++      encontrados.unshift(entrada[1]);
++      cola.splice(i, 1);
++    }
++  }
++  return encontrados;
++}
++
++/** Inserta <script src="vendor-paquetes/…"> (con file:// es la única forma de leer un archivo local). */
++function aaCargarScriptPaquete(archivo) {
++  if (__aaCargasPaquete.has(archivo)) return __aaCargasPaquete.get(archivo);
++  const promesa = new Promise((resolver, rechazar) => {
++    const script = document.createElement("script");
++    let temporizador = 0;
++    const terminar = error => {
++      clearTimeout(temporizador);
++      script.onload = null;
++      script.onerror = null;
++      script.remove();
++      __aaCargasPaquete.delete(archivo);
++      if (error) rechazar(error); else resolver();
++    };
++    script.onload = () => terminar(null);
++    script.onerror = () => terminar(new Error(`no se encontró vendor-paquetes/${archivo}: copia la carpeta vendor-paquetes completa junto a la página`));
++    temporizador = setTimeout(() => terminar(new Error(`vendor-paquetes/${archivo} no terminó de cargarse en ${AA_MS_MAX_CARGA_PAQUETE / 1000} s`)),
++      AA_MS_MAX_CARGA_PAQUETE);
++    script.src = aaResolverURLLocal(`${AA_CARPETA_PAQUETES}${archivo}`);
++    document.head.appendChild(script);
++  });
++  __aaCargasPaquete.set(archivo, promesa);
++  return promesa;
++}
++
++/** Bytes de un archivo oficial empaquetado, comprobados (tamaño y SHA-256) contra AA_PAQUETES. */
++async function aaObtenerPaquete(ruta) {
++  const entrada = Object.prototype.hasOwnProperty.call(AA_PAQUETES, ruta) ? AA_PAQUETES[ruta] : null;
++  if (!entrada) throw new Error(`${ruta} no figura entre las librerías empaquetadas.`);
++  const [esperado, tamano, archivo] = entrada;
++  let candidatos = aaTomarDeColaPaquetes(ruta);
++  for (let intento = 0; !candidatos.length && intento < 2; intento++) {
++    await aaCargarScriptPaquete(archivo);
++    candidatos = aaTomarDeColaPaquetes(ruta);
++  }
++  if (!candidatos.length) throw new Error(`vendor-paquetes/${archivo} no contiene ${ruta}: vuelve a copiar la carpeta vendor-paquetes`);
++  for (const base64 of candidatos) {
++    let bytes;
++    try { bytes = aaBase64ABytes(base64); } catch { continue; }
++    if (bytes.length === tamano && await aaSha256Hex(bytes) === esperado) return bytes;
++  }
++  throw new Error(`Integridad fallida en ${ruta}: el contenido de vendor-paquetes/${archivo} no coincide con el SHA-256 del archivo oficial.`);
++}
++
+ /**
+  * Manifiesto de integridad: { version: 1, algoritmo: "SHA-256",
+  * archivos: { "vendor/ruta/archivo": "<hex>" } }. Rutas relativas a la página.
+  * Se genera con herramientas/generar-manifiesto.html.
+  */
+ class IntegridadLocal {
+-  constructor({ exigir }) {
++  constructor({ exigir, paquetes = false }) {
+     this.exigir = !!exigir;
++    // Versión sin servidor: los SHA-256 están fijados en AA_PAQUETES y los bytes llegan por <script>.
++    this.paquetes = !!paquetes;
++    this.rutaDeURL = null;       // paquetes: Map<URL absoluta, ruta de AA_PAQUETES>
+     this.hashes = null;          // Map<URL absoluta, hex>
+     this.verificados = new Set(); // URLs ya comprobadas
+     this.avisos = [];
+@@ -7432,7 +7747,25 @@
+     return this.hashes !== null;
+   }
+ 
++  /** Sin servidor: no hay manifiesto que descargar; los SHA-256 de los archivos oficiales están en AA_PAQUETES. */
++  cargarDePaquetes() {
++    const hashes = new Map();
++    const rutas = new Map();
++    for (const [ruta, [hex]] of Object.entries(AA_PAQUETES)) {
++      const absoluta = aaResolverURLLocal(`./${ruta}`);
++      hashes.set(absoluta, hex);
++      rutas.set(absoluta, ruta);
++    }
++    this.hashes = hashes;
++    this.rutaDeURL = rutas;
++  }
++
++  /** Versión sin servidor: AA_PAQUETES; instalación con servidor: el manifiesto anclado. */
+   async cargar() {
++    return this.paquetes ? this.cargarDePaquetes() : this.cargarManifiesto();
++  }
++
++  async cargarManifiesto() {
+     const url = aaResolverURLLocal(RECURSOS_ANALIZADOR_ARCHIVOS_LOCAL.manifiestoIntegridad);
+     const anclado = /^[0-9a-f]{64}$/.test(SHA256_MANIFIESTO_INTEGRIDAD) && !/^0+$/.test(SHA256_MANIFIESTO_INTEGRIDAD);
+     if (this.exigir && !anclado) {
+@@ -7514,10 +7847,19 @@
+    */
+   async obtenerVerificado(url, { hashFijo = null, cachear = false } = {}) {
+     const esperado = hashFijo || this.esperado(url);
+-    if (!esperado && this.activo) throw new Error(`${url} no figura en el manifiesto de integridad.`);
++    if (!esperado && this.activo) {
++      throw new Error(this.paquetes ? `${url} no figura entre las librerías empaquetadas.` : `${url} no figura en el manifiesto de integridad.`);
++    }
+     const clave = esperado ? `${url}|${esperado}` : null;
+     if (cachear && clave && __aaCacheBinarios.has(clave)) return __aaCacheBinarios.get(clave).slice();
+-    const bytes = await aaDescargarLocal(url);
++    let bytes;
++    if (this.paquetes) {
++      const ruta = this.rutaDeURL.get(url);
++      if (!ruta) throw new Error(`${url} no figura entre las librerías empaquetadas.`);
++      bytes = await aaObtenerPaquete(ruta);
++    } else {
++      bytes = await aaDescargarLocal(url);
++    }
+     if (!esperado) return bytes;
+     const real = await aaSha256Hex(bytes);
+     if (real !== esperado) {
+@@ -7690,7 +8032,13 @@
+       return hash;
+     };
+     const urlModulo = await integridad.urlVerificada(moduleUrl, { hashFijo: fijo(cfg.modulePath) });
+-    const urlWorker = await integridad.urlVerificada(workerUrl, { hashFijo: fijo(cfg.workerPath) });
++    // Versión sin servidor: con file:// Chrome y Edge no ejecutan workers de tipo módulo creados desde blob:
++    // (comprobado en Chromium 141), pero sí los clásicos. El worker oficial, ya verificado, se adapta a
++    // worker clásico con dos cambios exactos y comprobados (aaWorkerPDFClasico).
++    const hashWorkerOficial = fijo(cfg.workerPath);
++    const bytesWorker = await integridad.obtenerVerificado(workerUrl, { hashFijo: hashWorkerOficial });
++    const urlWorker = URL.createObjectURL(new Blob([aaWorkerPDFClasico(bytesWorker)], { type: "text/javascript" }));
++    __aaHashDeURLBlob.set(urlWorker, hashWorkerOficial);
+     const pdfjs = await import(/* webpackIgnore: true */ urlModulo);
+ 
+     if (typeof pdfjs?.getDocument !== "function" || typeof pdfjs?.PDFWorker !== "function" || !pdfjs?.GlobalWorkerOptions) {
+@@ -7714,6 +8062,29 @@
+   return __aaPdfJsLocalPromise;
+ }
+ 
++/**
++ * El worker de PDF.js 6 (pdf.worker.mjs) es un módulo ES y con file:// solo pueden crearse workers clásicos.
++ * Se adapta el archivo oficial, YA VERIFICADO por SHA-256, con dos cambios exactos:
++ *   - import.meta.url (2 apariciones; solo sirve para calcular una carpeta que no se usa, porque los WASM,
++ *     CMaps y fuentes los entrega la página) → self.location.href;
++ *   - se quita la línea final «export { WorkerMessageHandler };» (el worker se inicia solo).
++ * Si el archivo no tiene exactamente esa forma, no se usa.
++ */
++function aaWorkerPDFClasico(bytes) {
++  const texto = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
++  const EXPORTACION = "\nexport { WorkerMessageHandler };\n";
++  const partes = texto.split("import.meta.url");
++  const posicion = texto.indexOf(EXPORTACION);
++  if (partes.length !== 3 || posicion < 0 || posicion !== texto.lastIndexOf(EXPORTACION)) {
++    throw new Error("el worker de PDF.js no tiene la forma esperada para ejecutarse como worker clásico.");
++  }
++  const clasico = partes.join("self.location.href").replace(EXPORTACION, "\n");
++  if (/(?:^|\n)\s*(?:import|export)\s[^(]/.test(clasico)) {
++    throw new Error("el worker de PDF.js contiene otras declaraciones de módulo; no se puede ejecutar como worker clásico.");
++  }
++  return clasico;
++}
++
+ /** PDF.js deja globalThis.pdfjsWorker cuando procesa en el hilo principal. */
+ function aaComprobarSinWorkerFalsoPDF() {
+   if (globalThis.pdfjsWorker !== undefined) {
+@@ -7753,40 +8124,46 @@
+   return __aaTesseractPromise;
+ }
+ 
++/** Ruta ficticia (sin red) desde la que el worker de Tesseract pide los modelos de idioma que lleva dentro. */
++const AA_RUTA_MEMORIA_IDIOMAS = "idefix-memoria://tessdata";
++
++/** Módulos WebAssembly mínimos para saber si el navegador admite SIMD y relaxed SIMD (los mismos que usa Tesseract.js). */
++const AA_WASM_SIMD = Object.freeze([0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 10, 1, 8, 0, 65, 0, 253, 15, 253, 98, 11]);
++const AA_WASM_RELAXED_SIMD = Object.freeze([0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 15, 1, 13, 0, 65, 1, 253, 15, 65, 2,
++  253, 15, 253, 128, 2, 11]);
++function aaWasmAdmite(modulo) {
++  try { return typeof WebAssembly === "object" && WebAssembly.validate(new Uint8Array(modulo)); } catch { return false; }
++}
++
+ /**
+- * Código que se antepone al worker de Tesseract (Fase 13). Dentro del worker:
+- * - importScripts solo carga los núcleos verificados (URL blob: con sus bytes comprobados);
+- * - fetch solo puede pedir los idiomas elegidos, comprueba su SHA-256 sobre los MISMOS bytes que
+- *   entrega a Tesseract y rechaza cualquier otra petición;
+- * - XMLHttpRequest, WebSocket, EventSource y sendBeacon quedan anulados.
+- * Así el OCR solo usa bytes verificados también en modo estricto.
++ * Preludio del worker de Tesseract (versión sin servidor). Dentro del worker:
++ * - no hay red: fetch solo entrega los modelos de idioma que van dentro del propio worker, ya verificados en
++ *   la página y comprobados aquí otra vez con su SHA-256; importScripts, XMLHttpRequest, WebSocket,
++ *   EventSource y sendBeacon quedan anulados;
++ * - el núcleo WebAssembly va a continuación en el mismo blob (define TesseractCore), así Tesseract.js no lo
++ *   pide: con file://, un worker blob: no puede importar otra URL blob: (comprobado en Chromium 141).
++ * @param {Object<string, [string, string]>} idiomas URL en memoria → [SHA-256, base64]
+  */
+-function aaShimWorkerTesseract(blobsNucleo, hashesIdiomas) {
++function aaPreludioWorkerTesseract(idiomas) {
+   return `"use strict";
+ (() => {
+-  const BLOBS = ${JSON.stringify(blobsNucleo)};
+-  const HASHES = ${JSON.stringify(hashesIdiomas)};
+-  const fetchOriginal = self.fetch.bind(self);
+-  const importOriginal = self.importScripts.bind(self);
+-  const normalizar = u => String(u).split("#")[0].split("?")[0].replace(/([^:/])\\/{2,}/g, "$1/");
++  const IDIOMAS = ${JSON.stringify(idiomas)};
++  const normalizar = u => String(u).split("#")[0].split("?")[0];
+   const hex = b => Array.from(new Uint8Array(b), x => x.toString(16).padStart(2, "0")).join("");
+-  self.importScripts = (...urls) => importOriginal(...urls.map(u => {
+-    const b = BLOBS[normalizar(u)];
+-    if (!b) throw new Error("AnalizadorArchivos: el OCR pidió un script no verificado: " + String(u).slice(0, 200));
+-    return b;
+-  }));
+   self.fetch = async (recurso) => {
+     const url = normalizar(typeof recurso === "string" ? recurso : recurso && recurso.url);
+-    const esperado = Object.prototype.hasOwnProperty.call(HASHES, url) ? HASHES[url] : null;
+-    if (!esperado) throw new TypeError("AnalizadorArchivos: petición no permitida desde el OCR: " + url.slice(0, 200));
+-    const r = await fetchOriginal(url, { credentials: "same-origin", cache: "no-store", redirect: "error" });
+-    if (!r.ok) throw new TypeError(url + " respondió " + r.status);
+-    const bytes = await r.arrayBuffer();
+-    if (hex(await crypto.subtle.digest("SHA-256", bytes)) !== esperado) {
+-      throw new TypeError("Integridad fallida en " + url + ": el archivo de idioma no coincide con el manifiesto.");
++    const entrada = Object.prototype.hasOwnProperty.call(IDIOMAS, url) ? IDIOMAS[url] : null;
++    if (!entrada) throw new TypeError("AnalizadorArchivos: petición no permitida desde el OCR: " + url.slice(0, 200));
++    delete IDIOMAS[url];
++    const binario = atob(entrada[1]);
++    const bytes = new Uint8Array(binario.length);
++    for (let i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
++    if (hex(await crypto.subtle.digest("SHA-256", bytes)) !== entrada[0]) {
++      throw new TypeError("Integridad fallida en " + url + ": el modelo de idioma no coincide con su SHA-256.");
+     }
+     return new Response(bytes, { status: 200, headers: { "Content-Type": "application/octet-stream" } });
+   };
++  self.importScripts = () => { throw new TypeError("AnalizadorArchivos: importScripts está desactivado dentro del worker OCR."); };
+   for (const k of ["XMLHttpRequest", "WebSocket", "EventSource"]) {
+     try { Object.defineProperty(self, k, { value: undefined, writable: false, configurable: false }); } catch (e) { /* ya anulado */ }
+   }
+@@ -7796,10 +8173,38 @@
+ }
+ 
+ /**
+- * Crea el worker de Tesseract con los idiomas indicados. Con manifiesto (siempre en modo estricto):
+- * script, worker y núcleos se ejecutan desde URL blob: de bytes verificados y los idiomas se
+- * comprueban dentro del worker (aaShimWorkerTesseract). Sin manifiesto (solo modo compatible) se
+- * cargan por URL desde el mismo origen.
++ * Núcleo de Tesseract: lo elige la aplicación con el mismo criterio que Tesseract.js (relaxed SIMD → SIMD →
++ * sin SIMD), entre los disponibles, y va dentro del worker: basta con que haya uno compatible con el navegador.
++ * Se usa el primero que se pueda leer (p. ej., si falta el paquete del de SIMD, el de sin SIMD). Uno alterado
++ * no se salta en silencio: se informa y el OCR no arranca.
++ * @returns {Promise<{ nucleo: string, bytes: Uint8Array }>}
++ */
++async function aaLeerNucleoTesseract(baseNucleo, integridad, obtener, dondeFalta) {
++  const compatibles = AA_ARCHIVOS_TESSERACT.nucleos.map(r => r.slice(r.lastIndexOf("/") + 1))
++    .filter(n => (n.includes("relaxedsimd") ? aaWasmAdmite(AA_WASM_RELAXED_SIMD) : n.includes("simd") ? aaWasmAdmite(AA_WASM_SIMD) : true));
++  const disponibles = [];
++  for (const n of compatibles) {
++    if (await aaExisteRecurso(`${baseNucleo}${n}`, integridad)) disponibles.push(n);
++  }
++  if (!disponibles.length) {
++    throw new Error(`no hay ningún núcleo de Tesseract compatible con este navegador ${dondeFalta} (se buscó: ${compatibles.join(", ")})`);
++  }
++  const fallos = [];
++  for (const n of disponibles) {
++    try {
++      return { nucleo: n, bytes: await obtener(`${baseNucleo}${n}`) };
++    } catch (error) {
++      if (/Integridad fallida/.test(String(error?.message))) throw error;
++      fallos.push(`${n}: ${error?.message || error}`);
++    }
++  }
++  throw new Error(`no se pudo leer ningún núcleo de Tesseract (${fallos.join(" | ")})`);
++}
++
++/**
++ * Crea el worker de Tesseract con los idiomas indicados, sin red y sin importar nada: un único blob: con el
++ * preludio, el núcleo WebAssembly elegido, el worker oficial y los modelos de idioma (todos verificados por
++ * SHA-256: con AA_PAQUETES en la versión sin servidor o con el manifiesto en la instalación con servidor).
+  * @param {string[]} idiomas códigos de AA_IDIOMAS_TESSERACT
+  */
+ async function crearWorkerTesseractLocal(idiomas, integridad = null) {
+@@ -7809,67 +8214,80 @@
+   const urlWorker = aaResolverURLLocal(cfg.workerPath);
+   const baseNucleo = aaResolverURLLocal(cfg.corePath, { directorio: true });
+   const baseIdiomas = aaResolverURLLocal(cfg.langPath, { directorio: true });
+-  let workerPath = urlWorker;
+-  // Fase A: los tres núcleos entre los que elige Tesseract.js (AA_ARCHIVOS_TESSERACT.nucleos), en la carpeta
+-  // configurada. Si falta el que pide el navegador, el worker fallaría con un mensaje poco claro: se comprueba
+-  // antes (sin manifiesto, con una petición HEAD al mismo origen).
+-  const nucleos = AA_ARCHIVOS_TESSERACT.nucleos.map(r => `${baseNucleo}${r.slice(r.lastIndexOf("/") + 1)}`);
+-  const faltanNucleos = [];
+-  for (const u of nucleos) if (!await aaExisteRecurso(u, integridad)) faltanNucleos.push(u.slice(u.lastIndexOf("/") + 1));
+-  if (faltanNucleos.length) {
+-    throw new Error(`faltan núcleos de Tesseract${integridad?.activo ? " en el manifiesto" : ""}: ${faltanNucleos.join(", ")}. ` +
+-      "Hacen falta los tres *-lstm.wasm.js de tesseract.js-core 7.0.0: Tesseract elige uno según el navegador " +
+-      "(Chrome y Edge actuales usan el de relaxed SIMD)");
+-  }
+-  if (integridad?.activo) {
+-    // Solo se verifican y cargan los tres núcleos que puede pedir Tesseract (los demás no se usan con LSTM_ONLY).
+-    const blobs = {};
+-    for (const u of nucleos) blobs[u] = await integridad.urlVerificada(u);
+-    const hashes = {};
+-    for (const idioma of idiomas) {
+-      const u = `${baseIdiomas}${idioma}.traineddata.gz`;
+-      const h = integridad.esperado(u);
+-      if (!h) throw new Error(`el idioma ${idioma} (${AA_IDIOMAS_TESSERACT[idioma]}) no figura en el manifiesto: copia ${idioma}.traineddata.gz en vendor/tessdata/ y vuelve a sellar`);
+-      hashes[u] = h;
+-    }
+-    // Fase A: los idiomas se comprueban también aquí, antes de crear el worker. Si uno no coincide con el
+-    // manifiesto, el worker lo rechaza (aaShimWorkerTesseract), pero Tesseract.js 7 no rechaza entonces la
+-    // creación del worker y la aplicación se quedaba esperando para siempre sin explicar el motivo.
+-    for (const u of Object.keys(hashes)) await integridad.obtenerVerificado(u);
+-    const bytesWorker = await integridad.obtenerVerificado(urlWorker);
+-    workerPath = URL.createObjectURL(new Blob([aaShimWorkerTesseract(blobs, hashes), "\n", bytesWorker], { type: "text/javascript" }));
++  const obtener = url => (integridad?.activo ? integridad.obtenerVerificado(url, { cachear: true }) : aaDescargarLocal(url));
++  const dondeFalta = integridad?.paquetes ? "entre las librerías empaquetadas (vendor-paquetes)" : "en el manifiesto";
++
++  const memoria = {};
++  for (const idioma of idiomas) {
++    const u = `${baseIdiomas}${idioma}.traineddata.gz`;
++    if (integridad?.activo && !integridad.esperado(u)) {
++      throw new Error(`el idioma ${idioma} (${AA_IDIOMAS_TESSERACT[idioma]}) no figura ${dondeFalta}: copia ${idioma}.traineddata.gz` +
++        (integridad.paquetes ? " (su paquete de vendor-paquetes)" : " en vendor/tessdata/ y vuelve a sellar"));
++    }
++    // Fase A: los idiomas se comprueban en la página antes de crear el worker; un modelo que no coincide no
++    // llega a Tesseract (que, si falla al cargarlo, no rechaza la creación del worker y se queda esperando).
++    const bytes = await obtener(u);
++    memoria[`${AA_RUTA_MEMORIA_IDIOMAS}/${idioma}.traineddata.gz`] = [await aaSha256Hex(bytes), aaBytesABase64(bytes)];
++  }
++  const { nucleo, bytes: bytesNucleo } = await aaLeerNucleoTesseract(baseNucleo, integridad, obtener, dondeFalta);
++  const bytesWorker = await obtener(urlWorker);
++  const workerPath = URL.createObjectURL(new Blob(
++    [aaPreludioWorkerTesseract(memoria), "\n", bytesNucleo, "\n;\n", bytesWorker, "\n"], { type: "text/javascript" }));
++
++  // Tesseract.createWorker crea el Worker de forma síncrona antes de su primer await: se captura para poder
++  // terminarlo si no llega a iniciarse (si falla al cargar, createWorker no termina nunca).
++  let nativo = null;
++  let creacion;
++  const WorkerOriginal = globalThis.Worker;
++  try {
++    globalThis.Worker = function WorkerCapturado(ruta, opciones) {
++      nativo = new WorkerOriginal(ruta, opciones);
++      return nativo;
++    };
++    creacion = T.createWorker(
++      [...idiomas],
++      T.OEM?.LSTM_ONLY ?? 1,
++      {
++        workerPath,
++        // El núcleo ya va dentro del worker (TesseractCore definido): Tesseract.js no usa esta ruta.
++        corePath: `${baseNucleo}${nucleo}`,
++        langPath: AA_RUTA_MEMORIA_IDIOMAS,
++        workerBlobURL: false,
++        // Sin caché en IndexedDB: nada persiste entre sesiones.
++        cacheMethod: "none",
++        gzip: true
++      }
++    );
++  } finally {
++    globalThis.Worker = WorkerOriginal;
+   }
+   let temporizador = null;
+   let vencido = false;
++  let alFallar = null;
+   try {
+-    const creacion = T.createWorker(
+-    [...idiomas],
+-    T.OEM?.LSTM_ONLY ?? 1,
+-    {
+-      workerPath,
+-      // Directorio: el worker elige el núcleo (con o sin SIMD) y la petición se redirige al blob verificado.
+-      corePath: baseNucleo.replace(/\/$/, ""),
+-      // Tesseract.js espera langPath sin "/" final.
+-      langPath: baseIdiomas.replace(/\/$/, ""),
+-      workerBlobURL: false,
+-      // Sin caché en IndexedDB: nada persiste entre sesiones.
+-      cacheMethod: "none",
+-      gzip: true
+-    }
+-  );
+     // Fase A: si el worker llega a crearse después del tiempo máximo, se termina (nadie lo usará).
+     creacion.then(w => { if (vencido) w?.terminate?.(); }, () => {});
+     const limite = new Promise((_, rechazar) => {
++      alFallar = evento => {
++        evento.preventDefault?.();
++        rechazar(new Error(`el worker OCR falló al iniciarse: ${evento.message || "error al cargarlo"}`));
++      };
++      nativo?.addEventListener("error", alFallar);
+       temporizador = setTimeout(() => {
+         vencido = true;
+         rechazar(new Error(`el motor OCR no terminó de iniciarse en ${AA_MAX_MS_ARRANQUE_OCR / 1000} s`));
+       }, AA_MAX_MS_ARRANQUE_OCR);
+     });
+     return await Promise.race([creacion, limite]);
++  } catch (error) {
++    vencido = true;
++    try { nativo?.terminate(); } catch { /* ya terminado */ }
++    throw error;
+   } finally {
+     clearTimeout(temporizador);
+-    // El worker ya ha cargado su código (o ha fallado): la URL blob: de esta instancia no se reutiliza.
+-    if (workerPath !== urlWorker) URL.revokeObjectURL(workerPath);
++    if (alFallar) nativo?.removeEventListener("error", alFallar);
++    // El worker ya ha cargado su código (o ha fallado): la URL blob: no se reutiliza.
++    URL.revokeObjectURL(workerPath);
+   }
+ }
+ 
+@@ -8160,10 +8578,9 @@
+ });
+ 
+ /**
+- * Archivos de Tesseract.js que deben copiarse en vendor/ (y sellarse en el manifiesto) para activar el OCR.
+- * Los núcleos *.wasm.js llevan el WASM incrustado: no hace falta ningún .wasm suelto.
+- * Fase A: con OEM LSTM_ONLY, Tesseract.js 7 elige uno de estos TRES núcleos según lo que admita el navegador
+- * (relaxed SIMD → SIMD → sin SIMD; Chrome y Edge actuales piden el primero). Los tres son obligatorios.
++ * Archivos de Tesseract.js (en vendor-paquetes en la versión sin servidor; en vendor/ con servidor).
++ * Los núcleos *.wasm.js llevan el WASM incrustado: no hace falta ningún .wasm suelto. Con OEM LSTM_ONLY solo
++ * sirven los *-lstm; la aplicación elige, por este orden, el primero que el navegador admita y esté disponible.
+  */
+ const AA_ARCHIVOS_TESSERACT = Object.freeze({
+   script: "vendor/tesseract/tesseract.min.js",
+@@ -8274,6 +8691,9 @@
+   if (!["tesseract", "none"].includes(cfg.ocrMotor)) {
+     throw new RangeError("ocrMotor debe ser tesseract o none.");
+   }
++  if (!["paquetes", "vendor"].includes(cfg.origenLibrerias)) {
++    throw new RangeError("origenLibrerias debe ser paquetes o vendor.");
++  }
+ 
+   aaValidarIdiomasTesseract(cfg.idiomasTesseract);
+   cfg.idiomasTesseract = Object.freeze([...cfg.idiomasTesseract]);
+@@ -8320,6 +8740,10 @@
+       .filter(script => script.src)
+       .map(script => { try { return new URL(script.src, href); } catch { return null; } })
+       .filter(Boolean)
++      // Versión sin servidor: con file:// Chrome y Edge dan a los archivos el origen «file://» y a las URL blob:
++      // creadas por la propia página el origen «null» (comprobado en Chromium 141). Son locales, no de terceros.
++      .filter(scriptUrl => !(url.protocol === "file:" &&
++        (scriptUrl.protocol === "file:" || (scriptUrl.protocol === "blob:" && scriptUrl.href.startsWith("blob:null/")))))
+       .filter(scriptUrl => scriptUrl.origin !== origin);
+ 
+     if (externos.length) {
+@@ -8346,10 +8770,11 @@
+     }
+   }
+ 
+-  if (url.protocol === "file:") {
++  // Versión sin servidor: con origenLibrerias "paquetes" la aplicación funciona abierta como archivo (file://).
++  if (url.protocol === "file:" && config.origenLibrerias === "vendor") {
+     errors.push(
+-      "La página se abrió como archivo (file://). Los Web Workers, obligatorios en esta versión, no funcionan así: " +
+-      "sírvela desde http://localhost o HTTPS."
++      "La página se abrió como archivo (file://) con origenLibrerias \"vendor\", que necesita servidor: " +
++      "sírvela desde http://localhost o usa la versión sin servidor (vendor-paquetes)."
+     );
+   }
+   if (!document.querySelector('meta[http-equiv="Content-Security-Policy" i]')) {
+@@ -8357,7 +8782,8 @@
+   }
+   // Fase 12: primer eslabón de la cadena de integridad (index.html → este archivo).
+   const propio = scripts.find(script => /(^|\/)analizador-archivos\.js(\?|#|$)/.test(script.getAttribute("src") || ""));
+-  if (propio && !/^sha(256|384|512)-/.test(propio.getAttribute("integrity") || "")) {
++  // Con file:// el atributo integrity impide cargar el script: solo se recomienda en la instalación con servidor.
++  if (config.origenLibrerias === "vendor" && propio && !/^sha(256|384|512)-/.test(propio.getAttribute("integrity") || "")) {
+     warnings.push("La etiqueta <script> de analizador-archivos.js no tiene atributo integrity (SRI). Calcúlalo con herramientas/generar-manifiesto.html.");
+   }
+ 
+@@ -12317,7 +12743,8 @@
+     // Un worker de PDF.js propio por documento: terminarlo detiene el
+     // análisis al instante (timeout/cancelación) y, al entregarse como
+     // puerto, PDF.js no puede sustituirlo por un "worker falso".
+-    const puerto = new Worker(this.urlWorker, { type: "module", name: "pdfjs" });
++    // Worker clásico (versión sin servidor: con file:// no se admiten workers de tipo módulo).
++    const puerto = new Worker(this.urlWorker, { name: "pdfjs" });
+     let pdfWorker;
+     try {
+       pdfWorker = new this.pdfjs.PDFWorker({ port: puerto });
+@@ -12863,7 +13290,7 @@
+   }
+ 
+   paso("Comprobando la integridad de los componentes locales");
+-  const integridad = new IntegridadLocal({ exigir: cfg.modoSeguridad === "estricto" });
++  const integridad = new IntegridadLocal({ exigir: cfg.modoSeguridad === "estricto", paquetes: cfg.origenLibrerias === "paquetes" });
+   await integridad.cargar();
+ 
+   paso("Cargando el MARCO_FISCAL_LOCAL");
+@@ -12882,11 +13309,12 @@
+     try {
+       tesseractWorker = await crearWorkerTesseractLocal(cfg.idiomasTesseract, integridad);
+     } catch (error) {
+-      const motivo = `${String(error?.message || error).replace(/\.+$/, "")}. Revisa vendor/tesseract, vendor/tesseract-core y ` +
+-        `vendor/tessdata (idiomas: ${cfg.idiomasTesseract.join(", ")}) según el paso 2 de las instrucciones y vuelve a sellar con ` +
+-        "herramientas/generar-manifiesto.html, o desactiva el OCR con data-ocr=\"false\" en la etiqueta <script> " +
+-        "(o { ocr: false } si creas el analizador por código).";
+-      // Un archivo que NO coincide con el manifiesto es una instalación alterada: se detiene todo, como antes.
++      const motivo = `${String(error?.message || error).replace(/\.+$/, "")}. ` + (cfg.origenLibrerias === "paquetes"
++        ? `Vuelve a copiar la carpeta vendor-paquetes completa de la entrega original (idiomas: ${cfg.idiomasTesseract.join(", ")}), `
++        : `Revisa vendor/tesseract, vendor/tesseract-core y vendor/tessdata (idiomas: ${cfg.idiomasTesseract.join(", ")}) según ` +
++          "el paso 2 de las instrucciones y vuelve a sellar con herramientas/generar-manifiesto.html, ") +
++        "o desactiva el OCR con data-ocr=\"false\" en la etiqueta <script> (o { ocr: false } si creas el analizador por código).";
++      // Un archivo que NO coincide con su SHA-256 es una instalación alterada: se detiene todo, como antes.
+       if (aaEsFalloIntegridad(error)) throw new Error(motivo);
+       // Fase A: si falta algo del OCR, se arranca sin OCR. Excel, Word, HTML y PDF con texto se analizan con
+       // normalidad; el panel del OCR y cada imagen o página escaneada lo dicen (OCR_UNAVAILABLE).
+@@ -13669,8 +14097,10 @@
+     if (!aaOcrActivo(this.config)) {
+       resumen.textContent = "OCR (imágenes y PDF escaneados): desactivado";
+       det.append(el("p", "aa-fs-ayuda",
+-        `Idiomas configurados: ${Object.values(AA_IDIOMAS_TESSERACT).join(", ")}. Para activarlo, copia Tesseract.js y sus idiomas en vendor/ ` +
+-        "(tesseract, tesseract-core y tessdata), sella el manifiesto y usa data-ocr=\"true\" en la etiqueta <script>."));
++        `Idiomas configurados: ${Object.values(AA_IDIOMAS_TESSERACT).join(", ")}. ` + (this.config.origenLibrerias === "paquetes"
++          ? "Para activarlo, abre index.html (lleva data-ocr=\"true\" y los paquetes de Tesseract de vendor-paquetes)."
++          : "Para activarlo, copia Tesseract.js y sus idiomas en vendor/ (tesseract, tesseract-core y tessdata), sella el " +
++            "manifiesto y usa data-ocr=\"true\" en la etiqueta <script>.")));
+       return det;
+     }
+     // Fase A: aviso visible cuando el OCR no está disponible (el resto del analizador funciona); el título
+@@ -16401,7 +16831,8 @@
+      data-ocr="false"            desactivar el OCR (valor por defecto)
+      data-idiomas-ocr="spa,eng"  idiomas del OCR (por defecto spa, cat, eus, eng y fra;
+                                  chi_sim y chi_tra solo para documentos en chino);
+-                                 solo hace falta copiar en vendor/tessdata los que se usen
++                                 (versión sin servidor: todos van en vendor-paquetes; con
++                                 servidor, basta con copiar en vendor/tessdata los que se usen)
+    Contenedor por defecto, por orden: [data-analizador-archivos],
+    #analizadorArchivos, #demoAnalizadorArchivos; si no hay ninguno se crea
+    uno al final de <body>.
+@@ -16462,7 +16893,7 @@
+   const config = { idContenedor: host.id };
+   if (datos.ocr === "false") config.ocr = false;
+   if (datos.ocr === "true") config.ocr = true;
+-  // Idefix1.0: data-idiomas-ocr="spa,eng" limita los idiomas del OCR a los que se han copiado en vendor/tessdata.
++  // Idefix1.0: data-idiomas-ocr="spa,eng" limita los idiomas del OCR (vendor-paquetes, o vendor/tessdata con servidor).
+   if (datos.idiomasOcr) config.idiomasTesseract = datos.idiomasOcr.split(",").map(x => x.trim()).filter(Boolean);
+ 
+   try {
+@@ -16502,17 +16933,18 @@
+  * Idefix1.0 — OCR local SIN interfaz, con la misma carga verificada que usa la aplicación:
+  * tesseract.min.js, worker.min.js, el núcleo WASM y cada .traineddata.gz se comprueban con el
+  * SHA-256 del manifiesto antes de usarse; el worker OCR no puede hacer ninguna otra petición.
+- * Solo funciona servido por http(s) (Chrome y Edge no permiten fetch ni workers en file://).
+- * @param {{ idiomas?: string[] }} [opciones] idiomas de AA_IDIOMAS_TESSERACT (por defecto ["spa"])
++ * Versión sin servidor: funciona abierta con doble clic (file://), con las librerías de vendor-paquetes.
++ * @param {{ idiomas?: string[], origenLibrerias?: "paquetes"|"vendor" }} [opciones] idiomas de AA_IDIOMAS_TESSERACT
++ *   (por defecto ["spa"]); origenLibrerias "vendor" usa vendor/ y el manifiesto (necesita servidor).
+  * @returns {Promise<{ idiomas: string[], reconocer: Function, terminar: Function }>}
+  */
+-async function aaCrearOCRLocal({ idiomas = ["spa"] } = {}) {
+-  if (globalThis.location?.protocol === "file:") {
+-    throw new Error("La página se abrió como archivo (file://): Chrome y Edge no permiten así cargar Tesseract, su núcleo WASM ni los modelos de idioma. " +
+-      "Sírvela con el servidor local (servidor-local.ps1 o servidor-local.py) y ábrela en http://localhost.");
++async function aaCrearOCRLocal({ idiomas = ["spa"], origenLibrerias = "paquetes" } = {}) {
++  if (!["paquetes", "vendor"].includes(origenLibrerias)) throw new RangeError("origenLibrerias debe ser paquetes o vendor.");
++  if (origenLibrerias === "vendor" && globalThis.location?.protocol === "file:") {
++    throw new Error("Con origenLibrerias \"vendor\" la página necesita servidor (http://localhost); con doble clic usa la versión sin servidor (vendor-paquetes).");
+   }
+   aaValidarIdiomasTesseract(idiomas);
+-  const integridad = new IntegridadLocal({ exigir: true });
++  const integridad = new IntegridadLocal({ exigir: true, paquetes: origenLibrerias === "paquetes" });
+   await integridad.cargar();
+   const lista = [...idiomas];
+   const crear = () => crearWorkerTesseractLocal(lista, integridad);
+@@ -16595,17 +17027,26 @@
+ })();
+ 
+ /*
+-  USO (autoarranque) — ARCHIVO ÚNICO
++  USO (autoarranque) — ARCHIVO ÚNICO · VERSIÓN SIN SERVIDOR
+ 
+   <div id="analizadorArchivos"></div>
+-  <script src="./analizador-archivos.js" integrity="sha256-…"></script>
++  <script src="vendor-paquetes/pdfjs-6.2.108-legacy-pdf.mjs.paquete.js"></script>
++  … (los demás paquetes: ver index.html)
++  <script src="./analizador-archivos.js"></script>
++
++  Se abre con doble clic (file://) en Chrome o Edge: no hace falta servidor,
++  ni Node.js, ni sellar nada. Basta con copiar la carpeta completa
++  (index.html, analizador-archivos.js y vendor-paquetes/). Los SHA-256 de las
++  librerías están fijados en AA_PAQUETES; con file:// no se usa el atributo
++  integrity (Chrome y Edge no cargarían el script).
+ 
+   Eso es todo: el código JavaScript, el HTML de la interfaz, la hoja de
+   estilos, el worker núcleo y el MARCO_FISCAL_LOCAL van dentro de este
+   archivo. El analizador comprueba sus componentes y se inicia solo. La
+   instancia queda en window.analizadorArchivos y en AnalizadorArchivosAPI.listo.
+ 
+-  Librerías que hay que desplegar junto a la página (locales, nunca CDN):
++  Instalación con servidor (origenLibrerias: "vendor"), la de antes: <script
++  … integrity="sha256-…"> y estas librerías junto a la página (locales, nunca CDN):
+     vendor/manifiesto-integridad.json        (herramientas/generar-manifiesto.html)
+     vendor/pdfjs/                             (pdfjs-6.2.108-dist.zip descomprimido tal cual)
+     vendor/pdfjs-legacy/                      (opcional: pdfjs-6.2.108-legacy-dist.zip)
+--- fase-a/Idefix1.0/index.html
++++ sin-servidor/Idefix1.0/index.html
+@@ -3,21 +3,35 @@
+ <head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+-<!-- CSP. Envíala TAMBIÉN como cabecera HTTP (herramientas/cabeceras-http-recomendadas.txt).
+-     style-src 'self': los estilos van incrustados en el JS y se aplican con adoptedStyleSheets, sin 'unsafe-inline'.
+-     blob: el worker núcleo, PDF.js y Tesseract se ejecutan desde URL blob: con bytes cuyo SHA-256 se ha comprobado. -->
+-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' blob:; worker-src blob:; connect-src 'self'; style-src 'self'; img-src 'none'; font-src 'none'; media-src 'none'; manifest-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
++<!-- Versión SIN SERVIDOR: se abre con doble clic (file://) en Chrome o Edge. No hay nada que instalar ni configurar.
++     CSP: solo se ejecutan los scripts de esta carpeta y los blob: creados con bytes cuyo SHA-256 se ha comprobado
++     (worker núcleo, PDF.js y Tesseract); connect-src 'none': la página no puede hacer ninguna petición de red.
++     style-src 'self': los estilos van incrustados en el JS y se aplican con adoptedStyleSheets, sin 'unsafe-inline'. -->
++<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' blob:; worker-src blob:; connect-src 'none'; style-src 'self'; img-src 'none'; font-src 'none'; media-src 'none'; manifest-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+ <meta name="referrer" content="no-referrer">
+ <title>Idefix1.0 · Analizador de archivos fiscales</title>
+ </head>
+ <body>
+ <div id="analizadorArchivos"></div>
+-<!-- Archivo único. integrity: SHA-256 del archivo (recalcúlalo con herramientas/generar-manifiesto.html si lo cambias).
+-     OCR: requiere vendor/tesseract, vendor/tesseract-core (los tres *-lstm.wasm.js) y vendor/tessdata.
+-     Sin esos archivos, usa data-ocr="false" (si falta alguno, la aplicación arranca sin OCR y lo avisa).
+-     Idiomas (fase A): español, catalán, euskera, inglés y francés. Añade chi_sim o chi_tra solo para documentos
+-     en chino: junto a los demás, el OCR pierde las líneas de las tablas y es mucho más lento (también pueden
+-     marcarse en el panel «Idiomas del OCR»). Copia en vendor/tessdata solo los idiomas que indiques. -->
+-<script src="analizador-archivos.js" integrity="sha256-HcN60aer4OthmjR1XLOMWXZwp6Nxhy4GUN3eNOlEjKU=" data-ocr="true" data-idiomas-ocr="spa,cat,eus,eng,fra"></script>
++<!-- Librerías oficiales (PDF.js 6.2.108, Tesseract.js 7.0.0, su núcleo y los modelos de idioma) en vendor-paquetes/:
++     cada paquete es un <script> con el archivo oficial en base64. analizador-archivos.js comprueba el tamaño y el
++     SHA-256 de cada archivo antes de usarlo (están fijados en su tabla AA_PAQUETES): si no coinciden, no se usa.
++     Sin atributo integrity: con file:// Chrome y Edge no cargan ningún script que lo lleve.
++     Lo que no está aquí (núcleo para navegadores sin SIMD, chino, CMaps, fuentes estándar y WASM de PDF.js) lo
++     carga la aplicación de vendor-paquetes/ solo cuando lo necesita, con la misma comprobación.
++     Idiomas del OCR: español, catalán, euskera, inglés y francés. Para documentos en chino, márcalo en el panel
++     «Idiomas del OCR» (o añade chi_sim / chi_tra a data-idiomas-ocr): junto a los demás, el OCR pierde las líneas
++     de las tablas y es mucho más lento. Sin OCR: index-sin-ocr.html. -->
++<script src="vendor-paquetes/pdfjs-6.2.108-legacy-pdf.mjs.paquete.js"></script>
++<script src="vendor-paquetes/pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js"></script>
++<script src="vendor-paquetes/tesseract-7.0.0.min.js.paquete.js"></script>
++<script src="vendor-paquetes/tesseract-7.0.0-worker.min.js.paquete.js"></script>
++<script src="vendor-paquetes/tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js"></script>
++<script src="vendor-paquetes/tessdata-spa.traineddata.gz.paquete.js"></script>
++<script src="vendor-paquetes/tessdata-cat.traineddata.gz.paquete.js"></script>
++<script src="vendor-paquetes/tessdata-eus.traineddata.gz.paquete.js"></script>
++<script src="vendor-paquetes/tessdata-eng.traineddata.gz.paquete.js"></script>
++<script src="vendor-paquetes/tessdata-fra.traineddata.gz.paquete.js"></script>
++<script src="analizador-archivos.js" data-ocr="true" data-idiomas-ocr="spa,cat,eus,eng,fra"></script>
+ </body>
+ </html>
+--- fase-a/Idefix1.0/index-sin-ocr.html
++++ sin-servidor/Idefix1.0/index-sin-ocr.html
+@@ -3,18 +3,20 @@
+ <head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+-<!-- CSP. Envíala TAMBIÉN como cabecera HTTP (herramientas/cabeceras-http-recomendadas.txt).
+-     style-src 'self': los estilos van incrustados en el JS y se aplican con adoptedStyleSheets, sin 'unsafe-inline'.
+-     blob: el worker núcleo, PDF.js y Tesseract se ejecutan desde URL blob: con bytes cuyo SHA-256 se ha comprobado. -->
+-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' blob:; worker-src blob:; connect-src 'self'; style-src 'self'; img-src 'none'; font-src 'none'; media-src 'none'; manifest-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
++<!-- Versión SIN SERVIDOR: se abre con doble clic (file://) en Chrome o Edge. No hay nada que instalar ni configurar.
++     CSP: solo se ejecutan los scripts de esta carpeta y los blob: creados con bytes cuyo SHA-256 se ha comprobado
++     (worker núcleo, PDF.js y Tesseract); connect-src 'none': la página no puede hacer ninguna petición de red.
++     style-src 'self': los estilos van incrustados en el JS y se aplican con adoptedStyleSheets, sin 'unsafe-inline'. -->
++<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' blob:; worker-src blob:; connect-src 'none'; style-src 'self'; img-src 'none'; font-src 'none'; media-src 'none'; manifest-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+ <meta name="referrer" content="no-referrer">
+ <title>Idefix1.0 · Analizador (sin OCR)</title>
+ </head>
+ <body>
+ <div id="analizadorArchivos"></div>
+-<!-- Archivo único. integrity: SHA-256 del archivo (recalcúlalo con herramientas/generar-manifiesto.html si lo cambias).
+-     Sin OCR: las imágenes y los PDF escaneados no se leen. Con Tesseract copiado en vendor/, usa index.html.
+-     Solo algunos idiomas (y copiar solo esos): añade, por ejemplo, data-idiomas-ocr="spa" o data-idiomas-ocr="spa,eng". -->
+-<script src="analizador-archivos.js" integrity="sha256-HcN60aer4OthmjR1XLOMWXZwp6Nxhy4GUN3eNOlEjKU=" data-ocr="false"></script>
++<!-- Sin OCR: las imágenes y los PDF escaneados no se leen (para leerlos, usa index.html).
++     Solo PDF.js 6.2.108 (vendor-paquetes/, con su SHA-256 comprobado antes de usarlo; ver index.html). -->
++<script src="vendor-paquetes/pdfjs-6.2.108-legacy-pdf.mjs.paquete.js"></script>
++<script src="vendor-paquetes/pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js"></script>
++<script src="analizador-archivos.js" data-ocr="false"></script>
+ </body>
+ </html>
+--- fase-a/Idefix1.0/demo-ocr.html
++++ sin-servidor/Idefix1.0/demo-ocr.html
+@@ -3,14 +3,13 @@
+ <head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+-<!-- Idefix1.0 — demostración de OCR local en español con Tesseract.js 7.0.0.
+-     Misma CSP que la aplicación: nada sale de este ordenador (connect-src 'self') y los workers solo
+-     pueden crearse desde blob: con bytes verificados. Envíala también como cabecera HTTP (lo hacen
+-     servidor-local.ps1 y servidor-local.py). -->
+-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' blob:; worker-src blob:; connect-src 'self'; style-src 'self'; img-src 'none'; font-src 'none'; media-src 'none'; manifest-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
++<!-- Idefix1.0 — demostración de OCR local en español con Tesseract.js 7.0.0. Se abre con doble clic (file://).
++     Misma CSP que la aplicación: ninguna petición de red (connect-src 'none') y los workers solo pueden
++     crearse desde blob: con bytes verificados. -->
++<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' blob:; worker-src blob:; connect-src 'none'; style-src 'self'; img-src 'none'; font-src 'none'; media-src 'none'; manifest-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+ <meta name="referrer" content="no-referrer">
+ <title>Idefix1.0 · Demo OCR local</title>
+-<link rel="stylesheet" href="demo-ocr.css" integrity="sha256-i2MCf3zwKpaFzBQ6pTpzLjmZPQ6wnOUEs2Su4Ud4MuU=">
++<link rel="stylesheet" href="demo-ocr.css">
+ </head>
+ <body>
+ <main class="demo">
+@@ -22,10 +21,8 @@
+   <!-- Visible hasta que la demo arranca. Si sigue visible, la página no se ha podido iniciar. -->
+   <section id="sin-arrancar" class="aviso">
+     <strong>La demostración no se ha iniciado.</strong>
+-    <p>Si has abierto este archivo con doble clic (la barra de direcciones empieza por <code>file://</code>), Chrome y Edge
+-       no permiten cargar así Tesseract, su núcleo WebAssembly ni los modelos de idioma. Arranca el servidor local
+-       (<code>iniciar-idefix.bat</code>, <code>servidor-local.ps1</code> o <code>servidor-local.py</code>) y abre
+-       <code>http://localhost:8080/demo-ocr.html</code>.</p>
++    <p>Falta <code>analizador-archivos.js</code> junto a esta página o no se ha podido ejecutar. Copia la carpeta
++       completa (con <code>vendor-paquetes</code>) y ábrela en Chrome o Edge.</p>
+   </section>
+ 
+   <section class="tarjeta" id="panel" hidden>
+@@ -65,13 +62,19 @@
+   <section class="tarjeta" id="red" hidden>
+     <h2>Comprobación de red</h2>
+     <p class="nota">Lista cada recurso que ha pedido esta página (Resource Timing) y cada intento bloqueado por la CSP.
+-       Las peticiones que hacen los workers no aparecen aquí: compruébalas en DevTools → Red (ver instrucciones).</p>
++       Abierta con doble clic (file://), el navegador no anota aquí los archivos locales. Las peticiones de los
++       workers tampoco aparecen: compruébalas en DevTools → Red.</p>
+     <div id="red-resumen" class="red-resumen">—</div>
+     <table id="tabla-red"><thead><tr><th>Recurso</th><th>Origen</th></tr></thead><tbody></tbody></table>
+     <div id="red-csp" class="nota"></div>
+   </section>
+ </main>
+-<script src="analizador-archivos.js" integrity="sha256-HcN60aer4OthmjR1XLOMWXZwp6Nxhy4GUN3eNOlEjKU=" data-autoarranque="false"></script>
+-<script src="demo-ocr.js" integrity="sha256-owz2pJpN7clCrCbdi/Ngc9+JRBXQbS23qKVJE/nGJzk="></script>
++<!-- Tesseract.js, su núcleo y el modelo de español (vendor-paquetes/; SHA-256 comprobado antes de usarlos). -->
++<script src="vendor-paquetes/tesseract-7.0.0.min.js.paquete.js"></script>
++<script src="vendor-paquetes/tesseract-7.0.0-worker.min.js.paquete.js"></script>
++<script src="vendor-paquetes/tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js"></script>
++<script src="vendor-paquetes/tessdata-spa.traineddata.gz.paquete.js"></script>
++<script src="analizador-archivos.js" data-autoarranque="false"></script>
++<script src="demo-ocr.js"></script>
+ </body>
+ </html>
+--- fase-a/Idefix1.0/demo-ocr.js
++++ sin-servidor/Idefix1.0/demo-ocr.js
+@@ -3,9 +3,9 @@
+    Demostración: cargar una imagen y reconocer su texto en español con
+    Tesseract.js 7.0.0 LOCAL, mediante AnalizadorArchivosAPI.crearOCRLocal
+    (la misma carga verificada por SHA-256 que usa la aplicación).
+-   Dependencias: analizador-archivos.js (cargado antes, sin autoarranque),
+-   vendor/manifiesto-integridad.json, vendor/tesseract/*, vendor/tesseract-core/*,
+-   vendor/tessdata/spa.traineddata.gz.
++   Dependencias: analizador-archivos.js (cargado antes, sin autoarranque) y
++   vendor-paquetes/ (Tesseract.js, su núcleo y spa.traineddata.gz; versión sin
++   servidor: funciona abierta con doble clic, file://).
+    Solo JavaScript nativo. Ningún texto de la imagen se inserta como HTML.
+    ========================================================================== */
+ "use strict";
+@@ -38,7 +38,7 @@
+     if (!propio) externas++;
+     const tr = document.createElement("tr");
+     const a = document.createElement("td"); a.textContent = url.length > 110 ? `${url.slice(0, 107)}…` : url; a.title = url;
+-    const b = document.createElement("td"); b.textContent = propio ? "este servidor local" : `EXTERNO (${origen})`;
++    const b = document.createElement("td"); b.textContent = propio ? "local (este equipo)" : `EXTERNO (${origen})`;
+     b.className = propio ? "ok" : "mal";
+     tr.append(a, b);
+     ui.tablaRed.appendChild(tr);
+@@ -47,7 +47,10 @@
+   const actualizarResumenRed = () => {
+     ui.redResumen.className = `red-resumen ${externas ? "mal" : "ok"}`;
+     ui.redResumen.textContent = `${vistos.size} recurso(s) pedidos por la página · peticiones externas: ${externas}` +
+-      ` · intentos bloqueados por la CSP: ${bloqueos.length}`;
++      ` · intentos bloqueados por la CSP: ${bloqueos.length}` +
++      // Con file:// Chrome y Edge no anotan los archivos locales en Resource Timing (comprobado en Chromium 141).
++      (location.protocol === "file:" ? " · abierta como archivo: los archivos locales no figuran en esta lista;" +
++        " la CSP (connect-src 'none') impide cualquier petición de red" : "");
+   };
+   try {
+     for (const e of performance.getEntriesByType("resource")) registrarRecurso(e.name);
+@@ -62,14 +65,15 @@
+ 
+   // ---------- Arranque ----------
+   if (typeof globalThis.AnalizadorArchivosAPI?.crearOCRLocal !== "function") {
+-    // analizador-archivos.js no se cargó (file://, integrity distinta o archivo ausente): el aviso estático sigue visible.
++    // analizador-archivos.js no se cargó (archivo ausente o bloqueado): el aviso estático sigue visible.
+     return;
+   }
+   ui.sinArrancar.hidden = true;
+   ui.panel.hidden = false;
+   ui.red.hidden = false;
+-  ui.origen.textContent = `Servido desde ${location.origin}`;
+-  ui.origen.className = `pastilla ${/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) ? "ok" : ""}`;
++  const local = location.protocol === "file:" || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
++  ui.origen.textContent = location.protocol === "file:" ? "Abierto como archivo local (sin servidor)" : `Servido desde ${location.origin}`;
++  ui.origen.className = `pastilla ${local ? "ok" : ""}`;
+   actualizarResumenRed();
+ 
+   // ---------- Elegir imagen ----------

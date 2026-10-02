@@ -22,6 +22,11 @@ Fase A aplicada: ../idefix1.0-fase-a/ (apartado 12 del informe). Sus pruebas est
   (corpus completo), resultados/faseA-interfaz/ (escenarios por la interfaz e instalaciones defectuosas) y
   resultados/capturas/faseA_*.png.
 
+Versión sin servidor: ../idefix1.0-sin-servidor/ (apartado 13 del informe). Pruebas en resultados/sinServidor/
+  (corpus completo abierto como file://), resultados/sinServidor-escenarios/ (seguridad, instalación
+  incompleta, demo, http, tiempos y memoria) y resultados/capturas/sinServidor_*.png. Herramientas en
+  herramientas/sin-servidor/ (con su LEEME). corpus/ incluye además cmap_chino.pdf y jpx_escaneada.pdf.
+
 Cómo repetirlo: apartado 11 del informe.
   Nota: herramientas/prueba-auditoria.html lleva el SRI del sellado usado en la auditoría; si sella su
   propia copia, cambie el atributo integrity por el que imprime sellar-idefix.py.

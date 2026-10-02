@@ -1,0 +1,9 @@
+### sonda.html (file://)
+{"paso":["protocolo file:","import(blob) OK version 6.2.108","Worker módulo blob creado"],"P":["pdfmjs","pdfworker","doc"]}
+(tiempo agotado)
+### sonda2.html (file://)
+{"fin":["módulo blob (pdf.worker.mjs): error «sin mensaje»","módulo blob trivial: error «sin mensaje»","clásico blob trivial: mensaje \"hola clásico\""],"paso":["módulo blob (pdf.worker.mjs): error «sin mensaje»","módulo blob trivial: error «sin mensaje»","clásico blob trivial: mensaje \"hola clásico\""],"P":["pdfmjs","pdfworker","doc"]}
+
+### sonda3.html (file://)
+{"fin":["import(blob) OK 6.2.108","import.meta sustituidos: 2 · export quitado: true","páginas 1 · texto: FACTURA  Número de factura: A-2025/0157 Fecha de expedición: 14/03/2025 Emisor: Construcci"],"paso":["import(blob) OK 6.2.108","import.meta sustituidos: 2 · export quitado: true","páginas 1 · texto: FACTURA  Número de factura: A-2025/0157 Fecha de expedición: 14/03/2025 Emisor: Construcci"],"P":["pdfmjs","pdfworker","doc"]}
+warning: Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.

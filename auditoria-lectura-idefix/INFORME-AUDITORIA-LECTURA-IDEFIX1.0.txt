@@ -448,3 +448,23 @@ Punto | Estado | Archivo | Línea | Evidencia | Impacto | Corrección | Priorida
     - Modelo dañado pero sellado: antes, cuelgue sin límite; ahora arranca sin OCR a los 60 s.
   Las notas por formato del apartado 0 no cambian: los veredictos de imágenes y PDF escaneados dependen de
   reconstruir tablas desde el OCR (fase B), que sigue pendiente.
+
+-----------------------------------------------------------------------------------------------------
+13. ANEXO · VERSIÓN SIN SERVIDOR (2026-10-02)
+-----------------------------------------------------------------------------------------------------
+  Entrega: idefix1.0-sin-servidor/ (Idefix1.0/ se abre con doble clic; código completo .txt,
+  sin-servidor.diff y CAMBIOS-SIN-SERVIDOR.txt con cada cambio, su línea y sus pruebas). Pruebas:
+  resultados/sinServidor/ (corpus), resultados/sinServidor-escenarios/, resultados/evaluacion_sinServidor.json
+  y resultados/capturas/sinServidor_*.png. Herramientas: herramientas/sin-servidor/.
+  Qué cambia: las librerías oficiales van en vendor-paquetes/*.paquete.js (base64 en <script> clásicos) y
+  analizador-archivos.js comprueba el tamaño y el SHA-256 de cada una (tabla AA_PAQUETES) antes de usarla;
+  sin manifiesto, sin fetch, sin servidor y sin nada que sellar. CSP con connect-src 'none'.
+  Medido (Chromium 141, página abierta como file://):
+    - Corpus de 72 documentos: resultado idéntico a la fase A en los 72; tiempo total 44,4 s (fase A 42,8 s).
+    - PDF con JPEG 2000 (WASM de PDF.js) y PDF con fuente china sin incrustar (CMaps): se leen; ambos
+      recursos se cargan bajo demanda.
+    - 0 peticiones externas. Paquetes alterados, carpeta incompleta, núcleo sin SIMD, chino bajo demanda,
+      ataque a la cola de paquetes, ruta con espacios y acentos y acceso por http: todo según lo previsto
+      (detalle en CAMBIOS-SIN-SERVIDOR.txt, apartado 3).
+    - Arranque 1,46 s (fase A 1,12 s); memoria JS retenida 60 MB (fase A 7 MB).
+  Las notas por formato no cambian: es la misma lectura. La fase B parte de esta versión.

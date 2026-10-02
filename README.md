@@ -21,6 +21,7 @@ Si su navegador tiene `file://` bloqueado por política de empresa, use el servi
 | [`verificacion/`](verificacion/) | Pruebas automáticas usadas (opcionales, no las necesita la aplicación) y sus resultados |
 | [`auditoria-lectura-idefix/`](auditoria-lectura-idefix/) | **Auditoría real de Idefix1.0**: calidad de lectura medida en cada formato (pdf, docx, xlsx, xls, html, htm, png, jpg, jpeg) con 72 documentos de verdad-terreno, valoración del código, lista priorizada y corpus reproducible |
 | [`idefix1.0-fase-a/`](idefix1.0-fase-a/) | **Idefix1.0 con la fase A aplicada**: los 17 archivos, el código completo en un único .txt, el diff y [`CAMBIOS-FASE-A.txt`](idefix1.0-fase-a/CAMBIOS-FASE-A.txt) (núcleos de Tesseract, idiomas del OCR, arranque sin OCR con aviso) |
+| [`idefix1.0-sin-servidor/`](idefix1.0-sin-servidor/) | **Idefix1.0 sin servidor (recomendada)**: doble clic en `Idefix1.0/index.html`, sin servidor, sin Node.js y sin sellar nada. Librerías oficiales en `vendor-paquetes/` (cargadas con `<script>` y comprobadas por SHA-256), código completo .txt, diff y [`CAMBIOS-SIN-SERVIDOR.txt`](idefix1.0-sin-servidor/CAMBIOS-SIN-SERVIDOR.txt) |
 
 ## Estructura
 
@@ -30,6 +31,7 @@ contexto-analisis/    cajetilla «Contexto del análisis» (módulo + demostraci
 verificacion/         pruebas, imágenes de prueba, capturas y resultados
 auditoria-lectura-idefix/  auditoría de lectura por formato de Idefix1.0 (informe, corpus, herramientas y resultados)
 idefix1.0-fase-a/          Idefix1.0 con la fase A aplicada (archivos, código completo .txt, diff y cambios)
+idefix1.0-sin-servidor/    Idefix1.0 sin servidor: Idefix1.0/ se abre con doble clic (código completo .txt, diff y cambios)
 ```
 
 Bibliotecas de terceros (incluidas como paquetes verificados por SHA-256): Tesseract.js 7.0.0 y

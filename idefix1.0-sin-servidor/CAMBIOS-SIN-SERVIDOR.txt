@@ -1,0 +1,167 @@
+=====================================================================================================
+IDEFIX1.0 · VERSIÓN SIN SERVIDOR — CAMBIOS Y PRUEBAS
+(sobre la fase A · AnalizadorArchivos 6.14.0 · 2 de octubre de 2026)
+=====================================================================================================
+
+Lo que pediste: cargar las librerías con etiquetas <script> y que funcione directamente, sin Node.js, sin
+servidor y sin configurar nada.
+
+Resultado: carpeta Idefix1.0/ → doble clic en index.html (Chrome o Edge). No hay servidor, ni manifiesto
+que sellar, ni nada que instalar. Comprobado en Chromium 141 abriendo la página como archivo (file://).
+
+Leyenda: ✅ comprobado aquí · ⚠️ no demostrable aquí (se dice por qué).
+
+-----------------------------------------------------------------------------------------------------
+1. CÓMO FUNCIONA (y por qué así)
+-----------------------------------------------------------------------------------------------------
+Con file:// Chrome y Edge bloquean fetch() de archivos locales, los workers creados desde un archivo, los
+workers de tipo módulo creados desde blob:, importScripts() de otra URL blob: dentro de un worker blob: y
+cualquier <script> con atributo integrity. Sí permiten <script src> clásicos, import() de una URL blob: y
+workers clásicos creados desde blob: (✅ todo comprobado en Chromium 141 con páginas de prueba).
+De ahí las cuatro piezas:
+
+  1) vendor-paquetes/*.paquete.js: cada archivo OFICIAL (PDF.js 6.2.108 legacy, Tesseract.js 7.0.0,
+     tesseract.js-core 7.0.0 y los modelos de idioma) va, sin modificar, en base64 dentro de un <script>
+     clásico que solo lo mete en una cola: self.IdefixPaquetes.push(["vendor/ruta", "<base64>"]).
+  2) analizador-archivos.js lleva fijados el tamaño y el SHA-256 de los 197 archivos oficiales (tabla
+     AA_PAQUETES). Antes de usar un archivo lo saca de la cola, lo decodifica y lo comprueba; si no
+     coincide, no lo usa y dice cuál es. Ya no hay manifiesto, ni fetch, ni nada que sellar.
+  3) El worker de PDF.js 6 es un módulo ES. Tras verificarlo, se adapta a worker clásico con dos cambios
+     exactos (2 apariciones de import.meta.url → self.location.href y se quita la línea final
+     «export { WorkerMessageHandler };»). Si el archivo no tiene exactamente esa forma, no se usa.
+  4) Tesseract: núcleo WebAssembly + worker + modelos de idioma van en UN solo blob: (con file://, un
+     worker blob: no puede importar otra URL blob:). Los idiomas se sirven desde memoria dentro del worker
+     y se vuelven a comprobar allí con su SHA-256. La aplicación elige el núcleo (relaxed SIMD → SIMD →
+     sin SIMD) entre los disponibles: basta con uno compatible.
+
+Lo que carga index.html con etiquetas <script>: PDF.js (pdf.mjs y su worker), Tesseract.js, su worker, el
+núcleo con SIMD y los idiomas spa, cat, eus, eng y fra. El resto (núcleo sin SIMD, chino, fuentes estándar,
+CMaps y WASM de PDF.js) lo carga la aplicación solo si hace falta, insertando su <script>, con la misma
+comprobación.
+
+-----------------------------------------------------------------------------------------------------
+2. CAMBIOS POR ARCHIVO (líneas de Idefix1.0/analizador-archivos.js de esta carpeta, 17.058 líneas,
+   SHA-256 b823331bc7c8a1870f2dfef4547fa737b453a35b39fbfdb62a4baa4cb3a6975e). Diff completo: sin-servidor.diff
+-----------------------------------------------------------------------------------------------------
+analizador-archivos.js
+  5–23        Cabecera: bloque «Versión SIN SERVIDOR» y la viñeta A1 de la fase A reescrita.
+  272–289     CSP de referencia: connect-src 'none'.
+  389         Nueva opción origenLibrerias: "paquetes" (por defecto) | "vendor" (instalación con servidor
+              de la fase A, que se conserva). Validación en 8695.
+  7419–7706   Bloque 2b, librerías en paquetes:
+                7430–7628 AA_PAQUETES (ruta oficial → SHA-256, tamaño, paquete);
+                7634–7647 base64 ↔ bytes; 7650–7662 aaTomarDeColaPaquetes (saca de la cola);
+                7665–7687 aaCargarScriptPaquete (inserta el <script>, límite 60 s, mensaje si falta);
+                7690–7706 aaObtenerPaquete (comprueba tamaño y SHA-256; «Integridad fallida en …» en 7705).
+  7713–7890   IntegridadLocal: modo paquetes (constructor, cargarDePaquetes 7751, cargar 7764 →
+              cargarManifiesto 7768 para el modo con servidor; obtenerVerificado lee de los paquetes en 7856).
+  8035–8041   cargarPDFJSLocal: el worker verificado se adapta y se ejecuta como worker clásico.
+  8073–8086   aaWorkerPDFClasico: los dos cambios exactos y sus comprobaciones (8078 y 8082).
+  8128–8173   Tesseract: ruta de idiomas en memoria, detección de SIMD / relaxed SIMD (aaWasmAdmite) y
+              preludio del worker (fetch solo de los idiomas que lleva dentro, comprobados con SHA-256 y
+              borrados tras servirlos; importScripts, XMLHttpRequest, WebSocket, EventSource y sendBeacon
+              anulados: 8157–8170).
+  8182–8202   aaLeerNucleoTesseract: elige el núcleo; si falta el paquete de uno, usa el siguiente; si uno
+              está alterado, se detiene y lo dice.
+  8210–8292   crearWorkerTesseractLocal: un único blob: (preludio + núcleo + worker), tiempo máximo de la
+              fase A y cierre del worker si falla.
+  8746        Control de «scripts de terceros»: con file://, los archivos de la carpeta tienen origen
+              «file://» y los blob: creados por la página «null» (✅ comprobado); no son de terceros.
+  8774, 8786  Error de file:// y aviso de SRI solo en el modo con servidor (origenLibrerias "vendor").
+  12747       El worker de PDF.js se crea como worker clásico.
+  13293       La factoría crea el verificador en modo paquetes.
+  13312–13317 Mensaje si falla el OCR: «Vuelve a copiar la carpeta vendor-paquetes completa…» (ya no habla
+              de sellar).
+  14099–14103 Panel con el OCR desactivado: «abre index.html».
+  16941–16983 AnalizadorArchivosAPI.crearOCRLocal funciona con file:// (origenLibrerias "paquetes").
+  17030–17041 Bloque de uso del final del archivo.
+
+index.html (líneas 6–35), index-sin-ocr.html (6–20), demo-ocr.html (4–12, 22–25, 72–78)
+  - Sin atributo integrity (con file:// impide cargar el script). La CSP pasa de connect-src 'self' a
+    connect-src 'none' (la página no puede hacer ninguna petición).
+  - Etiquetas <script src="vendor-paquetes/…"> antes de analizador-archivos.js.
+  - demo-ocr.html: el aviso estático ya no pide el servidor.
+demo-ocr.js (líneas 6–8, 41, 50–53, 68, 74–76): textos para file:// («Abierto como archivo local»;
+  Resource Timing no anota los archivos locales y se dice).
+Nuevos: LEEME.txt, vendor-paquetes/ (16 paquetes, LEEME.txt con los SHA-256 de los 197 archivos oficiales
+  y licencias/).
+Ya no hacen falta (siguen en idefix1.0-fase-a/ para quien quiera la instalación con servidor):
+  servidor-local.ps1, servidor-local.py, iniciar-idefix.bat, vendor/, herramientas/generar-manifiesto.*.
+
+-----------------------------------------------------------------------------------------------------
+3. PRUEBAS (Chromium 141.0.7390.37 · página abierta como file:// · sobre una copia exacta de Idefix1.0/)
+   Pruebas y resultados: auditoria-lectura-idefix/resultados/sinServidor/ y herramientas/
+-----------------------------------------------------------------------------------------------------
+Lectura
+  ✅ Corpus completo de la auditoría (72 documentos, 9 formatos): mismo resultado que la fase A en los 72
+     (comparación campo a campo de cada JSON; solo cambian las marcas de tiempo y el documentId aleatorio).
+     Tiempo total 44,4 s (fase A 42,8 s).
+  ✅ PDF escaneado con imagen JPEG 2000: se carga el paquete WASM de PDF.js bajo demanda y el OCR lee la
+     factura (total 1.639,07).
+  ✅ PDF con fuente china no incrustada (CMap UniGB-UCS2-H): se cargan los CMaps bajo demanda; texto
+     «发票号码 A-2025/0157 合计 1.639,07 EUR» correcto.
+  ✅ Por la interfaz (index.html): xlsx, docx, png y PDF escaneado con OCR, PDF digital; 0 avisos nuevos.
+  ✅ demo-ocr.html: factura PNG reconocida en 1,3 s, confianza media 91 %.
+  ✅ index-sin-ocr.html: arranca en 0,26 s; el PDF escaneado sale «partial» con el aviso
+     PDF_PAGE_WITHOUT_TEXT (igual que antes).
+  ✅ Carpeta en una ruta con espacios y acentos («Mis documentos/Idefix José ñ»): funciona.
+  ✅ La misma carpeta servida por http://127.0.0.1 (sin cabeceras especiales): también funciona.
+
+Seguridad e instalación incompleta
+  ✅ Red: 0 peticiones externas en todas las pruebas. Las únicas peticiones son archivos de la carpeta y
+     blob: creados por la página.
+  ✅ pdf.mjs alterado (1 carácter del base64): no arranca. «No se pudo cargar PDF.js LOCAL 6.2.108:
+     Integridad fallida en vendor/pdfjs-legacy/build/pdf.mjs: el contenido de vendor-paquetes/… no
+     coincide con el SHA-256 del archivo oficial.»
+  ✅ Modelo spa alterado: no arranca (como en la fase A: un archivo alterado detiene todo) y dice cuál.
+  ✅ WASM de PDF.js alterado: ese PDF falla con «Un recurso local de PDF.js no superó la verificación de
+     integridad … openjpeg.wasm …». PDF.js intentó cargar su módulo de reserva sin WASM y la CSP lo
+     bloqueó (la ruta es una marca opaca, no una URL). Los demás PDF se leen.
+  ✅ worker núcleo incrustado alterado: no arranca («no coincide con su SHA-256»).
+  ✅ Falta el paquete del núcleo con SIMD: usa el núcleo sin SIMD y el OCR funciona.
+  ✅ Navegador sin SIMD (simulado: WebAssembly.validate rechaza SIMD): carga bajo demanda el núcleo sin
+     SIMD y el OCR funciona. ⚠️ No he podido probar un navegador real sin SIMD.
+  ✅ Chino marcado en el panel: carga bajo demanda el paquete chi_sim y el OCR sigue funcionando.
+  ✅ Falta la carpeta vendor-paquetes: no arranca y dice «no se encontró vendor-paquetes/… copia la carpeta
+     vendor-paquetes completa junto a la página».
+  ✅ Ataque a la cola: un script mete en self.IdefixPaquetes, antes que los oficiales, un pdf.mjs falso con
+     código y un modelo spa falso. La aplicación los descarta (no coinciden con el SHA-256), usa los
+     oficiales, lee los documentos y el código falso no se ejecuta (globalThis.__pwned sigue sin definir).
+  ✅ ESLint (misma configuración que la auditoría): 36 errores y 73 avisos, los mismos que la fase A; 0
+     nuevos. Sin eval, new Function, CDN ni scripts externos.
+
+Coste
+  ✅ Arranque hasta la interfaz con OCR: 1,46 s de media (fase A con servidor: 1,12 s).
+  ✅ Memoria JavaScript de la página tras la recolección: 60 MB (fase A: 7 MB). El navegador conserva el
+     texto de los paquetes ya ejecutados; con solo los paquetes cargados ya son 42 MB. Comprobé que quitar
+     las tildes de los paquetes no lo reduce, así que no lo he cambiado.
+  ✅ Tamaño de la carpeta: 34 MB (el base64 ocupa un tercio más que los archivos originales).
+
+-----------------------------------------------------------------------------------------------------
+4. SEGURIDAD: QUÉ CAMBIA FRENTE A LA INSTALACIÓN CON SERVIDOR
+-----------------------------------------------------------------------------------------------------
+  - Mejor: connect-src 'none' (antes 'self'); no hay manifiesto ni servidor que configurar mal; el
+    verificador no descarga nada.
+  - Igual: cada librería se comprueba con su SHA-256 antes de usarse; PDF.js, su worker, el worker núcleo
+    y Tesseract se ejecutan desde blob: con los bytes verificados; los workers no tienen red.
+  - Distinto: con file:// no se puede usar el atributo integrity en <script> (Chrome y Edge no cargarían
+    el archivo). La raíz de confianza es analizador-archivos.js, que lleva dentro los SHA-256. Quien pueda
+    modificar los archivos de la carpeta puede modificar también ese archivo (y, con servidor, también
+    podía modificar index.html y su integrity). Guarda la carpeta donde solo tú puedas escribir.
+  - Los paquetes no son de confianza por sí mismos: solo meten datos en una cola. Nada se ejecuta ni se
+    usa sin pasar la comprobación (ver «Ataque a la cola»).
+
+-----------------------------------------------------------------------------------------------------
+5. NO DEMOSTRABLE AQUÍ
+-----------------------------------------------------------------------------------------------------
+  ⚠️ Chrome y Edge de marca y Windows: en este entorno solo hay Chromium 141 en Linux. Mismo motor, pero no
+     he podido abrir la carpeta con doble clic en Windows (rutas file:///C:/…).
+  ⚠️ Un navegador real sin SIMD de WebAssembly (solo simulado).
+  ⚠️ Firefox y Safari: no probados.
+
+-----------------------------------------------------------------------------------------------------
+6. MANTENIMIENTO (no hace falta para usar Idefix)
+-----------------------------------------------------------------------------------------------------
+  herramientas/empaquetar-idefix.py genera vendor-paquetes/ y la tabla AA_PAQUETES a partir de los archivos
+  oficiales (solo si algún día se cambia de versión de PDF.js o Tesseract.js). Es Python, se usa una vez y
+  no forma parte de la aplicación.

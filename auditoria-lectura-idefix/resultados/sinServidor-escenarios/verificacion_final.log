@@ -1,0 +1,825 @@
+### corpus
+png09    OK    2677 ms complete
+inicio(ms) 1289 peticiones 134 externas 0 consola 1
+### base
+{
+ "nombre": "final-base",
+ "msArranque": 2354,
+ "errorArranque": null,
+ "panelInicial": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "panelFinal": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "documentos": [
+  {
+   "archivo": "png01_factura.png",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": []
+  },
+  {
+   "archivo": "pdfE1_factura_escaneada.pdf",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": []
+  },
+  {
+   "archivo": "pdf01_factura_reportlab.pdf",
+   "estado": "complete",
+   "ocr": "not-needed",
+   "idiomas": null,
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "PDF_TABLES_GEOMETRIC_HEURISTIC: Se detectaron 1 tabla(s) mediante alineación geométrica de texto PDF.js."
+   ]
+  },
+  {
+   "archivo": "jpx_escaneada.pdf",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": []
+  },
+  {
+   "archivo": "cmap_chino.pdf",
+   "estado": "complete",
+   "ocr": "not-needed",
+   "idiomas": null,
+   "total": null,
+   "texto": "",
+   "avisos": []
+  }
+ ],
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "tesseract-7.0.0.min.js.paquete.js",
+  "tesseract-7.0.0-worker.min.js.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tessdata-spa.traineddata.gz.paquete.js",
+  "tessdata-cat.traineddata.gz.paquete.js",
+  "tessdata-eus.traineddata.gz.paquete.js",
+  "tessdata-eng.traineddata.gz.paquete.js",
+  "tessdata-fra.traineddata.gz.paquete.js",
+  "pdfjs-6.2.108-legacy-fuentes.paquete.js",
+  "pdfjs-6.2.108-legacy-wasm.paquete.js",
+  "pdfjs-6.2.108-legacy-cmaps.paquete.js"
+ ],
+ "externas": [],
+ "consola": []
+}
+### alt-pdf
+{
+ "nombre": "final-alt-pdf",
+ "msArranque": 294,
+ "errorArranque": "El analizador no se ha iniciado\nNo se pudo cargar PDF.js LOCAL 6.2.108: Integridad fallida en vendor/pdfjs-legacy/build/pdf.mjs: el contenido de vendor-paquetes/pdfjs-6.2.108-legacy-pdf.mjs.paquete.js no coincide con el SHA-256 del archivo oficial.\nNo se ha procesado ningún archivo. Corrige la causa indicada y recarga la página.",
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "tesseract-7.0.0.min.js.paquete.js",
+  "tesseract-7.0.0-worker.min.js.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tessdata-spa.traineddata.gz.paquete.js",
+  "tessdata-cat.traineddata.gz.paquete.js",
+  "tessdata-eus.traineddata.gz.paquete.js",
+  "tessdata-eng.traineddata.gz.paquete.js",
+  "tessdata-fra.traineddata.gz.paquete.js"
+ ],
+ "externas": [],
+ "consola": []
+}
+### alt-spa
+{
+ "nombre": "final-alt-spa",
+ "msArranque": 418,
+ "errorArranque": "El analizador no se ha iniciado\nIntegridad fallida en vendor/tessdata/spa.traineddata.gz: el contenido de vendor-paquetes/tessdata-spa.traineddata.gz.paquete.js no coincide con el SHA-256 del archivo oficial. Vuelve a copiar la carpeta vendor-paquetes completa de la entrega original (idiomas: spa, cat, eus, eng, fra), o desactiva el OCR con data-ocr=\"false\" en la etiqueta <script> (o { ocr: false } si creas el analizador por código).\nNo se ha procesado ningún archivo. Corrige la causa indicada y recarga la página.",
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "tesseract-7.0.0.min.js.paquete.js",
+  "tesseract-7.0.0-worker.min.js.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tessdata-spa.traineddata.gz.paquete.js",
+  "tessdata-cat.traineddata.gz.paquete.js",
+  "tessdata-eus.traineddata.gz.paquete.js",
+  "tessdata-eng.traineddata.gz.paquete.js",
+  "tessdata-fra.traineddata.gz.paquete.js"
+ ],
+ "externas": [],
+ "consola": []
+}
+### alt-wasm
+{
+ "nombre": "final-alt-wasm",
+ "msArranque": 1496,
+ "errorArranque": null,
+ "panelInicial": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "panelFinal": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "documentos": [
+  {
+   "archivo": "jpx_escaneada.pdf",
+   "estado": "failed",
+   "ocr": "not-needed",
+   "idiomas": null,
+   "total": null,
+   "texto": "",
+   "avisos": []
+  },
+  {
+   "archivo": "pdf01_factura_reportlab.pdf",
+   "estado": "complete",
+   "ocr": "not-needed",
+   "idiomas": null,
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "PDF_TABLES_GEOMETRIC_HEURISTIC: Se detectaron 1 tabla(s) mediante alineación geométrica de texto PDF.js."
+   ]
+  }
+ ],
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "tesseract-7.0.0.min.js.paquete.js",
+  "tesseract-7.0.0-worker.min.js.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tessdata-spa.traineddata.gz.paquete.js",
+  "tessdata-cat.traineddata.gz.paquete.js",
+  "tessdata-eus.traineddata.gz.paquete.js",
+  "tessdata-eng.traineddata.gz.paquete.js",
+  "tessdata-fra.traineddata.gz.paquete.js",
+  "pdfjs-6.2.108-legacy-fuentes.paquete.js",
+  "pdfjs-6.2.108-legacy-wasm.paquete.js"
+ ],
+ "externas": [
+  "aa-verificado:wasm/openjpeg_nowasm_fallback.js"
+ ],
+ "consola": [
+  "warning: Warning: #instantiateWasm: UnknownErrorException: Integridad fallida en vendor/pdfjs-legacy/web/wasm/openjpeg.wasm: el contenido de vendor-paquetes/pdfjs-6.2.108-legacy-wasm.paquete.js no coincide con el SHA-256 del archivo oficial.",
+  "requestfailed: aa-verificado:wasm/openjpeg_nowasm_fallback.js csp",
+  "warning: Warning: #getJsModule: TypeError: Failed to fetch dynamically imported module: aa-verificado:wasm/openjpeg_nowasm_fallback.js",
+  "warning: Warning: Unable to decode image \"img_p0_1\": \"JpxError: OpenJPEG failed to initialize\".",
+  "warning: Warning: Dependent image isn't ready yet"
+ ]
+}
+### sin-simd
+{
+ "nombre": "final-sin-simd",
+ "msArranque": 1444,
+ "errorArranque": null,
+ "panelInicial": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "panelFinal": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "documentos": [
+  {
+   "archivo": "png01_factura.png",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": []
+  }
+ ],
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "tesseract-7.0.0.min.js.paquete.js",
+  "tesseract-7.0.0-worker.min.js.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tessdata-spa.traineddata.gz.paquete.js",
+  "tessdata-cat.traineddata.gz.paquete.js",
+  "tessdata-eus.traineddata.gz.paquete.js",
+  "tessdata-eng.traineddata.gz.paquete.js",
+  "tessdata-fra.traineddata.gz.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tesseract-core-7.0.0-lstm.wasm.js.paquete.js"
+ ],
+ "externas": [],
+ "consola": [
+  "requestfailed: simd/vendor-paquetes/tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js net::ERR_FILE_NOT_FOUND",
+  "error: Failed to load resource: net::ERR_FILE_NOT_FOUND",
+  "requestfailed: simd/vendor-paquetes/tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js net::ERR_FILE_NOT_FOUND",
+  "error: Failed to load resource: net::ERR_FILE_NOT_FOUND"
+ ]
+}
+### sin-paquetes
+{
+ "nombre": "final-sin-paquetes",
+ "msArranque": 96,
+ "errorArranque": "El analizador no se ha iniciado\nNo se pudo cargar PDF.js LOCAL 6.2.108: no se encontró vendor-paquetes/pdfjs-6.2.108-legacy-pdf.mjs.paquete.js: copia la carpeta vendor-paquetes completa junto a la página\nNo se ha procesado ningún archivo. Corrige la causa indicada y recarga la página.",
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "tesseract-7.0.0.min.js.paquete.js",
+  "tesseract-7.0.0-worker.min.js.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tessdata-spa.traineddata.gz.paquete.js",
+  "tessdata-cat.traineddata.gz.paquete.js",
+  "tessdata-eus.traineddata.gz.paquete.js",
+  "tessdata-eng.traineddata.gz.paquete.js",
+  "tessdata-fra.traineddata.gz.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js"
+ ],
+ "externas": [],
+ "consola": [
+  "requestfailed: l/sin-paquetes/vendor-paquetes/pdfjs-6.2.108-legacy-pdf.mjs.paquete.js net::ERR_FILE_NOT_FOUND",
+  "error: Failed to load resource: net::ERR_FILE_NOT_FOUND",
+  "requestfailed: aquetes/vendor-paquetes/pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js net::ERR_FILE_NOT_FOUND",
+  "error: Failed to load resource: net::ERR_FILE_NOT_FOUND",
+  "requestfailed: x/final/sin-paquetes/vendor-paquetes/tesseract-7.0.0.min.js.paquete.js net::ERR_FILE_NOT_FOUND",
+  "error: Failed to load resource: net::ERR_FILE_NOT_FOUND",
+  "requestfailed: /sin-paquetes/vendor-paquetes/tesseract-7.0.0-worker.min.js.paquete.js net::ERR_FILE_NOT_FOUND",
+  "error: Failed to load resource: net::ERR_FILE_NOT_FOUND"
+ ]
+}
+### nav-sin-simd
+{
+ "nombre": "final-nav-sin-simd",
+ "msArranque": 1520,
+ "errorArranque": null,
+ "panelInicial": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "panelFinal": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "documentos": [
+  {
+   "archivo": "png01_factura.png",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": []
+  }
+ ],
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "tesseract-7.0.0.min.js.paquete.js",
+  "tesseract-7.0.0-worker.min.js.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tessdata-spa.traineddata.gz.paquete.js",
+  "tessdata-cat.traineddata.gz.paquete.js",
+  "tessdata-eus.traineddata.gz.paquete.js",
+  "tessdata-eng.traineddata.gz.paquete.js",
+  "tessdata-fra.traineddata.gz.paquete.js",
+  "tesseract-core-7.0.0-lstm.wasm.js.paquete.js"
+ ],
+ "externas": [],
+ "consola": []
+}
+### chino
+{
+ "nombre": "final-chino",
+ "msArranque": 1612,
+ "errorArranque": null,
+ "panelInicial": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "panelFinal": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés, Chino simplificado",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra",
+   "chi_sim"
+  ]
+ },
+ "documentos": [
+  {
+   "archivo": "png01_factura.png",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra",
+    "chi_sim"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": []
+  }
+ ],
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "tesseract-7.0.0.min.js.paquete.js",
+  "tesseract-7.0.0-worker.min.js.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tessdata-spa.traineddata.gz.paquete.js",
+  "tessdata-cat.traineddata.gz.paquete.js",
+  "tessdata-eus.traineddata.gz.paquete.js",
+  "tessdata-eng.traineddata.gz.paquete.js",
+  "tessdata-fra.traineddata.gz.paquete.js",
+  "tessdata-chi_sim.traineddata.gz.paquete.js"
+ ],
+ "externas": [],
+ "consola": []
+}
+### cola
+{
+ "nombre": "final-cola",
+ "msArranque": 1511,
+ "errorArranque": null,
+ "panelInicial": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "panelFinal": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "documentos": [
+  {
+   "archivo": "png01_factura.png",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": []
+  },
+  {
+   "archivo": "pdfE1_factura_escaneada.pdf",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": []
+  },
+  {
+   "archivo": "pdf01_factura_reportlab.pdf",
+   "estado": "complete",
+   "ocr": "not-needed",
+   "idiomas": null,
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "PDF_TABLES_GEOMETRIC_HEURISTIC: Se detectaron 1 tabla(s) mediante alineación geométrica de texto PDF.js."
+   ]
+  }
+ ],
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "tesseract-7.0.0.min.js.paquete.js",
+  "tesseract-7.0.0-worker.min.js.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tessdata-spa.traineddata.gz.paquete.js",
+  "tessdata-cat.traineddata.gz.paquete.js",
+  "tessdata-eus.traineddata.gz.paquete.js",
+  "tessdata-eng.traineddata.gz.paquete.js",
+  "tessdata-fra.traineddata.gz.paquete.js",
+  "pdfjs-6.2.108-legacy-fuentes.paquete.js"
+ ],
+ "externas": [],
+ "consola": []
+}
+### alt-analizador
+{
+ "nombre": "final-alt-analizador",
+ "msArranque": 265,
+ "errorArranque": "El analizador no se ha iniciado\nEl worker núcleo incrustado no coincide con su SHA-256 (SHA256_WORKER_NUCLEO): el archivo se ha modificado.\nNo se ha procesado ningún archivo. Corrige la causa indicada y recarga la página.",
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "tesseract-7.0.0.min.js.paquete.js",
+  "tesseract-7.0.0-worker.min.js.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tessdata-spa.traineddata.gz.paquete.js",
+  "tessdata-cat.traineddata.gz.paquete.js",
+  "tessdata-eus.traineddata.gz.paquete.js",
+  "tessdata-eng.traineddata.gz.paquete.js",
+  "tessdata-fra.traineddata.gz.paquete.js"
+ ],
+ "externas": [],
+ "consola": []
+}
+### acentos
+{
+ "nombre": "final-acentos",
+ "msArranque": 1617,
+ "errorArranque": null,
+ "panelInicial": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "panelFinal": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "documentos": [
+  {
+   "archivo": "png01_factura.png",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": []
+  },
+  {
+   "archivo": "pdfE1_factura_escaneada.pdf",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": []
+  },
+  {
+   "archivo": "pdf01_factura_reportlab.pdf",
+   "estado": "complete",
+   "ocr": "not-needed",
+   "idiomas": null,
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "PDF_TABLES_GEOMETRIC_HEURISTIC: Se detectaron 1 tabla(s) mediante alineación geométrica de texto PDF.js."
+   ]
+  }
+ ],
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "tesseract-7.0.0.min.js.paquete.js",
+  "tesseract-7.0.0-worker.min.js.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tessdata-spa.traineddata.gz.paquete.js",
+  "tessdata-cat.traineddata.gz.paquete.js",
+  "tessdata-eus.traineddata.gz.paquete.js",
+  "tessdata-eng.traineddata.gz.paquete.js",
+  "tessdata-fra.traineddata.gz.paquete.js",
+  "pdfjs-6.2.108-legacy-fuentes.paquete.js"
+ ],
+ "externas": [],
+ "consola": []
+}
+### sin-ocr
+{
+ "nombre": "final-sin-ocr",
+ "msArranque": 262,
+ "errorArranque": null,
+ "panelInicial": {
+  "resumen": "OCR (imágenes y PDF escaneados): desactivado",
+  "aviso": null,
+  "marcados": []
+ },
+ "panelFinal": {
+  "resumen": "OCR (imágenes y PDF escaneados): desactivado",
+  "aviso": null,
+  "marcados": []
+ },
+ "documentos": [
+  {
+   "archivo": "png01_factura.png",
+   "estado": "complete",
+   "ocr": "not-requested",
+   "idiomas": null,
+   "total": null,
+   "texto": "",
+   "avisos": []
+  },
+  {
+   "archivo": "pdfE1_factura_escaneada.pdf",
+   "estado": "partial",
+   "ocr": "not-requested",
+   "idiomas": null,
+   "total": null,
+   "texto": "",
+   "avisos": [
+    "PDF_PAGE_WITHOUT_TEXT: La página 1 no tiene texto digital suficiente y el OCR está desactivado; su contenido puede no estar incluido."
+   ]
+  },
+  {
+   "archivo": "pdf01_factura_reportlab.pdf",
+   "estado": "complete",
+   "ocr": "not-requested",
+   "idiomas": null,
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "PDF_TABLES_GEOMETRIC_HEURISTIC: Se detectaron 1 tabla(s) mediante alineación geométrica de texto PDF.js."
+   ]
+  }
+ ],
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-fuentes.paquete.js"
+ ],
+ "externas": [],
+ "consola": []
+}
+### http
+{
+ "nombre": "final-http",
+ "msArranque": 1493,
+ "errorArranque": null,
+ "panelInicial": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "panelFinal": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "documentos": [
+  {
+   "archivo": "png01_factura.png",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": []
+  },
+  {
+   "archivo": "pdfE1_factura_escaneada.pdf",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": []
+  },
+  {
+   "archivo": "pdf01_factura_reportlab.pdf",
+   "estado": "complete",
+   "ocr": "not-needed",
+   "idiomas": null,
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "PDF_TABLES_GEOMETRIC_HEURISTIC: Se detectaron 1 tabla(s) mediante alineación geométrica de texto PDF.js."
+   ]
+  }
+ ],
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "tesseract-7.0.0.min.js.paquete.js",
+  "tesseract-7.0.0-worker.min.js.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tessdata-spa.traineddata.gz.paquete.js",
+  "tessdata-cat.traineddata.gz.paquete.js",
+  "tessdata-eus.traineddata.gz.paquete.js",
+  "tessdata-eng.traineddata.gz.paquete.js",
+  "tessdata-fra.traineddata.gz.paquete.js",
+  "pdfjs-6.2.108-legacy-fuentes.paquete.js"
+ ],
+ "externas": [],
+ "consola": []
+}
+### demo
+{
+ "sinArrancarVisible": false,
+ "origen": "Abierto como archivo local (sin servidor)",
+ "segundos": 1.3,
+ "mensaje": "Listo: 16 línea(s) en 1 s · confianza media 91 %.",
+ "motor": "Motor OCR: Tesseract.js local · español (spa) · verificado",
+ "texto": "Número de factura: A-2025/0157\nFecha de expedición: 14/03/2025\nEmisor: Construcciones Muñoz Ibáñez, S.L.\nNIF emisor: B12345674\nDomicilio: C/ Mayor 12, 28013 Madrid\nCliente: Talleres Peña Gutiérrez, S.A.\nNIF cliente: A58818501\nDomicilio cliente: Avda. de la Constitución 45, 41001 Sevilla\n[cometo | Cantidad] — precio] importe]\nReparación de cubierta 850,00 850,00\nSustitución de canalón (m) 32,05 384",
+ "redResumen": "0 recurso(s) pedidos por la página · peticiones externas: 0 · intentos bloqueados por la CSP: 0 · abierta como archivo: los archivos locales no figuran en esta lista; la CSP (connect-src 'none') impide cualquier petición de red",
+ "csp": "",
+ "peticiones": [
+  "file://…/base/demo-ocr.html",
+  "file://…/base/demo-ocr.css",
+  "file://…/vendor-paquetes/tesseract-7.0.0.min.js.paquete.js",
+  "file://…/vendor-paquetes/tesseract-7.0.0-worker.min.js.paquete.js",
+  "file://…/vendor-paquetes/tesseract-core-7.0.0-simd-lstm.wasm.js.pa",
+  "file://…/vendor-paquetes/tessdata-spa.traineddata.gz.paquete.js",
+  "file://…/base/analizador-archivos.js",
+  "file://…/base/demo-ocr.js",
+  "blob:null/0ecfed1f-fcb9-45f2-b8b3-5f9fd8530fb4",
+  "blob:null/7f501053-473e-4ab7-ad08-1892ec1ffb3e"
+ ],
+ "consola": []
+}
+### tiempos
+fase A (http, vendor)        [1126,"32 MB",1127,"32 MB",1110,"32 MB",1099,"32 MB",1124,"32 MB"]
+sin servidor (file://)       [1479,"87 MB",1437,"87 MB",1452,"87 MB",1487,"87 MB",1463,"87 MB"]
+### memoria
+fase A (http, vendor)        antes de GC 30 MB · tras GC 7 MB · cola pendiente: []
+sin servidor (file://)       antes de GC 87 MB · tras GC 60 MB · cola pendiente: []
+### FIN
