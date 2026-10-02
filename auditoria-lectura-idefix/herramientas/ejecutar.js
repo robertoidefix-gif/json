@@ -5,7 +5,7 @@ const fs = require('fs'), path = require('path');
 const OUT = path.resolve(process.argv[2]);
 const CONFIG = process.argv[3] || 'prod';
 const SOLO = process.argv[4] ? new Set(process.argv[4].split(',')) : null;
-const CONFIGS = { prod: { ocr: true }, spa: { ocr: true, idiomasTesseract: ['spa'] }, latinos: { ocr: true, idiomasTesseract: ['spa', 'cat', 'eus', 'eng', 'fra'] } };
+const CONFIGS = { prod: { ocr: true }, spa: { ocr: true, idiomasTesseract: ['spa'] }, latinos: { ocr: true, idiomasTesseract: ['spa', 'cat', 'eus', 'eng', 'fra'] }, sinocr: { ocr: false } };
 const verdad = JSON.parse(fs.readFileSync(path.join(OUT, 'verdad.json'), 'utf8'));
 const DIR = path.join(OUT, 'resultados', process.env.ETIQUETA || CONFIG);
 fs.mkdirSync(DIR, { recursive: true });

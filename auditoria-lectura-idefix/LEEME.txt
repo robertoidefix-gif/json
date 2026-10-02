@@ -27,6 +27,10 @@ Versión sin servidor: ../idefix1.0-sin-servidor/ (apartado 13 del informe). Pru
   incompleta, demo, http, tiempos y memoria) y resultados/capturas/sinServidor_*.png. Herramientas en
   herramientas/sin-servidor/ (con su LEEME). corpus/ incluye además cmap_chino.pdf y jpx_escaneada.pdf.
 
+Fase B: ../idefix1.0-fase-b/ (apartado 14 del informe). Pruebas en resultados/faseB/ (corpus completo),
+  resultados/faseB-casos/ (casos de borde y OCR desactivado), resultados/faseB-escenarios/ (interfaz,
+  seguridad, demo, tiempos y memoria) y resultados/capturas/faseB_*.png. Herramientas en herramientas/fase-b/.
+
 Cómo repetirlo: apartado 11 del informe.
   Nota: herramientas/prueba-auditoria.html lleva el SRI del sellado usado en la auditoría; si sella su
   propia copia, cambie el atributo integrity por el que imprime sellar-idefix.py.

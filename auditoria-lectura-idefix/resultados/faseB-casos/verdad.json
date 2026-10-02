@@ -1,0 +1,110 @@
+[
+ {
+  "id": "b3x1",
+  "archivo": "b3_referencias_mixtas.xlsx",
+  "cajetilla": "otros",
+  "verdad": "faseB",
+  "checks": [],
+  "mime": "",
+  "nota": "Celdas y filas con r, sin r y con una r no válida",
+  "esperado": {
+   "celdas": {
+    "A1": "Concepto",
+    "B1": "Importe",
+    "A2": "Uno",
+    "B2": "10",
+    "C5": "x",
+    "D5": "7",
+    "A6": "Fin"
+   },
+   "avisos": [
+    "XLSX_IMPLICIT_CELL_POSITIONS",
+    "XLSX_INVALID_CELL_REFERENCES"
+   ],
+   "estado": "partial"
+  }
+ },
+ {
+  "id": "b2h1",
+  "archivo": "b2_rowspan_colspan.html",
+  "cajetilla": "otros",
+  "verdad": "faseB",
+  "checks": [],
+  "mime": "",
+  "nota": "rowspan y colspan juntos, también en la última columna",
+  "esperado": {
+   "filas": [
+    [
+     "Grupo",
+     "Concepto",
+     "Importe y tipo",
+     null,
+     "Nota"
+    ],
+    [
+     "G1",
+     "Alfa",
+     "100,00",
+     "21",
+     "revisar"
+    ],
+    [
+     "G1",
+     "Beta",
+     "50,00 (exento)",
+     null,
+     "revisar"
+    ],
+    [
+     "G1",
+     "Gamma",
+     "50,00 (exento)",
+     null,
+     "ok"
+    ],
+    [
+     "G2",
+     "Delta",
+     "7,00",
+     "10",
+     "ok"
+    ]
+   ],
+   "combinada_desde": {
+    "2,0": 2,
+    "3,0": 2,
+    "2,4": 2,
+    "3,2": 3
+   },
+   "avisos": [
+    "HTML_ROWSPAN_EXPANDED"
+   ]
+  }
+ },
+ {
+  "id": "b1p1",
+  "archivo": "b1_digital_con_imagen.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseB",
+  "checks": [],
+  "mime": "",
+  "nota": "PDF digital con mucho texto y una imagen grande sin texto",
+  "esperado": {
+   "ocr_pagina": "no",
+   "bloques_ocr": 0
+  }
+ },
+ {
+  "id": "b1p2",
+  "archivo": "b1_escaneo_con_capa_texto.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseB",
+  "checks": [],
+  "mime": "",
+  "nota": "Escaneo con capa de texto invisible (PDF buscable): no necesita OCR",
+  "esperado": {
+   "ocr_pagina": "no",
+   "bloques_ocr": 0
+  }
+ }
+]

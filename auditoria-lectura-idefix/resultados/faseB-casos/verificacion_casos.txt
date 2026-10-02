@@ -1,0 +1,39 @@
+b3x1 · XLSX con referencias mixtas
+  ✅ A1 = 'Concepto' (leído: 'Concepto')
+  ✅ B1 = 'Importe' (leído: 'Importe')
+  ✅ A2 = 'Uno' (leído: 'Uno')
+  ✅ B2 = '10' (leído: '10')
+  ✅ C5 = 'x' (leído: 'x')
+  ✅ D5 = '7' (leído: '7')
+  ✅ A6 = 'Fin' (leído: 'Fin')
+  ✅ aviso XLSX_IMPLICIT_CELL_POSITIONS
+  ✅ aviso XLSX_INVALID_CELL_REFERENCES
+  ✅ estado partial (leído: partial)
+  ✅ la celda con referencia no válida no se coloca en ningún sitio
+b2h1 · HTML con rowspan y colspan
+  ✅ fila 1: ['Grupo', 'Concepto', 'Importe y tipo', None, 'Nota'] (leída: ['Grupo', 'Concepto', 'Importe y tipo', None, 'Nota'])
+  ✅ fila 2: ['G1', 'Alfa', '100,00', '21', 'revisar'] (leída: ['G1', 'Alfa', '100,00', '21', 'revisar'])
+  ✅ fila 3: ['G1', 'Beta', '50,00 (exento)', None, 'revisar'] (leída: ['G1', 'Beta', '50,00 (exento)', None, 'revisar'])
+  ✅ fila 4: ['G1', 'Gamma', '50,00 (exento)', None, 'ok'] (leída: ['G1', 'Gamma', '50,00 (exento)', None, 'ok'])
+  ✅ fila 5: ['G2', 'Delta', '7,00', '10', 'ok'] (leída: ['G2', 'Delta', '7,00', '10', 'ok'])
+  ✅ fila 3 col 1: combinada_desde = 2
+  ✅ fila 4 col 1: combinada_desde = 2
+  ✅ fila 3 col 5: combinada_desde = 2
+  ✅ fila 4 col 3: combinada_desde = 3
+  ✅ solo las celdas repetidas llevan combinada_desde
+  ✅ aviso HTML_ROWSPAN_EXPANDED
+b1p1 · PDF digital con mucho texto y una imagen grande sin texto
+  ✅ sin OCR (ocr.used = False)
+  ✅ 0 bloques ocr-text (leídos: 0)
+  ✅ no se trata como página mixta
+b1p2 · Escaneo con capa de texto invisible (PDF buscable): no necesita OCR
+  ✅ sin OCR (ocr.used = False)
+  ✅ 0 bloques ocr-text (leídos: 0)
+  ✅ no se trata como página mixta
+pdf09 con el OCR desactivado
+  ✅ aviso PDF_PAGE_IMAGE_WITHOUT_OCR
+  ✅ estado partial (leído: partial)
+png01 con el OCR desactivado
+  ✅ aviso IMAGE_OCR_DISABLED
+  ✅ estado partial (leído: partial)
+FALLOS: 0

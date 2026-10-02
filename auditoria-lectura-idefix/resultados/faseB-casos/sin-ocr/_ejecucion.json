@@ -1,0 +1,154 @@
+{
+ "config": {
+  "ocr": false
+ },
+ "msInicio": 178,
+ "resumen": [
+  {
+   "id": "png01",
+   "ok": true,
+   "ms": 102,
+   "error": null,
+   "estado": "partial"
+  },
+  {
+   "id": "pdfE1",
+   "ok": true,
+   "ms": 256,
+   "error": null,
+   "estado": "partial"
+  },
+  {
+   "id": "pdf09",
+   "ok": true,
+   "ms": 284,
+   "error": null,
+   "estado": "partial"
+  }
+ ],
+ "peticiones": [
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalB/base/prueba-auditoria.html",
+   "tipo": "document",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalB/base/vendor-paquetes/pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalB/base/vendor-paquetes/pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalB/base/vendor-paquetes/tesseract-7.0.0.min.js.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalB/base/vendor-paquetes/tesseract-7.0.0-worker.min.js.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalB/base/vendor-paquetes/tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalB/base/vendor-paquetes/tessdata-spa.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalB/base/vendor-paquetes/tessdata-cat.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalB/base/vendor-paquetes/tessdata-eus.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalB/base/vendor-paquetes/tessdata-eng.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalB/base/vendor-paquetes/tessdata-fra.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalB/base/analizador-archivos.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalB/base/prueba-auditoria.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/8edb5a42-e361-4dfd-842d-35cc9c12bfbf",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/42423a21-bf5d-4ed5-aab5-db81a9ca837f",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/8edb5a42-e361-4dfd-842d-35cc9c12bfbf",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/8edb5a42-e361-4dfd-842d-35cc9c12bfbf",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/8edb5a42-e361-4dfd-842d-35cc9c12bfbf",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/c18713e5-1df7-412f-ba75-2a6cd6c30d2c",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalB/base/vendor-paquetes/pdfjs-6.2.108-legacy-fuentes.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/8edb5a42-e361-4dfd-842d-35cc9c12bfbf",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/8edb5a42-e361-4dfd-842d-35cc9c12bfbf",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/c18713e5-1df7-412f-ba75-2a6cd6c30d2c",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/8edb5a42-e361-4dfd-842d-35cc9c12bfbf",
+   "tipo": "script",
+   "metodo": "GET"
+  }
+ ],
+ "externas": [],
+ "consola": [],
+ "navegador": "141.0.7390.37"
+}

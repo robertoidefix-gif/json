@@ -1,0 +1,150 @@
+=====================================================================================================
+IDEFIX1.0 · FASE B (sobre la versión sin servidor) — CAMBIOS Y PRUEBAS
+(AnalizadorArchivos 6.14.0 · 2 de octubre de 2026)
+=====================================================================================================
+
+Lo que pediste: «pasar a la Fase B para mejorar la lectura aún más». La fase B del informe de auditoría
+(apartado 9) eran las pérdidas silenciosas (prioridades 3 a 6 de la lista):
+  B1 PDF mixto: OCR híbrido o, como mínimo, aviso.   B2 HTML con rowspan.   B3 XLSX sin atributo r.
+  B4 Tablas desde el OCR con las cajas de palabra; quitar la cuadrícula antes del OCR.
+Las cuatro están hechas. Además, una pérdida silenciosa que encontré al probar la versión sin servidor:
+con el OCR desactivado, una imagen salía «complete» sin texto y sin aviso (ahora avisa).
+
+Se usa igual que la versión sin servidor: doble clic en Idefix1.0/index.html (Chrome o Edge).
+
+Leyenda: ✅ comprobado aquí · ⚠️ no demostrable aquí (se dice por qué).
+
+-----------------------------------------------------------------------------------------------------
+1. RESULTADO MEDIDO (mismo corpus de 72 documentos y mismas reglas de veredicto que la auditoría)
+-----------------------------------------------------------------------------------------------------
+  Nota por formato             antes de la fase B  →  después
+  PDF escaneado (.pdf + OCR)        4,0           →    8,0     (pdfE3 y pdf09: ❌ → ⚠️ y ✅)
+  PNG                               3,3           →    7,5     (png04, png05, png09: ❌ → ⚠️; png01 y png07 ⚠️ → ✅)
+  Imágenes (png+jpg+jpeg)           3,3           →    6,1
+  XLSX                              8,6           →    9,5     (xlsx05: ❌ → ✅)
+  HTML                              5,5           →    6,5     (html06: ❌ → ✅)
+  HTML+HTM (mismo lector)           6,5           →    7,3
+  PDF (global)                      5,8           →    6,8
+  Sin cambios: PDF digital 6,3 · DOCX 7,7 · XLS 10 · HTM 10 · JPG 2,5 · JPEG 5,0 (sus fallos son de las
+  fases C y E: dos columnas, páginas giradas, celdas combinadas en Word, fotos giradas).
+
+  Casos que cambian (antes → después):
+  pdf09  escaneo + 1 línea digital (CSV)   0/7 datos, sin OCR ni aviso     → 7/7 datos, texto 98 %
+  pdfE3  libro escaneado (PDF)             0/12 registros, texto 3 %       → 12/12, campos 95,4 %, totales 3/3
+  png04  libro con cuadrícula              0/12 registros, texto 2 %       → 12/12, campos 97,2 %, totales 3/3
+  png09  libro sin cuadrícula              0/12 registros (texto 97 %)     → 12/12, campos 96,3 %, totales 3/3
+  html06 columna Serie con rowspan=12      campos 19,4 %, totales 0/3      → campos 100 %, totales 3/3
+  xlsx05 celdas y filas sin atributo r     0/12 registros, sin aviso       → 12/12, campos 100 %, totales 3/3
+  png01  factura                           texto 93 %, 0 tablas            → texto 99 %, tabla de líneas 100 %
+  pdfE1  factura escaneada                 texto 89 %, 0 tablas            → texto 98 %, tabla de líneas 100 %
+  jpg02  factura JPEG                      texto 90 %, 0 tablas            → texto 98 %, tabla de líneas 94 %
+  png07  fondo transparente                texto 91 %                      → texto 99 %
+  png05  baja resolución (≈72 ppp)         0/7 datos, texto 3 %            → 6/7 datos, texto 95 %
+  jpeg03 / pdfE2 (escaneos degradados)     0 tablas                        → 1 tabla con 12 % y 6 % de celdas
+                                                                             exactas (confianza baja; ver 5)
+  Los otros 57 documentos: mismo resultado. Tiempo total del corpus (72 documentos): 44,4 s → 42,0 s (el OCR sin
+  cuadrícula es más rápido: png04 14,2 s en la auditoría → 2,6 s).
+
+-----------------------------------------------------------------------------------------------------
+2. CÓMO FUNCIONA CADA CAMBIO
+-----------------------------------------------------------------------------------------------------
+B1 · PDF mixto. Antes, una página con 20 caracteres digitales o más no pasaba nunca por el OCR: un escaneo
+  con un sello o un CSV añadido (lo habitual en la sede electrónica) se quedaba con una línea. Ahora, si la
+  página tiene menos de 1.500 caracteres, sus imágenes cubren al menos el 25 % de la página y las cajas del
+  texto digital menos del 5 %, se dibuja y se hace OCR («hybrid»): se añade lo que el OCR leyó fuera del
+  texto digital (lo que cae encima de él se descarta, porque ya está). La superficie de las imágenes sale
+  de la lista de operaciones de dibujo de PDF.js (matriz de cada imagen); no se ejecuta nada del PDF.
+  Con el OCR desactivado: aviso PDF_PAGE_IMAGE_WITHOUT_OCR y estado «partial». Una imagen (PNG/JPEG) con
+  el OCR desactivado: aviso IMAGE_OCR_DISABLED y «partial» (antes «complete» sin texto).
+B2 · HTML rowspan. Algoritmo de tablas de HTML: una celda con rowspan ocupa su columna en las filas
+  siguientes y las celdas de esas filas se colocan a su derecha. El valor se repite en cada fila que abarca
+  y esas celdas llevan source.combinada_desde (fila de origen) para no sumar dos veces un importe. El aviso
+  de colspan ya no dice «las demás quedan vacías» de las filas (era falso con rowspan).
+B3 · XLSX sin r. El atributo r es opcional en <row> y en <c> (ECMA-376). Sin él, la fila es la siguiente
+  a la anterior y la celda, la siguiente columna (como LibreOffice y openpyxl): aviso informativo
+  XLSX_IMPLICIT_CELL_POSITIONS. Una r presente pero no válida ya no se descarta en silencio: aviso
+  XLSX_INVALID_CELL_REFERENCES y estado «partial».
+B4 · OCR de tablas.
+  - Antes del OCR se borra la cuadrícula: tramos rectos oscuros largos (≥ 8 % del ancho o ≥ 6 % del alto)
+    y finos, sus cruces y su borde gris. Las letras, los logotipos y las zonas rellenas no se tocan. Se hace
+    en el worker núcleo, sin red: las imágenes se decodifican allí (no en la página) y de las páginas PDF
+    se le pasan los píxeles ya dibujados. El archivo original no se modifica. Aviso OCR_GRID_REMOVED.
+  - Las tablas se reconstruyen con las PALABRAS de Tesseract (cada una con su caja), con el mismo criterio
+    que las del texto digital de los PDF; en una cuadrícula, las líneas verticales borradas separan las
+    columnas (así una celda vacía sigue siendo una columna). La confianza de la tabla es la menor entre la
+    geométrica y la media del OCR. Aviso OCR_TABLES_RECONSTRUCTED. Con esas tablas, los libros escaneados
+    ya dan registros.
+
+-----------------------------------------------------------------------------------------------------
+3. CAMBIOS POR ARCHIVO (líneas de Idefix1.0/analizador-archivos.js de esta carpeta, 17.669 líneas,
+   SHA-256 c5a35a7bf62b7eb8847a8107c69c072c4609046272cd56692f86326001dcfa8b). Diff completo: fase-b.diff
+   Solo cambia analizador-archivos.js (y el LEEME de la carpeta); páginas, demo y paquetes, iguales.
+-----------------------------------------------------------------------------------------------------
+  5–18        Cabecera: resumen de la fase B.
+  323–330     Umbrales de página mixta (AA_PDF_MAX_CARACTERES_PAGINA_MIXTA, …COBERTURA_IMAGEN…, …TEXTO…).
+  Worker núcleo (su SHA-256, SHA256_WORKER_NUCLEO en la línea 7583, se ha recalculado):
+  2106–2188   B3: filas y celdas sin r (2114 <row>, 2139 posición de la celda) y sus avisos (2179, 2184).
+  2930–3034   B4: confianza de las filas de OCR y avisos de tablas (OCR_TABLES_RECONSTRUCTED en 3028).
+  3039–3069   B4: pdfCeldasPorSeparadores (columnas según las líneas verticales).
+  3071–3095   B4: tablasDesdePalabrasOCR (tablas de imágenes; escala y vuelta a píxeles).
+  3098–3195   B4: quitarCuadricula, marcarLineasCuadricula, borrarLineasCuadricula,
+              unirSeparadoresCuadricula.
+  3197–3230   B4: prepararImagenOCR (píxeles de página PDF o archivo de imagen decodificado aquí).
+  3236–3247   B4: estructurarPDF usa las palabras del OCR para las tablas de páginas escaneadas o mixtas.
+  4212–4287   B2: celdas con rowspan, matriz de ocupación y source.combinada_desde.
+  4480–4484   B2: recuento de rowspan; avisos en 4537–4547.
+  6029–6042   B4: validación de separadores y de palabras del OCR que llegan al worker.
+  6046–6050   B4: validación de las páginas PDF (palabras y separadores opcionales).
+  6094–6114   B4: validación de la tarea nueva «cuadricula» y de «especificos» con palabras.
+  6154–6172   B4: ejecución de «cuadricula» y tablas de imágenes en «especificos».
+  Página (hilo principal):
+  8796–8813   Validación de las respuestas «resultado-especificos» (con tablas) y «resultado-cuadricula».
+  12426       Esquema del resultado: source.combinada_desde (propiedad opcional nueva).
+  13009–13048 Proveedor OCR: palabras con su caja (_palabrasDeLinea) además de las líneas.
+  13340–13395 B1: _coberturaImagenes, _coberturaTexto y _sinSolapeConDigital.
+  13397–13426 B4: _ocrPagina (cuadrícula, OCR, palabras y separadores en puntos de la página).
+  13428–13468 B1/B4: _leerPaginaConOCR (modo «ocr» o «hybrid»).
+  13604–13659 B1: detección de página mixta en analizarDocumento.
+  16678–16740 B1/B4: imágenes (aviso con el OCR desactivado, palabras, tablas y diagnósticos).
+  16793–16840 B4: _lienzoSinCuadricula (páginas PDF) e _imagenSinCuadricula (imágenes).
+  16920       B4: _analizarPDF pasa la limpieza de cuadrícula al renderizador.
+  17033–17067 B1/B4: avisos de página mixta y de cuadrícula en los PDF (con el OCR desactivado, una página
+              sin texto digital mantiene su aviso de siempre, PDF_PAGE_WITHOUT_TEXT, y no se repite).
+  ESLint (misma configuración que la auditoría): 36 errores y 71 avisos, todos anteriores; 0 nuevos y 2
+  menos que antes (anidamiento en analizarDocumento). Sin eval, new Function, CDN ni scripts externos.
+
+-----------------------------------------------------------------------------------------------------
+4. PRUEBAS (Chromium 141.0.7390.37 · página abierta como file:// · sobre una copia exacta de Idefix1.0/)
+   Resultados: auditoria-lectura-idefix/resultados/faseB/, faseB-casos/, faseB-escenarios/
+-----------------------------------------------------------------------------------------------------
+  ✅ Corpus completo (72 documentos): ver apartado 1. 0 peticiones externas.
+  ✅ Casos de borde (herramientas/fase-b/generar_casos_faseB.py y verificar_casos_faseB.py), 0 fallos:
+     - XLSX con r presente, ausente (fila y celda) y no válida: A1, B1, A2, B2, C5, D5 y A6 en su sitio;
+       la celda con r no válida no se coloca en ningún sitio; avisos y estado «partial».
+     - HTML con rowspan y colspan juntos (también en la última columna): las 5 filas exactas y
+       combinada_desde solo en las 4 celdas repetidas.
+     - PDF digital con una imagen grande sin texto (854 caracteres): no se trata como mixto, sin OCR.
+     - Escaneo con capa de texto invisible (PDF buscable): no se hace OCR (ya tiene el texto).
+     - Con el OCR desactivado: pdf09 avisa PDF_PAGE_IMAGE_WITHOUT_OCR y png01 avisa IMAGE_OCR_DISABLED;
+       ambos «partial».
+  ✅ Por la interfaz (index.html, file://): png01, pdfE1, pdf01, png04, PDF JPEG 2000, PDF con CMaps y pdf09.
+  ✅ Seguridad: paquete pdf.mjs alterado → no arranca; worker núcleo alterado → no arranca («no coincide
+     con su SHA-256»); ataque a la cola de paquetes → se ignora; demo OCR por file:// correcta.
+  ✅ Navegador sin SIMD (simulado): el libro png04 se lee con el núcleo sin SIMD.
+  ✅ index-sin-ocr.html: png01 y png04 «partial» con IMAGE_OCR_DISABLED; pdf09 «partial» con
+     PDF_PAGE_IMAGE_WITHOUT_OCR; pdfE1 «partial» con su aviso de siempre (PDF_PAGE_WITHOUT_TEXT).
+  ✅ Arranque hasta la interfaz con OCR: 1,49 s de media, igual que la versión sin servidor (1,49 s);
+     memoria JS tras la recolección, la misma (60 MB).
+
+-----------------------------------------------------------------------------------------------------
+5. LÍMITES QUE SIGUEN (dicho claramente)
+-----------------------------------------------------------------------------------------------------
+  - Los libros escaneados dan 95–97 % de campos, no 100 %: errores del OCR en algunas cifras (p. ej.
+    «2.592,59» leído «259259»). Revisa las cifras de un libro escaneado antes de usarlas.
+  - En escaneos degradados (jpeg03, pdfE2) la tabla reconstruida es pobre (12 % y 6 % de celdas
+    exactas); su confianza es baja y el texto completo sigue en los bloques ocr-text.
+  - Los umbrales de página mixta (25 % de imagen, 5 % de texto) son una regla, no una garantía: una página
+    digital con muy poco texto y una foto grande también pasa por el OCR (más lento, sin duplicar texto).
+  - Sigue pendiente: fase C (dos columnas, páginas giradas, celdas combinadas en Word, fragmentos HTML,
+    filas con onclick), D (texto oculto en DOCX/PDF/CSS) y E (orientación de fotos: jpg08 sigue 0/7).
+  ⚠️ Solo probado en Chromium 141 en Linux (mismo motor que Chrome y Edge); no en Windows.

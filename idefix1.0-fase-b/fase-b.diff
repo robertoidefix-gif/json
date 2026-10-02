@@ -1,0 +1,1199 @@
+--- sin-servidor/Idefix1.0/analizador-archivos.js
++++ fase-b/Idefix1.0/analizador-archivos.js
+@@ -2,6 +2,20 @@
+    IDEFIX1.0 — AnalizadorArchivos 6.14.0 (esquema del JSON 6.14.0)
+    Archivo único: JavaScript, interfaz, hoja de estilos, worker núcleo y MARCO_FISCAL_LOCAL.
+ 
++   Fase B (auditoría de lectura, 2026-10-02): sin pérdidas silenciosas.
++   - B1 PDF mixto: una página con poco texto digital y una imagen grande (un
++     escaneo con un sello o un CSV añadido) se lee también con OCR (modo
++     «hybrid», sin repetir lo que ya es texto digital). Con el OCR
++     desactivado se avisa (PDF_PAGE_IMAGE_WITHOUT_OCR) y una imagen ya no
++     sale «complete» sin texto (IMAGE_OCR_DISABLED).
++   - B2 HTML: rowspan con el algoritmo de tablas de HTML; el valor se repite
++     en cada fila que abarca (source.combinada_desde, propiedad opcional).
++   - B3 XLSX: celdas y filas sin atributo r (opcional en ECMA-376) en su
++     posición implícita; una referencia no válida se avisa.
++   - B4 OCR: antes del OCR se borra la cuadrícula de las tablas (en el worker
++     núcleo) y las tablas se reconstruyen con las palabras de Tesseract y las
++     líneas verticales como separadores de columna (OCR_TABLES_RECONSTRUCTED).
++
+    Versión SIN SERVIDOR (2026-10-02): se abre con doble clic (file://) en
+    Chrome y Edge, sin servidor, sin Node.js y sin nada que configurar ni
+    sellar.
+@@ -306,6 +320,14 @@
+ 
+ // Estimación de superficies RGBA simultáneas durante render + OCR.
+ const FACTOR_MEMORIA_OCR = 3;
++/**
++ * Fase B (B1): una página con texto digital se considera MIXTA (escaneo + algo de texto digital) si tiene menos
++ * de AA_PDF_MAX_CARACTERES_PAGINA_MIXTA caracteres, una o varias imágenes cubren al menos el 25 % de su
++ * superficie y las cajas del texto digital, menos del 5 %. Entonces se lee también con OCR (modo «hybrid»).
++ */
++const AA_PDF_MAX_CARACTERES_PAGINA_MIXTA = 1500;
++const AA_PDF_MIN_COBERTURA_IMAGEN_MIXTA = 0.25;
++const AA_PDF_MAX_COBERTURA_TEXTO_MIXTA = 0.05;
+ const FACTOR_MEMORIA_IMAGEN = 1.5;
+ 
+ const CONFIGURACION_ANALIZADOR_ARCHIVOS = Object.freeze({
+@@ -2053,6 +2075,10 @@
+   // §37: el mismo límite de hojas que en .xls.
+   if (hojas.length > MAX_HOJAS_EXCEL) throw fallo(`El libro tiene ${hojas.length} hojas y supera el límite de ${MAX_HOJAS_EXCEL}.`);
+   let formulasCompartidasSinExpresion = 0;
++  // Fase B (B3): celdas y filas sin atributo r (posición implícita) y referencias no válidas.
++  let celdasSinReferencia = 0;
++  let filasSinReferencia = 0;
++  let referenciasNoValidas = 0;
+ 
+   for (let ih = 0; ih < hojas.length && !libro.detenido; ih++) {
+     const nodoHoja = hojas[ih];
+@@ -2077,11 +2103,27 @@
+     let dentro = null;
+     let enIs = 0;
+     let enRPh = 0;
++    // Fase B (B3): el atributo r es opcional en <row> y en <c> (ECMA-376, CT_Row y CT_Cell). Sin él, la fila
++    // es la siguiente a la anterior y la celda, la siguiente columna de su fila (como LibreOffice y openpyxl).
++    let filaActual = 0;
++    let colSiguiente = 0;
+ 
+     for (const ev of eventosXML(await zip.texto(ruta), opcionesXML)) {
+       if (libro.detenido) break;
+       if (ev.t === "a") {
+-        if (ev.local === "c") {
++        if (ev.local === "row") {
++          const rFila = ev.atributos.get("r");
++          if (rFila === undefined || rFila === null || rFila === "") {
++            filaActual++;
++            filasSinReferencia++;
++          } else if (/^\d{1,7}$/.test(rFila) && Number(rFila) >= 1) {
++            filaActual = Number(rFila);
++          } else {
++            filaActual++;
++            referenciasNoValidas++;
++          }
++          colSiguiente = 0;
++        } else if (ev.local === "c") {
+           c = { r: ev.atributos.get("r") || "", t: ev.atributos.get("t") || "", s: Number(ev.atributos.get("s") || 0),
+             v: null, f: null, inline: "", fCompartida: false, fCompartidaVacia: false };
+         } else if (c && ev.local === "v") { dentro = "v"; c.v = ""; }
+@@ -2095,9 +2137,24 @@
+           const celda = c;
+           c = null;
+           const m = /^([A-Z]{1,3})(\d{1,7})$/i.exec(celda.r);
++          let fila = null;
++          let col = null;
+           if (m) {
++            fila = Number(m[2]);
++            col = XL.colIndice(m[1]);
++          } else if (!celda.r && filaActual >= 1) {
++            fila = filaActual;
++            col = colSiguiente;
++            celdasSinReferencia++;
++          } else {
++            // r presente pero no válida (o celda fuera de una fila): no se adivina su posición, se avisa.
++            referenciasNoValidas++;
++          }
++          if (fila !== null) {
++            filaActual = fila;
++            colSiguiente = col + 1;
+             if (celda.fCompartidaVacia) formulasCompartidasSinExpresion++;
+-            ponerCelda(libro, hoja, Number(m[2]), XL.colIndice(m[1]), { ...XL.leerCelda(celda, compartidas, estilosFecha, date1904), esFormula: celda.f !== null || celda.fCompartidaVacia });
++            ponerCelda(libro, hoja, fila, col, { ...XL.leerCelda(celda, compartidas, estilosFecha, date1904), esFormula: celda.f !== null || celda.fCompartidaVacia });
+           }
+         }
+         else if (ev.local === "v" || ev.local === "t") dentro = null;
+@@ -2118,6 +2175,17 @@
+   }
+   cerrarLibro(libro);
+ 
++  if (celdasSinReferencia || filasSinReferencia) {
++    diag.add("XLSX_IMPLICIT_CELL_POSITIONS", "info",
++      "El libro tiene celdas o filas sin referencia (atributo r, opcional en el formato): su posición se ha deducido " +
++      "del orden en el archivo, como hacen Excel y LibreOffice.", null, { cells: celdasSinReferencia, rows: filasSinReferencia });
++  }
++  if (referenciasNoValidas) {
++    diag.add("XLSX_INVALID_CELL_REFERENCES", "warning",
++      `${referenciasNoValidas} referencia(s) de celda o de fila no son válidas: esas celdas no se han leído y esas filas se han ` +
++      "colocado por orden. El libro puede estar incompleto o desplazado: compruébalo con el original.",
++      null, { count: referenciasNoValidas });
++  }
+   if (formulasCompartidasSinExpresion) {
+     diag.marcar("xlsx-shared-formula-translation");
+     diag.add("XLSX_SHARED_FORMULA_UNRESOLVED", "warning",
+@@ -2837,6 +2905,7 @@
+ function pdfTablasGeometricas(paginas, diag) {
+   const tables = [];
+   let nTabla = 0;
++  let nTablasOCR = 0;
+   const moda = valores => {
+     const cuenta = new Map();
+     let mejor = null;
+@@ -2854,6 +2923,15 @@
+     for (const linea of pagina.lineas) {
+       const items = linea.items.filter(it => it.text.trim()).sort((a, b) => a.x - b.x);
+       if (items.length < 2) continue;
++      // Fase B (B4): si la fila cruza líneas verticales de una cuadrícula (OCR), las columnas son los huecos
++      // entre esas líneas: cada palabra va a su celda y una celda vacía sigue contando como columna.
++      const celdasCuadricula = pdfCeldasPorSeparadores(items, linea, pagina.separadores);
++      if (celdasCuadricula) {
++        const confs = items.map(it => it.confianza).filter(numeroFinito);
++        filas.push({ y: linea.y, height: linea.height, cells: celdasCuadricula,
++          confianza: confs.length ? confs.reduce((a, b) => a + b, 0) / confs.length : null });
++        continue;
++      }
+       const celdas = [];
+       let actual = null;
+       for (const it of items) {
+@@ -2870,7 +2948,10 @@
+       }
+       if (actual) celdas.push(actual);
+       if (celdas.length >= 2) {
+-        filas.push({ y: linea.y, height: linea.height, cells: celdas.map(c => ({ ...c, text: c.text.replace(/\s+/g, " ").trim() })) });
++        // Fase B (B4): las palabras del OCR traen su confianza; la de la fila es la media.
++        const confs = items.map(it => it.confianza).filter(numeroFinito);
++        filas.push({ y: linea.y, height: linea.height, cells: celdas.map(c => ({ ...c, text: c.text.replace(/\s+/g, " ").trim() })),
++          confianza: confs.length ? confs.reduce((a, b) => a + b, 0) / confs.length : null });
+       }
+     }
+ 
+@@ -2888,13 +2969,20 @@
+       const columns = Array.from({ length: maxCols }, (_, i) => ({
+         id: `c${i + 1}`, label: String(cabecera[i] ?? "").trim() || `columna_${i + 1}`, valueType: "unknown"
+       }));
++      // Fase B (B4): tablas reconstruidas con las palabras del OCR (páginas escaneadas e imágenes).
++      const parte = pagina.ocr
++        ? (pagina.pageNumber === null ? { celda: "image-ocr-table", tabla: "image-ocr-layout" }
++          : { celda: `pdf-ocr-table-page-${pagina.pageNumber}`, tabla: `pdf-ocr-layout-page-${pagina.pageNumber}` })
++        : { celda: `pdf-table-page-${pagina.pageNumber}`, tabla: `pdf-layout-page-${pagina.pageNumber}` };
++      const confsOCR = estables.map(f => f.confianza).filter(numeroFinito);
++      const confOCR = confsOCR.length ? confsOCR.reduce((a, b) => a + b, 0) / confsOCR.length : null;
+       const rows = brutas.map((fila, i) => ({
+         sourceRow: i + 1,
+         cells: columns.map((col, j) => {
+           const origen = estables[i];
+           const c = origen.cells[j] || null;
+           return N.celda(fila[j] ?? null, col.id, {
+-            page: pagina.pageNumber, part: `pdf-table-page-${pagina.pageNumber}`, row: i + 1,
++            page: pagina.pageNumber, part: parte.celda, row: i + 1,
+             ...(c ? { boundingBox: { x: c.x, y: origen.y, width: Math.max(0, c.right - c.x), height: origen.height } } : {})
+           });
+         })
+@@ -2907,12 +2995,15 @@
+         if (f.y + f.height > y2) y2 = f.y + f.height;
+         for (const c of f.cells) { if (c.x < x1) x1 = c.x; if (c.right > x2) x2 = c.right; }
+       }
++      if (pagina.ocr) nTablasOCR++;
++      const confGeometrica = Math.min(0.95, 0.66 + estables.length * 0.025);
+       tables.push({
+         id: `tpdf${String(++nTabla).padStart(4, "0")}`,
+-        title: null, origin: "heuristic", confidence: Math.min(0.95, 0.66 + estables.length * 0.025),
++        title: null, origin: "heuristic",
++        confidence: Math.round((confOCR === null ? confGeometrica : Math.min(confGeometrica, confOCR)) * 1000) / 1000,
+         sparseRows: false, headerRow: brutas.length ? 1 : null, headerIncludedInRows: true,
+         source: {
+-          page: pagina.pageNumber, part: `pdf-layout-page-${pagina.pageNumber}`,
++          page: pagina.pageNumber, part: parte.tabla,
+           ...(Number.isFinite(x1) ? { boundingBox: { x: x1, y: y1, width: Math.max(0, x2 - x1), height: Math.max(0, y2 - y1) } } : {})
+         },
+         columns, rows
+@@ -2929,13 +3020,209 @@
+     vaciar();
+   }
+ 
+-  if (tables.length) {
+-    diag.add("PDF_TABLES_GEOMETRIC_HEURISTIC", "info", `Se detectaron ${tables.length} tabla(s) mediante alineación geométrica de texto PDF.js.`);
++  if (tables.length > nTablasOCR) {
++    diag.add("PDF_TABLES_GEOMETRIC_HEURISTIC", "info",
++      `Se detectaron ${tables.length - nTablasOCR} tabla(s) mediante alineación geométrica de texto PDF.js.`);
++  }
++  if (nTablasOCR) {
++    diag.add("OCR_TABLES_RECONSTRUCTED", "info",
++      `Se reconstruyeron ${nTablasOCR} tabla(s) a partir de la posición de las palabras del OCR. Son una inferencia: ` +
++      "compruébalas con el documento (la confianza de cada tabla tiene en cuenta la del OCR).");
+   }
+   return tables;
+ }
+ 
+ /**
++ * Fase B (B4): celdas de una fila según las líneas verticales de la cuadrícula que la cruzan (al menos dos).
++ * Devuelve null si la fila no está dentro de una cuadrícula.
++ */
++function pdfCeldasPorSeparadores(items, linea, separadores) {
++  if (!Array.isArray(separadores) || separadores.length < 2) return null;
++  const centro = linea.y + linea.height / 2;
++  const tolerancia = Math.max(1, linea.height * 0.5);
++  const xs = [];
++  for (const s of separadores) {
++    if (s.y1 - tolerancia > centro || s.y2 + tolerancia < centro) continue;
++    if (!xs.some(x => Math.abs(x - s.x) < tolerancia)) xs.push(s.x);
++  }
++  if (xs.length < 2) return null;
++  xs.sort((a, b) => a - b);
++  const celdas = [];
++  const antes = items.filter(it => it.x + it.width / 2 < xs[0]);
++  const despues = items.filter(it => it.x + it.width / 2 > xs[xs.length - 1]);
++  const texto = lista => lista.map(it => it.text).join(" ").replace(/\s+/g, " ").trim();
++  const caja = (lista, x1, x2) => (lista.length
++    ? { x: Math.min(...lista.map(it => it.x)), right: Math.max(...lista.map(it => it.x + it.width)) } : { x: x1, right: x2 });
++  if (antes.length) celdas.push({ text: texto(antes), ...caja(antes, antes[0].x, xs[0]) });
++  for (let i = 0; i + 1 < xs.length; i++) {
++    const dentro = items.filter(it => { const c = it.x + it.width / 2; return c >= xs[i] && c < xs[i + 1]; });
++    celdas.push({ text: texto(dentro), ...caja(dentro, xs[i], xs[i + 1]) });
++  }
++  if (despues.length) celdas.push({ text: texto(despues), ...caja(despues, xs[xs.length - 1], xs[xs.length - 1]) });
++  return celdas.filter(c => c.text).length >= 2 ? celdas : null;
++}
++
++/**
++ * Fase B (B4): tablas de una IMAGEN a partir de las palabras del OCR (cajas de Tesseract), con el mismo criterio
++ * que las del texto digital de un PDF. Las coordenadas se escalan para que la altura mediana de palabra sea 10
++ * (la escala de un PDF en puntos, para la que están pensados los umbrales) y las cajas del resultado vuelven a
++ * los píxeles de la imagen.
++ */
++function tablasDesdePalabrasOCR(palabras, diag, separadores = []) {
++  const validas = palabras.filter(p => p.text.trim() && p.width > 0 && p.height > 0);
++  if (validas.length < 6) return [];
++  const alto = mediana(validas.map(p => p.height)) || 10;
++  const k = Math.max(0.01, Math.min(10, 10 / alto));
++  const lineas = pdfAgruparLineas(validas.map(p => ({ text: p.text, x: p.x * k, y: p.y * k, width: p.width * k,
++    height: p.height * k, fontSize: p.height * k, ...(numeroFinito(p.confianza) ? { confianza: p.confianza } : {}) })));
++  const tablas = pdfTablasGeometricas([{ pageNumber: null, ocr: true, lineas,
++    separadores: separadores.map(sp => ({ x: sp.x * k, y1: sp.y1 * k, y2: sp.y2 * k })) }], diag);
++  const volver = c => ({ x: c.x / k, y: c.y / k, width: c.width / k, height: c.height / k });
++  for (const t of tablas) {
++    t.id = t.id.replace(/^tpdf/, "timg");
++    if (t.source.boundingBox) t.source.boundingBox = volver(t.source.boundingBox);
++    for (const r of t.rows) for (const c of r.cells) if (c.source.boundingBox) c.source.boundingBox = volver(c.source.boundingBox);
++  }
++  return tablas;
++}
++
++/**
++ * Fase B (B4): borra la cuadrícula de una tabla (líneas rectas largas y finas) antes del OCR: con ella, Tesseract
++ * confunde las líneas con letras y pierde casi todo el texto (png04 y pdfE3 de la auditoría: 4–11 %). Se borran
++ * los píxeles oscuros de un tramo recto horizontal (o vertical) largo cuyo grosor en la otra dirección es pequeño,
++ * los cruces de dos líneas y el borde gris (suavizado) de cada línea; las zonas rellenas (logotipos, cabeceras con
++ * fondo oscuro) y las letras no se tocan. Devuelve también las líneas verticales, que separan las columnas.
++ * @param {Uint8ClampedArray} rgba píxeles RGBA opacos (se modifican)
++ * @returns {{ horizontales: number, verticales: number, separadores: Array<{x:number,y1:number,y2:number}> }}
++ */
++function quitarCuadricula(rgba, w, h) {
++  const total = w * h;
++  const luz = new Uint8Array(total);
++  for (let i = 0, j = 0; i < total; i++, j += 4) luz[i] = (rgba[j] * 77 + rgba[j + 1] * 150 + rgba[j + 2] * 29) >> 8;
++  // Marcas por píxel: 1 oscuro · 2 en línea horizontal · 4 en línea vertical · 8 borrar.
++  const m = new Uint8Array(total);
++  for (let i = 0; i < total; i++) if (luz[i] < 140) m[i] = 1;
++  const grosor = Math.max(4, Math.round(Math.min(w, h) * 0.006));
++  const { horizontales, verticales, tramosV } = marcarLineasCuadricula(m, w, h);
++  if (!horizontales && !verticales) return { horizontales, verticales, separadores: [] };
++  borrarLineasCuadricula(rgba, m, luz, w, h, grosor);
++  return { horizontales, verticales, separadores: unirSeparadoresCuadricula(tramosV, grosor) };
++}
++
++/** Marca (bits 2 y 4) los tramos rectos oscuros largos: horizontales ≥ 8 % del ancho y verticales ≥ 6 % del alto. */
++function marcarLineasCuadricula(m, w, h) {
++  const largoH = Math.max(40, Math.round(w * 0.08));
++  const largoV = Math.max(40, Math.round(h * 0.06));
++  let horizontales = 0;
++  for (let y = 0; y < h; y++) {
++    for (let x = 0; x < w;) {
++      if (!(m[y * w + x] & 1)) { x++; continue; }
++      let x2 = x;
++      while (x2 < w && m[y * w + x2] & 1) x2++;
++      if (x2 - x >= largoH) {
++        horizontales++;
++        for (let a = x; a < x2; a++) m[y * w + a] |= 2;
++      }
++      x = x2;
++    }
++  }
++  let verticales = 0;
++  const tramosV = [];
++  for (let x = 0; x < w; x++) {
++    for (let y = 0; y < h;) {
++      if (!(m[y * w + x] & 1)) { y++; continue; }
++      let y2 = y;
++      while (y2 < h && m[y2 * w + x] & 1) y2++;
++      if (y2 - y >= largoV) {
++        verticales++;
++        tramosV.push({ x, y1: y, y2: y2 - 1 });
++        for (let b = y; b < y2; b++) m[b * w + x] |= 4;
++      }
++      y = y2;
++    }
++  }
++  return { horizontales, verticales, tramosV };
++}
++
++/**
++ * Borra los píxeles de línea: los de un tramo largo cuyo grosor en la otra dirección es pequeño y los cruces
++ * de dos líneas. También aclara el borde gris (suavizado) de la línea si no es tinta de una letra.
++ */
++function borrarLineasCuadricula(rgba, m, luz, w, h, grosor) {
++  const total = w * h;
++  const extension = (x, y, dx, dy) => {
++    let n = 1;
++    for (let a = x - dx, b = y - dy; n <= grosor && a >= 0 && b >= 0 && m[b * w + a] & 1; a -= dx, b -= dy) n++;
++    for (let a = x + dx, b = y + dy; n <= grosor && a < w && b < h && m[b * w + a] & 1; a += dx, b += dy) n++;
++    return n;
++  };
++  for (let i = 0; i < total; i++) {
++    const f = m[i];
++    if (!(f & 6)) continue;
++    const x = i % w, y = (i - x) / w;
++    if ((f & 6) === 6 || (f & 2 && extension(x, y, 0, 1) <= grosor) || (f & 4 && extension(x, y, 1, 0) <= grosor)) m[i] |= 8;
++  }
++  const blanco = k => { rgba[k * 4] = 255; rgba[k * 4 + 1] = 255; rgba[k * 4 + 2] = 255; };
++  for (let i = 0; i < total; i++) {
++    if (!(m[i] & 8)) continue;
++    blanco(i);
++    const paso = m[i] & 2 ? w : 1;
++    for (let d = 1; d <= 2; d++) {
++      for (const k of [i - d * paso, i + d * paso]) if (k >= 0 && k < total && !(m[k] & 1) && luz[k] < 230) blanco(k);
++    }
++  }
++}
++
++/** Separadores de columna: tramos verticales contiguos (una línea de varios píxeles de grosor) unidos. */
++function unirSeparadoresCuadricula(tramosV, grosor) {
++  tramosV.sort((a, b) => a.x - b.x || a.y1 - b.y1);
++  const separadores = [];
++  for (const t of tramosV) {
++    const previo = separadores.find(sp => Math.abs(sp.x2 - t.x) <= grosor && t.y1 <= sp.y2 + grosor && t.y2 >= sp.y1 - grosor);
++    if (previo) {
++      previo.x2 = t.x; previo.suma += t.x; previo.n++;
++      previo.y1 = Math.min(previo.y1, t.y1); previo.y2 = Math.max(previo.y2, t.y2);
++    } else {
++      separadores.push({ x2: t.x, suma: t.x, n: 1, y1: t.y1, y2: t.y2 });
++    }
++  }
++  return separadores.slice(0, 2000).map(sp => ({ x: sp.suma / sp.n, y1: sp.y1, y2: sp.y2 }));
++}
++
++/**
++ * Fase B (B4): prepara una imagen para el OCR dentro de este worker (sin red): o bien los píxeles RGBA de una
++ * página PDF ya dibujada, o bien el archivo de imagen, que se decodifica aquí (nunca en la página).
++ * Devuelve los píxeles o un PNG sin cuadrícula, o null si no había cuadrícula que quitar.
++ */
++async function prepararImagenOCR(p) {
++  if (p.rgba) {
++    const tramos = quitarCuadricula(new Uint8ClampedArray(p.rgba), p.width, p.height);
++    return { rgba: p.rgba, png: null, ...tramos };
++  }
++  if (typeof createImageBitmap !== "function" || typeof OffscreenCanvas !== "function") {
++    return { rgba: null, png: null, horizontales: 0, verticales: 0, separadores: [] };
++  }
++  const bitmap = await createImageBitmap(new Blob([p.imagen]));
++  try {
++    comprobarMemoriaImagen(bitmap.width, bitmap.height, p.limites);
++    const lienzo = new OffscreenCanvas(bitmap.width, bitmap.height);
++    const ctx = lienzo.getContext("2d", { willReadFrequently: true });
++    // Fondo blanco: las zonas transparentes cuentan como papel, no como tinta.
++    ctx.fillStyle = "#fff";
++    ctx.fillRect(0, 0, bitmap.width, bitmap.height);
++    ctx.drawImage(bitmap, 0, 0);
++    const datos = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
++    const tramos = quitarCuadricula(datos.data, bitmap.width, bitmap.height);
++    if (!tramos.horizontales && !tramos.verticales) return { rgba: null, png: null, ...tramos };
++    ctx.putImageData(datos, 0, 0);
++    const png = await (await lienzo.convertToBlob({ type: "image/png" })).arrayBuffer();
++    return { rgba: null, png, ...tramos };
++  } finally {
++    bitmap.close();
++  }
++}
++
++/**
+  * paginas: [{ pageNumber, modo: "digital"|"ocr"|"hybrid", items: [...], ocr: [...] }]
+  */
+ function estructurarPDF(paginas, idMensaje, documentoTipo, maxRegistros, seguridad) {
+@@ -2947,7 +3234,16 @@
+   paginas.forEach((pagina, i) => {
+     if (i % 20 === 0) progreso(idMensaje, 10 + Math.round((i / Math.max(1, paginas.length)) * 70), `Reconstruyendo página ${i + 1}/${paginas.length}`);
+     const lineas = pdfAgruparLineas(pagina.items);
+-    conLineas.push({ pageNumber: pagina.pageNumber, lineas });
++    // Fase B (B4): las tablas de una página escaneada (o de la parte escaneada de una página mixta) se
++    // reconstruyen con las palabras del OCR, en las mismas coordenadas (puntos) que el texto digital.
++    const palabras = pagina.palabras || [];
++    if (palabras.length && pagina.modo !== "digital") {
++      const base = pagina.modo === "hybrid" ? pagina.items : [];
++      conLineas.push({ pageNumber: pagina.pageNumber, ocr: true, lineas: pdfAgruparLineas([...base, ...palabras]),
++        separadores: pagina.separadores || [] });
++    } else {
++      conLineas.push({ pageNumber: pagina.pageNumber, lineas });
++    }
+     const digitales = pdfBloquesDigitales(lineas, pagina.pageNumber);
+     const ocr = pagina.ocr.map(b => ({
+       text: b.text, kind: "ocr-text", confidence: b.confidence,
+@@ -3874,7 +4170,7 @@
+     const n = src.length;
+ 
+     const cont = { ignorados: {}, eventos: 0, eventosConContenido: 0, formularios: 0, urlsExternas: 0, urlsScript: 0,
+-      comentarios: 0, entidadesDesconocidas: 0, celdasCombinadas: 0 };
++      comentarios: 0, entidadesDesconocidas: 0, celdasCombinadas: 0, celdasCombinadasFilas: 0 };
+     const blocks = [];
+     const tables = [];
+     const ocultos = [];
+@@ -3913,7 +4209,7 @@
+       t.celda = null;
+       if (!t.fila) t.fila = { celdas: [], enThead: t.enThead };
+       const texto = sinEspaciosJuntoASaltos(c.partes.join("")).replace(/ {2,}/g, " ").trim();
+-      t.fila.celdas.push({ texto, oculto: c.oculto, span: c.colspan });
++      t.fila.celdas.push({ texto, oculto: c.oculto, span: c.colspan, rowspan: c.rowspan });
+     };
+     const cerrarFila = t => {
+       if (!t) return;
+@@ -3925,19 +4221,51 @@
+       if (!t.filas.length) return;
+       const matriz = [];
+       const marcasOcultas = [];
++      const origenes = [];
++      // Fase B (B2): algoritmo de tablas de HTML. Una celda con rowspan ocupa su columna (o columnas, con
++      // colspan) también en las filas siguientes: las celdas de esas filas se colocan a su derecha y no
++      // debajo. Su valor se repite en cada fila que abarca y esas celdas llevan source.combinada_desde (la
++      // fila de origen), para no contar dos veces un importe.
++      const arrastre = []; // por columna: { valor, restantes, filaOrigen }
++      const maxCol = limites.maxColumnasExcel;
+       for (const f of t.filas) {
+         const fila = [];
+         const ocultasFila = [];
++        const origenFila = new Map();
++        const ocuparDesdeArriba = () => {
++          while (fila.length < maxCol && arrastre[fila.length]?.restantes > 0) {
++            const a = arrastre[fila.length];
++            if (a.valor !== null) origenFila.set(fila.length, a.filaOrigen);
++            fila.push(a.valor);
++            a.restantes--;
++          }
++        };
+         for (const c of f.celdas) {
+-          if (fila.length >= limites.maxColumnasExcel) break;
+-          if (c.oculto) ocultasFila.push([fila.length, c.oculto, c.texto]);
+-          fila.push(c.texto === "" ? null : c.texto);
+-          for (let k = 1; k < c.span && fila.length < limites.maxColumnasExcel; k++) fila.push(null);
++          ocuparDesdeArriba();
++          if (fila.length >= maxCol) break;
++          const x = fila.length;
++          const valor = c.texto === "" ? null : c.texto;
++          if (c.oculto) ocultasFila.push([x, c.oculto, c.texto]);
++          fila.push(valor);
++          for (let k = 1; k < c.span && fila.length < maxCol; k++) fila.push(null);
++          if (c.rowspan > 1) {
++            for (let k = 0; k < c.span && x + k < maxCol; k++) {
++              arrastre[x + k] = { valor: k === 0 ? valor : null, restantes: c.rowspan - 1, filaOrigen: matriz.length + 1 };
++            }
++          }
++        }
++        // Columnas ocupadas desde arriba a la derecha de la última celda de esta fila.
++        for (let j = fila.length; j < arrastre.length && j < maxCol; j++) {
++          if (!(arrastre[j]?.restantes > 0)) continue;
++          while (fila.length < j) fila.push(null);
++          ocuparDesdeArriba();
++          j = fila.length - 1;
+         }
+         if (matriz.length >= limites.maxFilasExcel || celdasTotales + fila.length > limites.maxCeldasExcel) { celdasTruncadas = true; break; }
+         celdasTotales += fila.length;
+         matriz.push(fila);
+         marcasOcultas.push(ocultasFila);
++        origenes.push(origenFila);
+       }
+       if (!matriz.length) return;
+       const maxCols = matriz.reduce((m, f) => Math.max(m, f.length), 0);
+@@ -3951,7 +4279,8 @@
+       const tableId = `t${String(ti + 1).padStart(4, "0")}`;
+       const rows = matriz.map((fila, i) => ({
+         sourceRow: i + 1,
+-        cells: columns.map((c, j) => N.celda(fila[j] ?? null, c.id, { part: "html", row: i + 1 }))
++        cells: columns.map((c, j) => N.celda(fila[j] ?? null, c.id,
++          { part: "html", row: i + 1, ...(origenes[i]?.has(j) ? { combinada_desde: origenes[i].get(j) } : {}) }))
+       }));
+       N.inferirTipos(columns, rows.filter((_, i) => i !== iCab));
+       marcasOcultas.forEach((lista, ri) => {
+@@ -4148,9 +4477,11 @@
+       } else if ((nombre === "td" || nombre === "th") && tab) {
+         if (!tab.fila) tab.fila = { celdas: [], enThead: tab.enThead };
+         const colspan = Math.max(1, Math.min(1000, parseInt(et.attrs.find(([an]) => an === "colspan")?.[1] || "1", 10) || 1));
+-        const rowspan = parseInt(et.attrs.find(([an]) => an === "rowspan")?.[1] || "1", 10) || 1;
+-        if (colspan > 1 || rowspan > 1) cont.celdasCombinadas++;
+-        tab.celda = { partes: [], colspan, oculto: entrada.oculto };
++        // HTML limita rowspan a 65534; rowspan="0" (hasta el final del grupo) se trata como 1.
++        const rowspan = Math.max(1, Math.min(65534, parseInt(et.attrs.find(([an]) => an === "rowspan")?.[1] || "1", 10) || 1));
++        if (colspan > 1) cont.celdasCombinadas++;
++        if (rowspan > 1) cont.celdasCombinadasFilas++;
++        tab.celda = { partes: [], colspan, rowspan, oculto: entrada.oculto };
+       } else if (/^h[1-6]$/.test(nombre)) {
+         if (!tab?.celda) { cerrarParrafo(); parrafo.nivel = Number(nombre[1]); }
+       } else if (BLOQUE.has(nombre)) {
+@@ -4206,7 +4537,13 @@
+     if (cont.celdasCombinadas) {
+       diag.marcar("html-merged-table-cells");
+       diag.add("HTML_MERGED_CELLS_SIMPLIFIED", "info",
+-        `${cont.celdasCombinadas} celda(s) combinada(s): el valor se conserva en la primera celda y las demás quedan vacías.`);
++        `${cont.celdasCombinadas} celda(s) combinada(s) en horizontal (colspan): el valor se conserva en la primera columna y ` +
++        "las demás columnas que abarca quedan vacías.");
++    }
++    if (cont.celdasCombinadasFilas) {
++      diag.add("HTML_ROWSPAN_EXPANDED", "info",
++        `${cont.celdasCombinadasFilas} celda(s) combinada(s) en vertical (rowspan): su valor se repite en cada fila que abarcan ` +
++        "(esas celdas llevan source.combinada_desde con la fila de origen; al sumar, cuenta cada importe una sola vez).");
+     }
+     if (cont.ignorados.style) {
+       diag.add("HTML_CSS_NOT_EVALUATED", "info",
+@@ -5688,13 +6025,29 @@
+     Object.keys(c).length === 4);
+ }
+ 
++/** Fase B (B4): líneas verticales de una cuadrícula (separadores de columna). */
++function validarSeparadores(lista) {
++  return Array.isArray(lista) && lista.length <= 5000 && lista.every(sp => esObjetoPlano(sp) && Object.keys(sp).length === 3 &&
++    ["x", "y1", "y2"].every(k => numeroFinito(sp[k])));
++}
++
++/** Fase B (B4): una palabra del OCR con su caja (mismas claves que un elemento de texto, más su confianza). */
++function validarPalabraOCR(it) {
++  return esObjetoPlano(it) && typeof it.text === "string" && it.text.length <= 10000 &&
++    ["x", "y", "width", "height", "fontSize"].every(k => numeroFinito(it[k])) &&
++    (it.confianza === undefined || it.confianza === null || numeroFinito(it.confianza)) &&
++    Object.keys(it).every(k => ["text", "x", "y", "width", "height", "fontSize", "confianza"].includes(k));
++}
++
+ function validarPaginasPDF(p) {
+   if (!Array.isArray(p.paginas) || p.paginas.length > 100000 || !Number.isSafeInteger(p.maxElementos) || p.maxElementos < 1) return false;
+   let total = 0;
+   for (const pag of p.paginas) {
+     if (!esObjetoPlano(pag) || !Number.isSafeInteger(pag.pageNumber) || pag.pageNumber < 1 ||
+-        !["digital", "ocr", "hybrid"].includes(pag.modo) || !Array.isArray(pag.items) || !Array.isArray(pag.ocr)) return false;
+-    total += pag.items.length + pag.ocr.length;
++        !["digital", "ocr", "hybrid"].includes(pag.modo) || !Array.isArray(pag.items) || !Array.isArray(pag.ocr) ||
++        !(pag.palabras === undefined || (Array.isArray(pag.palabras) && pag.palabras.every(validarPalabraOCR))) ||
++        !(pag.separadores === undefined || validarSeparadores(pag.separadores))) return false;
++    total += pag.items.length + pag.ocr.length + (pag.palabras?.length || 0);
+     if (total > p.maxElementos) return false;
+     for (const it of pag.items) {
+       if (!esObjetoPlano(it) || typeof it.text !== "string" || it.text.length > 10000 ||
+@@ -5738,9 +6091,23 @@
+         !nombreValido(p.nombreArchivo) || !metadatosValidos(p.metadatos) || !limitesSeguridadValidos(p.limitesSeguridad)) return "payload";
+     return validarPaginasPDF(p) ? null : "payload";
+   }
++  if (msg.tipo === "cuadricula") {
++    // Fase B (B4): o píxeles RGBA de una página PDF dibujada, o el archivo de imagen con sus límites.
++    const claves = Object.keys(p).sort().join(",");
++    if (claves === "height,rgba,width") {
++      return Number.isSafeInteger(p.width) && Number.isSafeInteger(p.height) && p.width > 0 && p.height > 0 &&
++        p.rgba instanceof ArrayBuffer && p.rgba.byteLength === p.width * p.height * 4 ? null : "payload";
++    }
++    if (claves === "imagen,limites") return p.imagen instanceof ArrayBuffer && validarLimites(p.limites) ? null : "payload";
++    return "payload";
++  }
+   if (msg.tipo === "especificos") {
+-    for (const k of Object.keys(p)) if (!["documentoTipo", "blocks", "maxRegistros", "nombreArchivo", "limitesSeguridad"].includes(k)) return "payload";
++    for (const k of Object.keys(p)) {
++      if (!["documentoTipo", "blocks", "maxRegistros", "nombreArchivo", "limitesSeguridad", "palabras", "separadores"].includes(k)) return "payload";
++    }
++    if (!(p.separadores === undefined || validarSeparadores(p.separadores))) return "payload";
+     if (!nombreValido(p.nombreArchivo) || !limitesSeguridadValidos(p.limitesSeguridad)) return "payload";
++    if (!(p.palabras === undefined || (Array.isArray(p.palabras) && p.palabras.length <= 200000 && p.palabras.every(validarPalabraOCR)))) return "payload";
+     if (!tipoValido(p.documentoTipo) || !Number.isSafeInteger(p.maxRegistros) || p.maxRegistros < 1 || !Array.isArray(p.blocks) ||
+         p.blocks.length > 200000 || !p.blocks.every(b => esObjetoPlano(b) && (b.text === undefined || (typeof b.text === "string" && b.text.length <= 100000)) &&
+           (b.confidence === undefined || b.confidence === null || numeroFinito(b.confidence)))) return "payload";
+@@ -5784,17 +6151,24 @@
+       const resultado = estructurarPDF(p.paginas, msg.id, p.documentoTipo, p.maxRegistros,
+         { nombreArchivo: p.nombreArchivo, metadatos: p.metadatos, limites: p.limitesSeguridad });
+       self.postMessage({ protocolo: PROTOCOLO, tipo: "resultado-pdf", id: msg.id, payload: resultado });
++    } else if (msg.tipo === "cuadricula") {
++      const resultado = await prepararImagenOCR(msg.payload);
++      self.postMessage({ protocolo: PROTOCOLO, tipo: "resultado-cuadricula", id: msg.id, payload: resultado },
++        [resultado.rgba, resultado.png].filter(Boolean));
+     } else {
+       const p = msg.payload;
++      const diag = new Diagnostico();
+       const bloques = p.blocks.map((b, i) => ({ id: `b${String(i + 1).padStart(6, "0")}`, kind: "ocr-text", text: b.text ?? "",
+         ...(numeroFinito(b.confidence) ? { confidence: b.confidence } : {}), source: {} }));
+-      const contenido = { blocks: bloques, tables: [], fields: N.campos(bloques) };
++      // Fase B (B4): tablas de la imagen a partir de las palabras del OCR.
++      const tablas = p.palabras ? tablasDesdePalabrasOCR(p.palabras, diag, p.separadores || []) : [];
++      const contenido = { blocks: bloques, tables: tablas, fields: N.campos(bloques) };
+       const datos = datosEspecificos(p.documentoTipo, contenido, { maxRegistros: p.maxRegistros });
+       datos.normalizacion_ocr = D7.normalizar(bloques);
+       const semantico = SEMANTICA.construir(p.documentoTipo, contenido, datos, "ocr");
+       const { textos, seguridad_contenido } = SEG.analizarContenido({ contenido, nombreArchivo: p.nombreArchivo, limites: p.limitesSeguridad });
+       self.postMessage({ protocolo: PROTOCOLO, tipo: "resultado-especificos", id: msg.id,
+-        payload: { datos_especificos: datos, semantico, textos, seguridad_contenido } });
++        payload: { datos_especificos: datos, semantico, textos, seguridad_contenido, tables: tablas, ...diag.exportar() } });
+     }
+   } catch (error) {
+     const esNucleo = error instanceof ErrorNucleo;
+@@ -7206,7 +7580,7 @@
+ }
+ });
+ /* AA:INCRUSTADOS:FIN */
+-const SHA256_WORKER_NUCLEO = "56b73aa3efefa37fb449095a19f74205a69fd72c5c0bdf74f982a58afb13f634";
++const SHA256_WORKER_NUCLEO = "1c3f438f096ab0258d4979a34993f0f722078dd96d1f1397f3ce303483ead362";
+ 
+ /** Nombre de archivo más largo que se admite (el esquema del resultado permite 4096). */
+ const AA_MAX_LONGITUD_NOMBRE_ARCHIVO = 1024;
+@@ -8420,11 +8794,25 @@
+       return msg;
+ 
+     case "resultado-especificos":
+-      if (Object.keys(p).length !== 4 || !aaEsObjetoPlano(p.datos_especificos) || !aaEsObjetoPlano(p.semantico) || !aaSeguridadNucleoValida(p)) {
++      // Fase B (B4): también las tablas reconstruidas con las palabras del OCR y sus diagnósticos.
++      if (Object.keys(p).length !== 8 || !aaEsObjetoPlano(p.datos_especificos) || !aaEsObjetoPlano(p.semantico) ||
++          !aaSeguridadNucleoValida(p) || !Array.isArray(p.tables) || !aaValidarDiagnosticosNucleo(p)) {
+         throw new Error("El worker núcleo devolvió un formato específico no válido.");
+       }
+       return msg;
+ 
++    case "resultado-cuadricula": {
++      // Fase B (B4): imagen preparada para el OCR (sin cuadrícula).
++      const tramos = ["horizontales", "verticales"].every(k => Number.isSafeInteger(p[k]) && p[k] >= 0);
++      const separadores = Array.isArray(p.separadores) && p.separadores.length <= 5000 && p.separadores.every(sp =>
++        aaEsObjetoPlano(sp) && Object.keys(sp).length === 3 && ["x", "y1", "y2"].every(k => Number.isFinite(sp[k])));
++      if (Object.keys(p).length !== 5 || !tramos || !separadores || !(p.rgba === null || p.rgba instanceof ArrayBuffer) ||
++          !(p.png === null || p.png instanceof ArrayBuffer) || (p.rgba !== null && p.png !== null)) {
++        throw new Error("El worker núcleo devolvió una imagen para el OCR no válida.");
++      }
++      return msg;
++    }
++
+     default:
+       throw new Error("Tipo de mensaje del worker núcleo desconocido.");
+   }
+@@ -12034,6 +12422,8 @@
+         part: { type: "string" },
+         blockId: { type: "string" },
+         contiene_campos_formulario: { const: true },
++        // Fase B (B2): celda que repite el valor de una celda combinada en vertical (fila de origen).
++        combinada_desde: { type: "integer", minimum: 1 },
+         boundingBox: {
+           type: "object",
+           required: ["x", "y", "width", "height"],
+@@ -12616,13 +13006,12 @@
+    * valor («Total: 1.234,56 €») y una fecha o un importe con su moneda no se separen en bloques distintos.
+    * La confianza de la línea es la que da Tesseract o, si no la da, la media de sus palabras.
+    */
+-  _extraerBloques(data) {
++  _extraerBloques(data, palabrasSalida = null) {
+     const out = [];
+     for (const block of Array.isArray(data?.blocks) ? data.blocks : []) {
+       for (const paragraph of Array.isArray(block?.paragraphs) ? block.paragraphs : []) {
+         for (const line of Array.isArray(paragraph?.lines) ? paragraph.lines : []) {
+-          const palabras = (Array.isArray(line?.words) ? line.words : []).map(w => ({ text: String(w?.text || "").trim(), conf: this._normalizarConfianza(w?.confidence) }))
+-            .filter(w => w.text);
++          const palabras = this._palabrasDeLinea(line, palabrasSalida);
+           const text = palabras.length ? palabras.map(w => w.text).join(" ") : String(line?.text || "").trim();
+           if (!text) continue;
+           const confs = palabras.map(w => w.conf).filter(c => c !== null);
+@@ -12645,6 +13034,19 @@
+     return out;
+   }
+ 
++  /** Palabras de una línea de Tesseract. Fase B (B4): también se apuntan, con su caja, en palabrasSalida. */
++  _palabrasDeLinea(line, palabrasSalida) {
++    const palabras = (Array.isArray(line?.words) ? line.words : [])
++      .map(w => ({ text: String(w?.text || "").trim(), conf: this._normalizarConfianza(w?.confidence), caja: this._normalizarBBox(w?.bbox) }))
++      .filter(w => w.text);
++    if (palabrasSalida) {
++      for (const w of palabras) {
++        if (w.caja && w.caja.width > 0 && w.caja.height > 0) palabrasSalida.push({ text: w.text, boundingBox: w.caja, confidence: w.conf });
++      }
++    }
++    return palabras;
++  }
++
+   /** fuente: Blob/File de imagen o HTMLCanvasElement. */
+   async detectar(fuente, { signal = null } = {}) {
+     // Idefix1.0: Tesseract.js recibe siempre un Blob. Un Blob se lee en la página sin ninguna petición;
+@@ -12681,7 +13083,9 @@
+           abortado
+         ]);
+         if (signal?.aborted) throw aaErrorAbort(signal, "OCR cancelado.");
+-        return { status: "complete", engine: this.id, blocks: this._extraerBloques(result?.data || {}) };
++        const words = [];
++        const blocks = this._extraerBloques(result?.data || {}, words);
++        return { status: "complete", engine: this.id, blocks, words };
+       } finally {
+         signal?.removeEventListener("abort", alAbortar);
+         abortado.catch(() => {});
+@@ -12928,6 +13332,135 @@
+     return { items, truncado };
+   }
+ 
++  /**
++   * Fase B (B1): fracción de la página cubierta por imágenes, a partir de las operaciones de dibujo de PDF.js
++   * (la superficie de cada imagen es el determinante de su matriz de transformación). Es la misma lista de
++   * operaciones que PDF.js prepara para dibujar la página; no se ejecuta nada del documento.
++   */
++  async _coberturaImagenes(page, viewport) {
++    const OPS = this.pdfjs.OPS;
++    if (!OPS) return 0;
++    const { fnArray = [], argsArray = [] } = await page.getOperatorList();
++    const det = m => (Array.isArray(m) && m.length >= 4 ? Math.abs(m[0] * m[3] - m[1] * m[2]) : 1);
++    const pila = [];
++    let actual = 1;
++    let area = 0;
++    for (let i = 0; i < fnArray.length; i++) {
++      const op = fnArray[i];
++      const args = argsArray[i];
++      if (op === OPS.save) pila.push(actual);
++      else if (op === OPS.restore) actual = pila.length ? pila.pop() : 1;
++      else if (op === OPS.transform) actual *= det(args);
++      else if (op === OPS.paintFormXObjectBegin) { pila.push(actual); actual *= det(args?.[0]); }
++      else if (op === OPS.paintFormXObjectEnd) actual = pila.length ? pila.pop() : 1;
++      else if (op === OPS.paintImageXObject || op === OPS.paintInlineImageXObject || op === OPS.paintImageMaskXObject) area += actual;
++      else if (op === OPS.paintImageXObjectRepeat) {
++        area += actual * Math.abs((Number(args?.[1]) || 0) * (Number(args?.[2]) || 0)) * ((args?.[3]?.length || 0) / 2);
++      }
++    }
++    const pagina = Math.abs(viewport.width * viewport.height) || 1;
++    return Math.max(0, Math.min(1, area / pagina));
++  }
++
++  /** Fase B (B1): fracción de la página ocupada por las cajas del texto digital. */
++  _coberturaTexto(items, viewport) {
++    const pagina = Math.abs(viewport.width * viewport.height) || 1;
++    return Math.min(1, items.reduce((suma, it) => suma + Math.abs(it.width * it.height), 0) / pagina);
++  }
++
++  /**
++   * Fase B (B1): en una página mixta, quita lo que el OCR leyó encima del texto digital (ya incluido). Una caja
++   * se descarta si al menos la mitad de su superficie está cubierta por cajas de texto digital.
++   */
++  _sinSolapeConDigital(cajas, items) {
++    if (!items.length) return cajas;
++    return cajas.filter(c => {
++      const b = c.boundingBox || c;
++      const area = b.width * b.height;
++      if (!(area > 0)) return true;
++      let cubierta = 0;
++      for (const it of items) {
++        const w = Math.min(b.x + b.width, it.x + it.width) - Math.max(b.x, it.x);
++        const h = Math.min(b.y + b.height, it.y + it.height) - Math.max(b.y, it.y);
++        if (w > 0 && h > 0) cubierta += w * h;
++        if (cubierta >= area * 0.5) return false;
++      }
++      return true;
++    });
++  }
++
++  /**
++   * OCR de una página ya dibujada. Fase B (B4): antes se quita la cuadrícula (preprocesarOCR, en el worker
++   * núcleo) y, además de las líneas, se devuelven las palabras con su caja (en puntos de la página) para
++   * reconstruir tablas.
++   */
++  async _ocrPagina(rendered, { ocrProvider, preprocesarOCR, signal, maxItemsPerPage }) {
++    let cuadricula = null;
++    if (preprocesarOCR) cuadricula = await preprocesarOCR(rendered.canvas, signal);
++    const ocrResult = await ocrProvider.detectar(rendered.canvas, { signal });
++    const scale = rendered.scale || 1;
++    const num = v => (Number.isFinite(Number(v)) ? Number(v) : 0);
++    const caja = b => (b ? { x: num(b.x) / scale, y: num(b.y) / scale, width: num(b.width) / scale, height: num(b.height) / scale } : null);
++    const blocks = [...(ocrResult?.blocks || [])]
++      .filter(block => String(block?.text || "").trim())
++      .slice(0, maxItemsPerPage)
++      .map(block => ({
++        text: String(block.text).trim().slice(0, 10000),
++        boundingBox: caja(block.boundingBox),
++        confidence: Number.isFinite(block.confidence) ? Math.max(0, Math.min(1, block.confidence)) : null
++      }));
++    const palabras = [...(ocrResult?.words || [])]
++      .filter(w => w?.boundingBox && String(w.text || "").trim())
++      .slice(0, maxItemsPerPage)
++      .map(w => {
++        const c = caja(w.boundingBox);
++        return { text: String(w.text).trim().slice(0, 10000), ...c, fontSize: c.height,
++          ...(Number.isFinite(w.confidence) ? { confianza: Math.max(0, Math.min(1, w.confidence)) } : {}) };
++      });
++    const separadores = (cuadricula?.separadores || []).map(sp => ({ x: sp.x / scale, y1: sp.y1 / scale, y2: sp.y2 / scale }));
++    return { ocrResult, blocks, palabras, cuadricula, separadores };
++  }
++
++  /**
++   * Dibuja la página, hace el OCR y decide el modo: «ocr» (página sin texto digital suficiente) o, en una página
++   * mixta (Fase B, B1), «hybrid» sin lo que el OCR leyó encima del texto digital (ya incluido).
++   */
++  async _leerPaginaConOCR(page, { items, chars, soloOCR, ocrProvider, preprocesarOCR, signal, maxPixelsPerPage, maxWorkingBytes, maxItemsPerPage }) {
++    const r = { modo: "digital", extractionType: chars > 0 ? "digital-incomplete-ocr" : "scanned-no-ocr", ocrStatus: "failed",
++      ocrEngine: null, ocrUsed: false, ocrBlocks: [], ocrPalabras: [], separadores: [], sinCuadricula: false };
++    let rendered = null;
++    try {
++      // Único paso de PDF que sigue en el hilo principal: PDF.js solo
++      // dibuja páginas en un canvas de la página (limitado en píxeles).
++      rendered = await this._renderizarPagina(page, { signal, maxPixelsPerPage, maxWorkingBytes });
++      const leido = await this._ocrPagina(rendered, { ocrProvider, preprocesarOCR, signal, maxItemsPerPage });
++      r.sinCuadricula = !!(leido.cuadricula?.horizontales || leido.cuadricula?.verticales);
++      r.ocrStatus = ["complete", "unavailable", "failed"].includes(leido.ocrResult?.status) ? leido.ocrResult.status : "failed";
++      r.ocrEngine = leido.ocrResult?.engine || ocrProvider.id || null;
++      if (r.ocrStatus !== "complete") return r;
++      r.ocrUsed = true;
++      r.separadores = leido.separadores;
++      if (soloOCR) {
++        Object.assign(r, { modo: "ocr", extractionType: "ocr", ocrBlocks: leido.blocks, ocrPalabras: leido.palabras });
++        return r;
++      }
++      r.ocrBlocks = this._sinSolapeConDigital(leido.blocks, items);
++      r.ocrPalabras = this._sinSolapeConDigital(leido.palabras, items);
++      r.extractionType = "digital";
++      if (r.ocrBlocks.length) Object.assign(r, { modo: "hybrid", extractionType: "hybrid" });
++      return r;
++    } catch (error) {
++      if (error?.name === "AbortError" || error?.name === "TimeoutError") throw error;
++      r.ocrStatus = "failed";
++      return r;
++    } finally {
++      if (rendered?.canvas) {
++        rendered.canvas.width = 1;
++        rendered.canvas.height = 1;
++      }
++    }
++  }
++
+   async _renderizarPagina(page, { signal = null, maxPixelsPerPage, maxWorkingBytes }) {
+     // El límite efectivo es el menor entre píxeles configurados y memoria.
+     const limitePixeles = Math.max(
+@@ -12987,6 +13520,7 @@
+     maxOcrPages = 1000,
+     maxItemsPerPage = 50000,
+     maxItemsTotal = 2000000,
++    preprocesarOCR = null,
+     onProgress = null
+   } = {}) {
+     if (this.closed) throw new Error("El adaptador PDF.js está cerrado.");
+@@ -13026,6 +13560,7 @@
+       if (adjuntos && typeof adjuntos === "object") activo.adjuntos += Object.keys(adjuntos).length;
+ 
+       const pages = [];
++      const paginasSinCuadricula = [];
+       let ocrPages = 0;
+       let taggedPages = 0;
+       let directCharacters = 0;
+@@ -13066,71 +13601,42 @@
+           directCharacters += chars;
+ 
+           const ocrRequired = pdfMode === "ocr-local" || (pdfMode === "automatico" && chars < minCharsPerPage);
++          // Fase B (B1): página MIXTA (escaneo con algo de texto digital, p. ej. el sello «copia auténtica» o el CSV
++          // de la sede electrónica). Antes bastaba con superar 20 caracteres para no hacer OCR y la página escaneada
++          // se perdía en silencio. Si las imágenes cubren al menos el 25 % de la página y el texto digital menos del
++          // 5 %, se hace OCR de la página y se añade lo que no es texto digital (modo «hybrid»).
++          let mixta = null;
++          if (!ocrRequired && pdfMode !== "ocr-local" && chars < AA_PDF_MAX_CARACTERES_PAGINA_MIXTA) {
++            const imagen = await this._coberturaImagenes(page, viewport).catch(() => 0);
++            const texto = this._coberturaTexto(items, viewport);
++            if (imagen >= AA_PDF_MIN_COBERTURA_IMAGEN_MIXTA && texto < AA_PDF_MAX_COBERTURA_TEXTO_MIXTA) {
++              mixta = { coberturaImagen: Math.round(imagen * 100) / 100, coberturaTexto: Math.round(texto * 1000) / 1000 };
++            }
++          }
++          const ocrHibrido = mixta !== null && pdfMode === "automatico";
+ 
+           let modo = "digital";
+           let ocrBlocks = [];
++          let ocrPalabras = [];
++          let separadores = [];
++          // Con el OCR desactivado, una página mixta se queda en digital, incompleta y con su aviso (PDF_PAGE_IMAGE_WITHOUT_OCR).
+           let extractionType = "digital";
+-          let ocrStatus = ocrRequired ? "unavailable" : "not-needed";
++          let ocrStatus = ocrRequired || ocrHibrido ? "unavailable" : "not-needed";
+           let ocrEngine = null;
+           let ocrUsed = false;
++          if (mixta && !ocrHibrido) allComplete = false;
+ 
+-          if (ocrRequired) {
++          if (ocrRequired || ocrHibrido) {
+             if (!ocrProvider || ocrPages >= maxOcrPages) {
+               allComplete = false;
+               extractionType = chars > 0 ? "digital-incomplete-ocr" : "scanned-no-ocr";
+             } else {
+               ocrPages++;
+-              let rendered = null;
+-
+-              try {
+-                // Único paso de PDF que sigue en el hilo principal: PDF.js solo
+-                // dibuja páginas en un canvas de la página (limitado en píxeles).
+-                rendered = await this._renderizarPagina(page, { signal, maxPixelsPerPage, maxWorkingBytes });
+-                const ocrResult = await ocrProvider.detectar(rendered.canvas, { signal });
+-
+-                ocrStatus = ["complete", "unavailable", "failed"].includes(ocrResult?.status) ? ocrResult.status : "failed";
+-                ocrEngine = ocrResult?.engine || ocrProvider.id || null;
+-
+-                if (ocrStatus === "complete") {
+-                  ocrUsed = true;
+-                  const scale = rendered.scale || 1;
+-                  const num = v => (Number.isFinite(Number(v)) ? Number(v) : 0);
+-                  ocrBlocks = [...(ocrResult.blocks || [])]
+-                    .filter(block => String(block?.text || "").trim())
+-                    .slice(0, maxItemsPerPage)
+-                    .map(block => ({
+-                      text: String(block.text).trim().slice(0, 10000),
+-                      boundingBox: block.boundingBox ? {
+-                        x: num(block.boundingBox.x) / scale,
+-                        y: num(block.boundingBox.y) / scale,
+-                        width: num(block.boundingBox.width) / scale,
+-                        height: num(block.boundingBox.height) / scale
+-                      } : null,
+-                      confidence: Number.isFinite(block.confidence) ? Math.max(0, Math.min(1, block.confidence)) : null
+-                    }));
+-
+-                  if (pdfMode === "ocr-local" || chars < minCharsPerPage) {
+-                    modo = "ocr";
+-                    extractionType = "ocr";
+-                  } else if (ocrBlocks.length) {
+-                    modo = "hybrid";
+-                    extractionType = "hybrid";
+-                  }
+-                } else {
+-                  allComplete = false;
+-                  extractionType = chars > 0 ? "digital-incomplete-ocr" : "scanned-no-ocr";
+-                }
+-              } catch (error) {
+-                if (error?.name === "AbortError" || error?.name === "TimeoutError") throw error;
+-                allComplete = false;
+-                ocrStatus = "failed";
+-                extractionType = chars > 0 ? "digital-incomplete-ocr" : "scanned-no-ocr";
+-              } finally {
+-                if (rendered?.canvas) {
+-                  rendered.canvas.width = 1;
+-                  rendered.canvas.height = 1;
+-                }
+-              }
++              const r = await this._leerPaginaConOCR(page, { items, chars, soloOCR: pdfMode === "ocr-local" || chars < minCharsPerPage,
++                ocrProvider, preprocesarOCR, signal, maxPixelsPerPage, maxWorkingBytes, maxItemsPerPage });
++              ({ modo, extractionType, ocrStatus, ocrEngine, ocrUsed, ocrBlocks, ocrPalabras, separadores } = r);
++              if (r.sinCuadricula) paginasSinCuadricula.push(pageNumber);
++              if (ocrStatus !== "complete") allComplete = false;
+             }
+           }
+ 
+@@ -13138,15 +13644,18 @@
+             pageNumber,
+             width: viewport.width,
+             height: viewport.height,
+-            complete: !ocrRequired || ocrStatus === "complete",
++            complete: (!ocrRequired && !mixta) || ocrStatus === "complete",
+             extractionType,
+             directCharacters: chars,
+             ocrStatus,
+             ocrEngine,
+             ocrUsed,
+             modo,
++            mixta,
+             items: modo === "ocr" ? [] : items,
+-            ocr: ocrBlocks
++            ocr: ocrBlocks,
++            palabras: modo === "digital" ? [] : ocrPalabras,
++            separadores: modo === "digital" ? [] : separadores
+           });
+         } finally {
+           page.cleanup?.();
+@@ -13170,6 +13679,7 @@
+         truncated: pdf.numPages > maxPages,
+         complete: allComplete,
+         paginasTruncadas,
++        paginasSinCuadricula,
+         pages,
+         ocrPages,
+         taggedPages,
+@@ -16165,10 +16675,14 @@
+     if (!dim) throw new Error("El procesador aislado no validó la imagen.");
+     const ocrActivo = aaOcrActivo(this.config);
+ 
+-    let ocrResult = { status: "not-requested", engine: null, blocks: [] };
++    let ocrResult = { status: "not-requested", engine: null, blocks: [], words: [] };
+     if (ocrActivo) {
+       this._setEstado(item, "procesando", 58, "Ejecutando OCR local");
+       ocrResult = await this._ocrImagen(item.file, item);
++    } else {
++      // Fase B (B1): con el OCR desactivado, una imagen no tiene texto que leer: se dice, no se da por completa.
++      this._addIssue(item, "IMAGE_OCR_DISABLED", "warning",
++        "El OCR está desactivado: no se ha leído el texto de la imagen y su contenido no está incluido.");
+     }
+ 
+     const blocks = ocrResult.blocks.map((block, index) => ({
+@@ -16180,7 +16694,13 @@
+     }));
+ 
+     this._setEstado(item, "procesando", 88, "Aplicando el formato del tipo documental");
+-    const { datos_especificos, semantico, textos, seguridad_contenido } = await this._datosEspecificosDesdeBloques(item, blocks);
++    // Fase B (B4): las palabras del OCR, con su caja en píxeles de la imagen, para reconstruir tablas.
++    const palabras = (ocrResult.words || []).map(w => ({ text: w.text, x: w.boundingBox.x, y: w.boundingBox.y,
++      width: w.boundingBox.width, height: w.boundingBox.height, fontSize: w.boundingBox.height,
++      ...(Number.isFinite(w.confidence) ? { confianza: w.confidence } : {}) }));
++    const especificos = await this._datosEspecificosDesdeBloques(item, blocks, palabras, ocrResult.separadores || []);
++    const { datos_especificos, semantico, textos, seguridad_contenido, tables } = especificos;
++    this._incorporarDiagnosticos(item, especificos);
+ 
+     this._setEstado(item, "procesando", 90, "Normalizando imagen");
+     return {
+@@ -16192,8 +16712,9 @@
+       executionMode: "web-worker",
+       contentQuality: "unverified",
+       metadata: { width: dim.width, height: dim.height, pixels: dim.pixels, mediaType: item.file.type || null },
+-      blocks,
+-      tables: [],
++      blocks: [...blocks, ...tables.map((t, i) => ({ id: `b${String(blocks.length + i + 1).padStart(6, "0")}`, kind: "table",
++        tableId: t.id, source: { ...t.source } }))],
++      tables,
+       fields: [],
+       ocr: {
+         requested: ocrActivo,
+@@ -16201,17 +16722,19 @@
+         status: ocrResult.status,
+         engine: ocrResult.engine || null
+       },
+-      statistics: { ocrBlocks: blocks.length }
++      statistics: { ocrBlocks: blocks.length, tables: tables.length }
+     };
+   }
+ 
+-  /** El formato específico de un texto OCR también se calcula en el worker núcleo. */
+-  async _datosEspecificosDesdeBloques(item, blocks) {
++  /** El formato específico de un texto OCR también se calcula en el worker núcleo (y las tablas, con las palabras). */
++  async _datosEspecificosDesdeBloques(item, blocks, palabras = [], separadores = []) {
+     const msg = await aaEjecutarWorkerNucleo({
+       tipo: "especificos",
+       payload: {
+         documentoTipo: item.documentoTipo,
+         blocks: blocks.map(b => ({ text: b.text, ...(Number.isFinite(b.confidence) ? { confidence: b.confidence } : {}) })),
++        ...(palabras.length ? { palabras } : {}),
++        ...(palabras.length && separadores.length ? { separadores } : {}),
+         maxRegistros: this.config.maxRegistrosEspecificos,
+         nombreArchivo: this._nombreParaNucleo(item),
+         limitesSeguridad: this._limitesSeguridad()
+@@ -16233,7 +16756,11 @@
+       return { status: "unavailable", engine: null, blocks: [] };
+     }
+     try {
+-      const resultado = await proveedor.detectar(fuente, { signal: item.controller.signal });
++      // Fase B (B4): sin la cuadrícula de las tablas, Tesseract lee el texto de las celdas.
++      this._setEstado(item, "procesando", 54, "Preparando la imagen para el OCR");
++      const sinCuadricula = await this._imagenSinCuadricula(item);
++      this._setEstado(item, "procesando", 58, "Ejecutando OCR local");
++      const resultado = await proveedor.detectar(sinCuadricula?.imagen || fuente, { signal: item.controller.signal });
+       const status = ["complete", "unavailable", "failed"].includes(resultado?.status) ? resultado.status : "failed";
+       const engine = String(resultado?.engine || proveedor.id || "ocr-local");
+       if (status !== "complete") {
+@@ -16247,12 +16774,68 @@
+         if (!a.boundingBox || !b.boundingBox) return 0;
+         return a.boundingBox.y - b.boundingBox.y || a.boundingBox.x - b.boundingBox.x;
+       });
+-      return { status, engine, blocks };
++      const words = (Array.isArray(resultado?.words) ? resultado.words : [])
++        .filter(w => w?.boundingBox && String(w.text || "").trim()).slice(0, 200000);
++      return { status, engine, blocks, words, separadores: sinCuadricula?.separadores || [] };
+     } catch (error) {
+       if (error?.name === "AbortError" || error?.name === "TimeoutError") throw error;
+       const engine = String(proveedor.id || "ocr-local");
+       this._addIssue(item, "OCR_FAILED", "warning", `${engine} falló: ${error.message}`);
+-      return { status: "failed", engine, blocks: [] };
++      return { status: "failed", engine, blocks: [], words: [] };
++    }
++  }
++
++  /**
++   * Fase B (B4): quita la cuadrícula de una página PDF ya dibujada. Los píxeles se tratan en el worker núcleo y
++   * vuelven al lienzo. Si no se puede, el OCR sigue con la página tal cual.
++   * @returns {Promise<{ horizontales: number, verticales: number, separadores: Array<{x:number,y1:number,y2:number}> }>}
++   */
++  async _lienzoSinCuadricula(canvas, item, signal) {
++    const ctx = canvas.getContext("2d");
++    const { width, height } = canvas;
++    const rgba = ctx.getImageData(0, 0, width, height).data.buffer;
++    try {
++      const limites = this._limitesNucleo();
++      const msg = await aaEjecutarWorkerNucleo({ tipo: "cuadricula", payload: { rgba, width, height }, transfer: [rgba], limites,
++        signal, timeoutMs: this.config.maxDuracionArchivoMs + 1000 });
++      if (msg.tipo === "error" || !msg.payload.rgba || msg.payload.rgba.byteLength !== width * height * 4) {
++        return { horizontales: 0, verticales: 0, separadores: [] };
++      }
++      const { horizontales, verticales, separadores } = msg.payload;
++      if (horizontales || verticales) ctx.putImageData(new ImageData(new Uint8ClampedArray(msg.payload.rgba), width, height), 0, 0);
++      return { horizontales, verticales, separadores };
++    } catch (error) {
++      if (error?.name === "AbortError" || error?.name === "TimeoutError") throw error;
++      this._addIssue(item, "OCR_GRID_NOT_CHECKED", "info",
++        `No se pudo comprobar si la página tiene cuadrícula (${String(error?.message || error).slice(0, 200)}); el OCR usa la página tal cual.`);
++      return { horizontales: 0, verticales: 0, separadores: [] };
++    }
++  }
++
++  /**
++   * Fase B (B4): quita la cuadrícula de una imagen antes del OCR. La imagen se decodifica y se trata en el worker
++   * núcleo (sin red), nunca en la página. Devuelve { imagen: PNG sin cuadrícula, separadores: líneas verticales },
++   * o null si no la había o no se pudo comprobar (entonces el OCR usa la imagen original, y se dice).
++   */
++  async _imagenSinCuadricula(item) {
++    try {
++      const imagen = await item.file.arrayBuffer();
++      const limites = this._limitesNucleo();
++      const msg = await aaEjecutarWorkerNucleo({ tipo: "cuadricula", payload: { imagen, limites }, transfer: [imagen], limites,
++        signal: item.controller.signal, timeoutMs: this.config.maxDuracionArchivoMs + 1000 });
++      if (msg.tipo === "error") throw new Error(msg.payload.mensaje);
++      const { png, horizontales, verticales, separadores } = msg.payload;
++      if (!png) return null;
++      this._addIssue(item, "OCR_GRID_REMOVED", "info",
++        `Antes del OCR se borraron las líneas de la cuadrícula (${horizontales} tramo(s) horizontal(es) y ${verticales} vertical(es)) ` +
++        "para que no se confundan con letras; las líneas verticales se usan para separar las columnas. El archivo original no se modifica.",
++        null, { horizontales, verticales });
++      return { imagen: new Blob([png], { type: "image/png" }), separadores };
++    } catch (error) {
++      if (error?.name === "AbortError" || error?.name === "TimeoutError") throw error;
++      this._addIssue(item, "OCR_GRID_NOT_CHECKED", "info",
++        `No se pudo comprobar si la imagen tiene cuadrícula (${String(error?.message || error).slice(0, 200)}); el OCR usa la imagen original.`);
++      return null;
+     }
+   }
+ 
+@@ -16333,6 +16916,8 @@
+       maxOcrPages: this.config.maxPaginasOCRPdf,
+       maxItemsPerPage: this.config.maxElementosTextoPaginaPDF,
+       maxItemsTotal: this.config.maxElementosTextoPDF,
++      // Fase B (B4): la cuadrícula de las tablas se quita en el worker núcleo antes del OCR.
++      preprocesarOCR: (canvas, signal) => this._lienzoSinCuadricula(canvas, item, signal),
+       onProgress: info => {
+         const ratio = Number(info?.ratio);
+         if (!Number.isFinite(ratio)) return;
+@@ -16349,9 +16934,11 @@
+     // Líneas, bloques, campos y tablas se reconstruyen en el worker núcleo.
+     this._setEstado(item, "procesando", 85, "Reconstruyendo texto, campos y tablas");
+     const paginasParaWorker = analysis.pages.map(page => ({
+-      pageNumber: page.pageNumber, modo: page.modo, items: page.items, ocr: page.ocr
++      pageNumber: page.pageNumber, modo: page.modo, items: page.items, ocr: page.ocr,
++      ...(page.palabras?.length ? { palabras: page.palabras } : {}),
++      ...(page.palabras?.length && page.separadores?.length ? { separadores: page.separadores.slice(0, 5000) } : {})
+     }));
+-    for (const page of analysis.pages) { page.items = null; page.ocr = null; }
++    for (const page of analysis.pages) { page.items = null; page.ocr = null; page.palabras = null; page.separadores = null; }
+ 
+     // Metadatos del PDF (título, autor…): texto controlado por quien creó el
+     // documento, así que también se revisan en el worker.
+@@ -16453,6 +17040,30 @@
+       }
+     }
+ 
++    // Fase B (B1): páginas mixtas (imagen grande con poco texto digital).
++    for (const page of analysis.pages) {
++      if (!page.mixta) continue;
++      const pct = `${Math.round(page.mixta.coberturaImagen * 100)} %`;
++      if (effectivePdfMode === "texto-directo") {
++        // Sin texto digital suficiente ya avisa PDF_PAGE_WITHOUT_TEXT; aquí, la página que antes pasaba por completa.
++        if (page.directCharacters < this.config.minCaracteresPorPaginaPDF) continue;
++        this._addIssue(item, "PDF_PAGE_IMAGE_WITHOUT_OCR", "warning",
++          `La página ${page.pageNumber} tiene una imagen que ocupa el ${pct} de la página y casi no tiene texto digital ` +
++          "(p. ej., un escaneo con un sello o un CSV añadido). Con el OCR desactivado, el contenido de la imagen no está incluido.",
++          { page: page.pageNumber }, page.mixta);
++      } else if (page.ocrUsed) {
++        this._addIssue(item, "PDF_MIXED_PAGE_OCR", "info",
++          `La página ${page.pageNumber} combina una imagen (${pct} de la página) con poco texto digital: además del texto ` +
++          "digital, se ha leído la imagen con OCR (bloques ocr-text).", { page: page.pageNumber }, page.mixta);
++      }
++    }
++    if (analysis.paginasSinCuadricula?.length) {
++      this._addIssue(item, "OCR_GRID_REMOVED", "info",
++        "Antes del OCR se borraron las líneas de la cuadrícula de las tablas para que no se confundan con letras " +
++        `(página(s) ${analysis.paginasSinCuadricula.slice(0, 50).join(", ")}). El archivo original no se modifica.`,
++        null, { pages: analysis.paginasSinCuadricula.slice(0, 1000) });
++    }
++
+     if (analysis.truncated) {
+       item.truncated = true;
+       this._addIssue(item, "PDF_PAGE_LIMIT_REACHED", "warning",

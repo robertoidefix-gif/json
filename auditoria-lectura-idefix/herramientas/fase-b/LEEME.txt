@@ -1,0 +1,15 @@
+herramientas/fase-b/ — cómo se comprobó la fase B
+==================================================
+Idefix se ejecuta tal cual en el navegador. Python y Node.js (Playwright) solo GENERAN y MIDEN aquí.
+
+  resellar-nucleo.py          recalcula SHA256_WORKER_NUCLEO tras cambiar el worker núcleo incrustado (replica
+                              aaFuenteWorkerIncrustado; con --comprobar solo verifica el ancla).
+  generar_casos_faseB.py      casos de borde: XLSX con referencias mixtas, HTML con rowspan+colspan, PDF digital
+                              con imagen grande y escaneo con capa de texto (PDF buscable), con su verdad.
+  verificar_casos_faseB.py    comprueba esos casos y, con el OCR desactivado, los avisos de pdf09 y png01.
+  verificacion_final_faseB.sh corpus completo, casos, OCR desactivado, escenarios por la interfaz, demo, tiempos
+                              y memoria sobre una copia exacta de idefix1.0-fase-b/Idefix1.0 (rutas de este
+                              entorno: ajústalas antes de usarlo).
+  ../ejecutar.js              ahora también admite la configuración «sinocr» ({ ocr: false }).
+Resultados: resultados/faseB/ (corpus), resultados/faseB-casos/, resultados/faseB-escenarios/ y
+resultados/capturas/faseB_*.png.

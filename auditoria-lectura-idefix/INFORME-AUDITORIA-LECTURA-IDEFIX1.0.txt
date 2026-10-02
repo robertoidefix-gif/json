@@ -468,3 +468,28 @@ Punto | Estado | Archivo | Línea | Evidencia | Impacto | Corrección | Priorida
       (detalle en CAMBIOS-SIN-SERVIDOR.txt, apartado 3).
     - Arranque 1,46 s (fase A 1,12 s); memoria JS retenida 60 MB (fase A 7 MB).
   Las notas por formato no cambian: es la misma lectura. La fase B parte de esta versión.
+
+-----------------------------------------------------------------------------------------------------
+14. ANEXO · FASE B APLICADA (2026-10-02)
+-----------------------------------------------------------------------------------------------------
+  Entrega: idefix1.0-fase-b/ (sobre la versión sin servidor; código completo .txt, fase-b.diff y
+  CAMBIOS-FASE-B.txt con cada cambio, su línea y sus pruebas). Pruebas: resultados/faseB/ (corpus),
+  resultados/faseB-casos/ (casos de borde), resultados/faseB-escenarios/ y resultados/capturas/faseB_*.png.
+  Herramientas: herramientas/fase-b/.
+  Puntos de la lista priorizada resueltos: 3 (PDF mixto), 4 (rowspan HTML), 5 (XLSX sin r) y 6 (tablas desde
+  el OCR y cuadrícula). Además: una imagen con el OCR desactivado ya no sale «complete» sin texto.
+  Medido con el mismo corpus y las mismas reglas de veredicto (apartado 1.5):
+    Nota por formato      antes → después        Nota por formato      antes → después
+    PDF escaneado          4,0  →  8,0           XLSX                   8,6  →  9,5
+    PNG                    3,3  →  7,5           HTML                   5,5  →  6,5
+    Imágenes (las 3)       3,3  →  6,1           HTML+HTM               6,5  →  7,3
+    PDF (global)           5,8  →  6,8           Sin cambios: PDF digital 6,3 · DOCX 7,7 · XLS 10 ·
+                                                 HTM 10 · JPG 2,5 · JPEG 5,0 (fases C y E)
+    - pdf09 0/7 → 7/7 · pdfE3 y png04 0/12 → 12/12 registros (95–97 % de campos, totales 3/3) · png09 0/12
+      → 12/12 · html06 19 % → 100 % · xlsx05 0/12 → 12/12 · facturas nítidas por OCR: texto 89–93 % → 98–99 % y
+      tabla de líneas 0 → 94–100 %. Los otros 57 documentos, igual. 0 peticiones externas.
+    - Casos de borde (XLSX con r mixtas y no válida, HTML con rowspan+colspan, PDF digital con imagen grande,
+      PDF buscable, OCR desactivado): 0 fallos.
+  Lo que queda (fases C, D y E): dos columnas, páginas giradas, celdas combinadas en Word, fragmentos HTML,
+  filas con onclick, texto oculto en DOCX/PDF/CSS y fotos giradas (jpg08 sigue 0/7). En libros escaneados,
+  revisar las cifras: el OCR aún confunde alguna (95–97 % de campos).
