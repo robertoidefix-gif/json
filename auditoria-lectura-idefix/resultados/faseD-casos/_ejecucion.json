@@ -1,0 +1,222 @@
+{
+ "config": {
+  "ocr": true
+ },
+ "msInicio": 1273,
+ "resumen": [
+  {
+   "id": "d1h",
+   "ok": true,
+   "ms": 81,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "d1w",
+   "ok": true,
+   "ms": 61,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "d1wf",
+   "ok": true,
+   "ms": 51,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "d1p",
+   "ok": true,
+   "ms": 283,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "d1po",
+   "ok": true,
+   "ms": 760,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "d1pc",
+   "ok": true,
+   "ms": 222,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "d2f",
+   "ok": true,
+   "ms": 40,
+   "error": null,
+   "estado": "complete"
+  }
+ ],
+ "peticiones": [
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalD/base/prueba-auditoria.html",
+   "tipo": "document",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalD/base/vendor-paquetes/pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalD/base/vendor-paquetes/pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalD/base/vendor-paquetes/tesseract-7.0.0.min.js.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalD/base/vendor-paquetes/tesseract-7.0.0-worker.min.js.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalD/base/vendor-paquetes/tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalD/base/vendor-paquetes/tessdata-spa.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalD/base/vendor-paquetes/tessdata-cat.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalD/base/vendor-paquetes/tessdata-eus.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalD/base/vendor-paquetes/tessdata-eng.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalD/base/vendor-paquetes/tessdata-fra.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalD/base/analizador-archivos.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalD/base/prueba-auditoria.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/12355404-8390-4e33-a411-9a779cb7fd16",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/0fcaba93-ddfd-4d1c-8a23-203a039ab421",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/d5f52d26-297b-4367-b524-b8bde51f1fa5",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/93daa9da-50c7-4fa3-97ed-6735b6f69649",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/12355404-8390-4e33-a411-9a779cb7fd16",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/12355404-8390-4e33-a411-9a779cb7fd16",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/12355404-8390-4e33-a411-9a779cb7fd16",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/12355404-8390-4e33-a411-9a779cb7fd16",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/7770311a-8691-404f-a71c-0205c349d461",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalD/base/vendor-paquetes/pdfjs-6.2.108-legacy-fuentes.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/12355404-8390-4e33-a411-9a779cb7fd16",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/12355404-8390-4e33-a411-9a779cb7fd16",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/7770311a-8691-404f-a71c-0205c349d461",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/12355404-8390-4e33-a411-9a779cb7fd16",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/12355404-8390-4e33-a411-9a779cb7fd16",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/12355404-8390-4e33-a411-9a779cb7fd16",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/7770311a-8691-404f-a71c-0205c349d461",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/12355404-8390-4e33-a411-9a779cb7fd16",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/12355404-8390-4e33-a411-9a779cb7fd16",
+   "tipo": "script",
+   "metodo": "GET"
+  }
+ ],
+ "externas": [],
+ "consola": [],
+ "navegador": "141.0.7390.37"
+}

@@ -38,6 +38,19 @@ def veredicto(e, d):
         if c["ok"] and re.search(r"No password given|Invalid PDF structure", msg):
             return "⚠️", "rechazo controlado, pero el mensaje es el texto técnico de PDF.js en inglés: " + msg.split("; ", 1)[-1][:80]
         return ("✅", "rechazo controlado: " + msg.split("; ", 1)[-1][:110]) if c["ok"] else ("❌", msg[:120])
+    if d["id"] == "html05":
+        # Fase D: se calcula con el resultado y va ANTES de la regla de factura. Antes estaba detrás y nunca se
+        # aplicaba: html05 se puntuaba solo por sus datos fiscales (✅) aunque la tabla del informe dijera ⚠️.
+        r = json.load(open(os.path.join(OUT, "resultados", PRINCIPAL, "html05.json"), encoding="utf-8"))["resultado"]
+        H = r["seguridad_contenido"]["patrones_sospechosos_detectados"]
+        marcados = sorted({h["fragmento_seguro"][:4] for h in H if h["tipo"] == "texto_oculto_html" and h["fragmento_seguro"].startswith("OC_")})
+        inyec = sorted({h["fragmento_seguro"][:4] for h in H if h["tipo"] == "prompt_injection" and h["fragmento_seguro"].startswith("OC_")})
+        faltan = [k for k in ("OC_A", "OC_B", "OC_C", "OC_D", "OC_E", "OC_F", "OC_G", "OC_H") if k not in marcados]
+        txt = (f"datos fiscales {e['factura']['campos_ok']}/7 · texto oculto marcado como oculto: {len(marcados)}/8" +
+               (f" (sin marcar: {', '.join(faltan)})" if faltan else "") + f" · instrucción detectada por patrón en {len(inyec)}/8")
+        if e["factura"]["campos_ok"] == 7 and len(marcados) == 8 and len(inyec) == 8:
+            return "✅", txt
+        return ("⚠️" if marcados or e["factura"]["campos_ok"] >= 4 else "❌"), txt
     if "factura" in e:
         f = e["factura"]
         tabla = e.get("tabla_lineas", {}).get("exactitud_celdas")
@@ -78,25 +91,27 @@ def veredicto(e, d):
         return ("⚠️" if o["parrafos_contiguos"] * 2 >= o["parrafos"] else "❌"), (
             f"{o['parrafos_contiguos']}/{o['parrafos']} párrafos legibles seguidos; las líneas de las dos columnas se intercalan"
             f" · {checks[0]['detalle'] if checks else ''}")
-    if d["id"] == "html05":
-        r = json.load(open(os.path.join(OUT, "resultados", PRINCIPAL, "html05.json"), encoding="utf-8"))["resultado"]
-        H = r["seguridad_contenido"]["patrones_sospechosos_detectados"]
-        marcados = sorted({h["fragmento_seguro"][:4] for h in H if h["tipo"] == "texto_oculto_html"})
-        inyec = sorted({h["fragmento_seguro"][:4] for h in H if h["tipo"] == "prompt_injection"})
-        return "⚠️", (f"datos fiscales {e['factura']['campos_ok']}/7 · texto oculto marcado como oculto: {len(marcados)}/8 ({', '.join(marcados)}: display:none, hidden, opacity:0); "
-                      f"sin marcar: clase CSS, texto blanco, 1px, fuera de pantalla, altura 0 · instrucción detectada por patrón en {len(inyec)}/8")
     if d["id"] == "pdf07":
         return "⚠️", "se lee todo el texto, pero solo la 1.ª factura se estructura: " + checks[0]["detalle"]
     if d["id"] == "html13":
-        det = []
-        n = 0
+        # Fase D: detección calculada con el resultado (antes, fija). Cada variante es un párrafo «INYxx: …».
+        r = json.load(open(os.path.join(OUT, "resultados", PRINCIPAL, "html13.json"), encoding="utf-8"))["resultado"]
+        bloques = r["content"]["blocks"]
+        detectadas = set()
+        for h in r["seguridad_contenido"]["patrones_sospechosos_detectados"]:
+            m = re.match(r"^/content/blocks/(\d+)/text$", h["campo"])
+            if m and h["tipo"] in ("prompt_injection", "suplantacion_delimitador"):
+                detectadas.add(bloques[int(m.group(1))].get("text", "")[:5])
+        det, n = [], 0
         for k, idioma, t in INY:
             if k == "INY10":
                 continue
-            ok = k in ("INY01", "INY02", "INY09", "INY11")
+            ok = k in detectadas
             n += ok
             det.append(f"{idioma}:{'sí' if ok else 'no'}")
-        return "⚠️", f"{n}/10 variantes detectadas (" + ", ".join(det) + "); en HTML el delimitador </DOCUMENT_DATA> se elimina al analizar la etiqueta"
+        txt = (f"{n}/10 variantes detectadas (" + ", ".join(det) + "); en HTML el delimitador </DOCUMENT_DATA> se elimina al analizar la "
+               f"etiqueta (INY10 {'detectada' if 'INY10' in detectadas else 'no detectada'} por su texto)")
+        return ("✅" if n == 10 else "⚠️" if n else "❌"), txt
     if d["verdad"] == "rendimiento":
         return ("✅" if e["estado"] == "complete" else "❌"), f"{e['ms']} ms · {e['n_bloques']} bloques"
     if checks:

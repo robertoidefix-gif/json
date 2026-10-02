@@ -1,0 +1,20 @@
+{
+ "nota": "Resumen de e2.json (el JSON completo ocupa 4,5 MB: 80.000 párrafos). Se regenera con generar_estres_faseD.py y ejecutar.js.",
+ "ok": true,
+ "ms": 955,
+ "estado": "complete",
+ "bloques": 40000,
+ "avisos": [
+  {
+   "code": "HTML_ACTIVE_CONTENT_IGNORED",
+   "severity": "info",
+   "message": "Se ignoraron por seguridad, con todo su contenido: 1 <meta>, 1 <style>. Nunca se ejecutan ni se cargan."
+  },
+  {
+   "code": "HTML_CSS_PARTIALLY_EVALUATED",
+   "severity": "info",
+   "message": "Para detectar texto oculto se han evaluado 20000 regla(s) de los <style> de la página (selectores de etiqueta, .clase, #id y sus combinaciones con espacio o «>»). La página tiene tantas reglas y elementos que la evaluación de las reglas se detuvo; en el resto solo se miran los estilos en línea. Las hojas de estilo externas nunca se cargan."
+  }
+ ],
+ "hallazgos_texto_oculto": 0
+}

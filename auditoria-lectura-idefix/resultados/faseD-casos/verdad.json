@@ -1,0 +1,440 @@
+[
+ {
+  "id": "d1h",
+  "archivo": "d1_html_css.html",
+  "cajetilla": "otros",
+  "verdad": "faseD",
+  "checks": [],
+  "mime": "",
+  "nota": "HTML: 15 formas de ocultar (reglas de <style>, estilos en línea, <font>) y 12 textos visibles que lo parecen",
+  "esperado": {
+   "ocultos": [
+    [
+     "HD_SRONLY",
+     "altura_cero"
+    ],
+    [
+     "HD_DESC",
+     "display_none"
+    ],
+    [
+     "HD_ID",
+     "visibility_hidden"
+    ],
+    [
+     "HD_BLANCO",
+     "color_blanco"
+    ],
+    [
+     "HD_ESCAPE",
+     "display_none"
+    ],
+    [
+     "HD_ESCALA",
+     "escala_cero"
+    ],
+    [
+     "HD_SANGRIA",
+     "fuera_de_pantalla"
+    ],
+    [
+     "HD_FONT",
+     "font_size_cero"
+    ],
+    [
+     "HD_FONTTAG",
+     "color_blanco"
+    ],
+    [
+     "HD_RGBA",
+     "color_transparente"
+    ],
+    [
+     "HD_ENTIDAD",
+     "color_blanco"
+    ],
+    [
+     "HD_CLIPPATH",
+     "recortado"
+    ],
+    [
+     "HD_HIJO",
+     "opacidad_cero"
+    ]
+   ],
+   "no_ocultos": [
+    "HD_NORMAL",
+    "HD_VISIBLE",
+    "HD_CABECERA",
+    "HD_FONDO",
+    "HD_INLINE",
+    "HD_HOVER",
+    "HD_PRINT",
+    "HD_MEDIA_ATTR",
+    "HD_MOVIL",
+    "HD_COMENTADA",
+    "HD_BGCOLOR",
+    "HD_LI"
+   ],
+   "contiene": [
+    "HD_SRONLY texto solo para lectores de pantalla.",
+    "HD_BLANCO texto blanco sin fondo."
+   ],
+   "aviso": "HTML_CSS_PARTIALLY_EVALUATED"
+  }
+ },
+ {
+  "id": "d1w",
+  "archivo": "d1_word_ocultos.docx",
+  "cajetilla": "otros",
+  "verdad": "faseD",
+  "checks": [],
+  "mime": "",
+  "nota": "Word: oculto por formato directo, estilos de carácter y de párrafo (con basedOn), blanco, 1 punto, specVanish y en celda",
+  "esperado": {
+   "ocultos": [
+    [
+     "WD_ESTILO_CAR",
+     "w_vanish"
+    ],
+    [
+     "WD_ESTILO_PAR",
+     "w_vanish"
+    ],
+    [
+     "WD_HEREDADO",
+     "w_vanish"
+    ],
+    [
+     "WD_BLANCO",
+     "color_blanco"
+    ],
+    [
+     "WD_CASI_BLANCO",
+     "color_blanco"
+    ],
+    [
+     "WD_DIMINUTO",
+     "tamano_minimo"
+    ],
+    [
+     "WD_SPEC",
+     "w_specvanish"
+    ],
+    [
+     "WD_MEDIO",
+     "w_vanish"
+    ],
+    [
+     "WD_CELDA_OCULTA",
+     "w_vanish"
+    ]
+   ],
+   "no_ocultos": [
+    "WD_NORMAL",
+    "WD_ANULADO",
+    "WD_RESALTADO",
+    "WD_CABECERA_ESTILO",
+    "WD_CELDA_OSCURA",
+    "WD_TABLA_ESTILO",
+    "Texto visible antes",
+    "Texto visible después"
+   ],
+   "contiene": [
+    "Texto visible antes. WD_MEDIO oculto en medio del párrafo. Texto visible después."
+   ],
+   "aviso": "DOCX_HIDDEN_TEXT"
+  }
+ },
+ {
+  "id": "d1wf",
+  "archivo": "d1_word_fondo_pagina.docx",
+  "cajetilla": "otros",
+  "verdad": "faseD",
+  "checks": [],
+  "mime": "",
+  "nota": "Word con color de página negro y texto blanco: se ve, no se marca",
+  "esperado": {
+   "no_ocultos": [
+    "WD_PAGINA_OSCURA"
+   ],
+   "sin_ocultos": true,
+   "sin_aviso": "DOCX_HIDDEN_TEXT"
+  }
+ },
+ {
+  "id": "d1p",
+  "archivo": "d1_pdf_ocultos.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseD",
+  "checks": [],
+  "mime": "",
+  "nota": "PDF: blanco sin fondo, blanco sobre gris casi blanco, alfa 0, letra de medio punto y modo 3; blanco sobre banda y tabla de color",
+  "esperado": {
+   "ocultos": [
+    [
+     "PD_BLANCO",
+     "color_blanco"
+    ],
+    [
+     "PD_GRIS",
+     "color_blanco"
+    ],
+    [
+     "PD_ALFA",
+     "relleno_transparente"
+    ],
+    [
+     "PD_DIMINUTO",
+     "tamano_minimo"
+    ],
+    [
+     "PD_INVISIBLE",
+     "modo_invisible"
+    ]
+   ],
+   "no_ocultos": [
+    "PD_CABECERA",
+    "PD_NORMAL",
+    "PD_DESPUES",
+    "PD_TABLA"
+   ],
+   "contiene": [
+    "PD_INVISIBLE modo de dibujo 3",
+    "PD_BLANCO blanco sin nada debajo"
+   ],
+   "aviso": "PDF_HIDDEN_TEXT"
+  }
+ },
+ {
+  "id": "d1po",
+  "archivo": "d1_pdf_capa_ocr.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseD",
+  "checks": [],
+  "mime": "",
+  "nota": "PDF escaneado con su capa de texto OCR invisible encima de la imagen: no es texto oculto",
+  "esperado": {
+   "no_ocultos": [
+    "PD_CAPAOCR"
+   ],
+   "sin_ocultos": true,
+   "aviso": "PDF_INVISIBLE_TEXT_OVER_IMAGE",
+   "sin_aviso": "PDF_HIDDEN_TEXT"
+  }
+ },
+ {
+  "id": "d1pc",
+  "archivo": "d1_pdf_capa_desactivada.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseD",
+  "checks": [],
+  "mime": "",
+  "nota": "PDF con una capa opcional (OCG) desactivada y otra activa",
+  "esperado": {
+   "ocultos": [
+    [
+     "PD_CAPA texto dentro",
+     "capa_desactivada"
+    ]
+   ],
+   "no_ocultos": [
+    "PD_VISIBLE",
+    "PD_CAPA_ON"
+   ]
+  }
+ },
+ {
+  "id": "d2f",
+  "archivo": "d2_frases.html",
+  "cajetilla": "otros",
+  "verdad": "faseD",
+  "checks": [],
+  "mime": "",
+  "nota": "26 instrucciones (ca, fr, eu, en, sutiles, cambio de rol, «no menciones») y 19 frases legítimas parecidas",
+  "esperado": {
+   "frases": [
+    [
+     "F01",
+     true
+    ],
+    [
+     "F02",
+     true
+    ],
+    [
+     "F03",
+     true
+    ],
+    [
+     "F04",
+     true
+    ],
+    [
+     "F05",
+     true
+    ],
+    [
+     "F06",
+     true
+    ],
+    [
+     "F07",
+     true
+    ],
+    [
+     "F08",
+     true
+    ],
+    [
+     "F09",
+     true
+    ],
+    [
+     "F10",
+     true
+    ],
+    [
+     "F11",
+     true
+    ],
+    [
+     "F12",
+     true
+    ],
+    [
+     "F13",
+     true
+    ],
+    [
+     "F14",
+     true
+    ],
+    [
+     "F15",
+     true
+    ],
+    [
+     "F16",
+     true
+    ],
+    [
+     "F17",
+     true
+    ],
+    [
+     "F18",
+     true
+    ],
+    [
+     "F19",
+     true
+    ],
+    [
+     "F20",
+     true
+    ],
+    [
+     "F21",
+     true
+    ],
+    [
+     "F22",
+     true
+    ],
+    [
+     "F23",
+     true
+    ],
+    [
+     "F24",
+     true
+    ],
+    [
+     "F25",
+     true
+    ],
+    [
+     "F26",
+     true
+    ],
+    [
+     "F27",
+     false
+    ],
+    [
+     "F28",
+     false
+    ],
+    [
+     "F29",
+     false
+    ],
+    [
+     "F30",
+     false
+    ],
+    [
+     "F31",
+     false
+    ],
+    [
+     "F32",
+     false
+    ],
+    [
+     "F33",
+     false
+    ],
+    [
+     "F34",
+     false
+    ],
+    [
+     "F35",
+     false
+    ],
+    [
+     "F36",
+     false
+    ],
+    [
+     "F37",
+     false
+    ],
+    [
+     "F38",
+     false
+    ],
+    [
+     "F39",
+     false
+    ],
+    [
+     "F40",
+     false
+    ],
+    [
+     "F41",
+     false
+    ],
+    [
+     "F42",
+     false
+    ],
+    [
+     "F43",
+     false
+    ],
+    [
+     "F44",
+     false
+    ],
+    [
+     "F45",
+     false
+    ]
+   ]
+  }
+ }
+]

@@ -1,0 +1,43 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Texto oculto con CSS</title>
+<style>
+ .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+ div.caja p.nota{display:none}
+ #secreto{visibility:hidden}
+ .cabecera{background:#003366;color:#fff}
+ .blanco{color:white}
+ .esc{display:\6e one}
+ .hover:hover{display:none}
+ @media print{.solo-impresion{display:none}}
+ @media (max-width:600px){.movil{display:none}}
+ .reset{font-size:0}
+ .grande{font-size:14px}
+ .lista > li.x{opacity:0}
+</style>
+<style media="print">.impreso{display:none}</style>
+<!-- <style>.comentada{display:none}</style> -->
+</head><body>
+<p>HD_NORMAL párrafo normal y visible.</p>
+<p class="sr-only">HD_SRONLY texto solo para lectores de pantalla.</p>
+<div class="caja"><p class="nota">HD_DESC oculto con un selector descendiente.</p></div>
+<p id="secreto">HD_ID oculto con visibility:hidden por id.</p>
+<div style="visibility:hidden"><span style="visibility:visible">HD_VISIBLE hijo que vuelve a ser visible.</span></div>
+<table><tr><th class="cabecera">HD_CABECERA blanco sobre azul</th></tr><tr><td>dato</td></tr></table>
+<p class="blanco">HD_BLANCO texto blanco sin fondo.</p>
+<div style="background:#222222"><p class="blanco">HD_FONDO blanco sobre fondo oscuro.</p></div>
+<div class="reset"><span class="grande">HD_INLINE letra a 0 en el padre y 14px en el hijo.</span></div>
+<p class="esc">HD_ESCAPE display escrito con un escape CSS.</p>
+<p class="hover">HD_HOVER oculto solo al pasar el ratón.</p>
+<p class="solo-impresion">HD_PRINT oculto solo al imprimir.</p>
+<p class="impreso">HD_MEDIA_ATTR hoja de estilos solo para imprimir.</p>
+<p class="movil">HD_MOVIL oculto solo en pantallas estrechas.</p>
+<p class="comentada">HD_COMENTADA regla dentro de un comentario HTML.</p>
+<p style="transform:scale(0)">HD_ESCALA transform scale(0).</p>
+<p style="text-indent:-9999px">HD_SANGRIA sangría de -9999px.</p>
+<p style="font:0/0 a">HD_FONT atajo font 0/0.</p>
+<p><font color="#FFFFFF">HD_FONTTAG etiqueta font blanca.</font></p>
+<table><tr><td bgcolor="#000000"><font color="white">HD_BGCOLOR blanco sobre celda negra.</font></td></tr></table>
+<p style="color:rgba(0,0,0,0)">HD_RGBA color con alfa 0.</p>
+<p style="color:&#35;fff">HD_ENTIDAD color escrito con una entidad.</p>
+<p style="clip-path:inset(50%)">HD_CLIPPATH clip-path inset(50%).</p>
+<ul class="lista"><li class="x">HD_HIJO opacity 0 con selector de hijo.</li><li>HD_LI elemento visible.</li></ul>
+</body></html>

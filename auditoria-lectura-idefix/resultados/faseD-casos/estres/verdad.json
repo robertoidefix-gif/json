@@ -1,0 +1,50 @@
+[
+ {
+  "id": "e1",
+  "archivo": "e1_style_retroceso.html",
+  "cajetilla": "otros",
+  "verdad": "estres",
+  "checks": [],
+  "mime": "",
+  "nota": "style de 400.000 letras, 200.000 dígitos, 60.000 «a:(», scale( sin cerrar y fondo de 100.000 palabras",
+  "esperado": {
+   "termina": true
+  }
+ },
+ {
+  "id": "e2",
+  "archivo": "e2_reglas_universales.html",
+  "cajetilla": "otros",
+  "verdad": "estres",
+  "checks": [],
+  "mime": "",
+  "nota": "20.000 reglas «*{…}» y 80.000 elementos (presupuesto de comprobaciones)",
+  "esperado": {
+   "termina": true
+  }
+ },
+ {
+  "id": "e3",
+  "archivo": "e3_css_patologico.html",
+  "cajetilla": "otros",
+  "verdad": "estres",
+  "checks": [],
+  "mime": "",
+  "nota": "300.000 «}», 50.000 @media anidados y un selector de 100.000 partes",
+  "esperado": {
+   "termina": true
+  }
+ },
+ {
+  "id": "e4",
+  "archivo": "e4_pdf_rellenos.pdf",
+  "cajetilla": "otros",
+  "verdad": "estres",
+  "checks": [],
+  "mime": "",
+  "nota": "PDF: 6.000 rectángulos oscuros y 12.000 textos blancos en una página (topes de la revisión)",
+  "esperado": {
+   "termina": true
+  }
+ }
+]

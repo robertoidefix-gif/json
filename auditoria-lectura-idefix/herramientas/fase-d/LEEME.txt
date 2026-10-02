@@ -1,0 +1,37 @@
+herramientas/fase-d/ — cómo se comprobó la fase D
+==================================================
+Idefix se ejecuta tal cual en el navegador. Python y Node.js (Playwright) solo GENERAN y MIDEN aquí.
+
+  generar_casos_faseD.py      casos de la fase D con su verdad. Cada caso mezcla texto que NO se ve (debe
+                              marcarse) con texto que SÍ se ve aunque lo parezca (no debe marcarse):
+                              - d1_html_css.html: 13 formas de ocultar con reglas de <style>, estilos en línea y
+                                <font> (sr-only, descendiente, #id, blanco, escape CSS, scale(0), sangría, font 0/0,
+                                rgba con alfa 0, entidad, clip-path, hijo con «>») y 12 visibles (blanco sobre fondo,
+                                hijo que vuelve a ser visible, letra restablecida, :hover, @media print, <style
+                                media="print">, @media con medidas, regla dentro de un comentario, bgcolor…).
+                              - d1_word_ocultos.docx: oculto por formato directo, por estilo de carácter, de párrafo y
+                                heredado (basedOn), blanco y casi blanco, 1 punto, specVanish, en medio de un párrafo y
+                                en una celda; visibles: vanish anulado, resaltado, sombreado del estilo, celda negra y
+                                tabla con estilo de color. d1_word_fondo_pagina.docx: color de página negro.
+                              - d1_pdf_ocultos.pdf: blanco sin fondo, blanco sobre gris casi blanco, alfa 0, medio
+                                punto y modo 3; visibles: blanco sobre banda azul y cabecera de tabla de color.
+                              - d1_pdf_capa_ocr.pdf: escaneo con su capa de texto OCR invisible (no es oculto).
+                              - d1_pdf_capa_desactivada.pdf: capa opcional (OCG) desactivada, escrito a mano.
+                              - d2_frases.html: 26 instrucciones (ca, fr, eu, en, sutiles, cambio de rol, «no
+                                menciones…») y 19 frases legítimas parecidas que NO deben marcarse.
+                              Los PDF se comprobaron con poppler (pdftoppm) para saber qué se ve de verdad.
+  verificar_casos_faseD.py    comprueba esos casos con los resultados (marca, motivo, que no haya marcas falsas,
+                              que el texto se conserve y los avisos).
+  generar_estres_faseD.py     documentos hostiles: style enormes pensados para expresiones regulares con
+                              retroceso, 20.000 reglas «*{…}» con 80.000 elementos, CSS patológico (llaves sueltas,
+                              @media anidados) y un PDF con 6.000 rectángulos y 12.000 textos blancos. Deben terminar
+                              en pocos segundos.
+  verificacion_final_faseD.sh corpus completo, casos de las fases B, C y D, documentos hostiles, OCR desactivado,
+                              escenarios por la interfaz (paquete y worker alterados, cola, sin SIMD, sin OCR),
+                              demo, tiempos y memoria sobre una copia exacta de idefix1.0-fase-d/Idefix1.0
+                              (rutas de este entorno: ajústalas antes de usarlo).
+  ../fase-b/resellar-nucleo.py  recalcula SHA256_WORKER_NUCLEO tras cambiar el worker núcleo.
+  ../consolidar.py            ahora calcula html05 (ocultos marcados) y html13 (variantes detectadas) con los
+                              resultados, y la regla de html05 va antes que la de factura (ver apartado 16).
+Resultados: resultados/faseD/ (corpus), resultados/faseD-casos/, resultados/faseD-escenarios/ y
+resultados/capturas/faseD_*.png.

@@ -518,3 +518,31 @@ Punto | Estado | Archivo | Línea | Evidencia | Impacto | Corrección | Priorida
   (3/7 datos, el máximo posible con ese archivo); la rotación se comprueba con casos bien construidos (12/12).
   Corrección de la herramienta: consolidar.py daba ❌ fijo a los casos de orden de lectura; ahora aplica la regla
   común (apartado 1.5).
+
+16. ANEXO · FASE D APLICADA (2026-10-02)
+-----------------------------------------------------------------------------------------------------
+  Entrega: idefix1.0-fase-d/ (sobre la fase C; código completo .txt, fase-d.diff y CAMBIOS-FASE-D.txt con cada
+  cambio, su línea y sus pruebas). Pruebas: resultados/faseD/, resultados/faseD-casos/, resultados/faseD-escenarios/
+  y resultados/capturas/faseD_*.png. Herramientas: herramientas/fase-d/.
+  Puntos de la lista priorizada resueltos: 13 (texto oculto en Word, PDF y CSS) y 14 (instrucciones en catalán,
+  francés y euskera, y las sutiles), presentados en la interfaz como AYUDA y no como garantía.
+  Medido con el mismo corpus y las mismas reglas (la fase C, recalculada con la herramienta corregida, ver abajo):
+    Nota por formato      fase C → fase D       Nota por formato      fase C → fase D
+    HTML                   9,0  → 10,0          DOCX                   8,5  →  8,8
+    HTML+HTM               9,2  → 10,0          PDF digital            7,0  →  7,3
+    PDF (global)           7,2  →  7,5          Sin cambios: PDF escaneado 8,0 · XLSX 9,5 · XLS 10 ·
+                                                HTM 10 · PNG 7,5 · JPG 2,5 · JPEG 5,0
+    - html05 ocultos marcados 3/8 → 8/8 · html13 variantes 4/10 → 10/10 · docx06 y pdf10 marcados como ocultos.
+      En los otros 68 documentos el contenido leído es idéntico y no hay hallazgos nuevos. 0 peticiones externas.
+    - Casos de la fase D (13 formas de ocultar en HTML y 12 visibles que lo parecen; 9 en Word y 8 visibles; 5 en
+      PDF, capa OCR de un escaneo y capa opcional desactivada; 26 instrucciones y 19 frases legítimas): 0 fallos.
+    - Documentos hostiles (expresiones regulares con retroceso, 20.000 reglas universales, CSS patológico, PDF con
+      miles de rellenos y textos blancos): todos terminan en menos de 1 s.
+  Hallazgo comprobado: PDF.js devuelve el texto de una capa opcional desactivada (ningún visor lo muestra;
+  poppler no lo extrae). Ahora se marca como texto_oculto_pdf (capa_desactivada).
+  Corrección de la herramienta y de la nota de HTML: consolidar.py tenía la regla de html05 detrás de la regla de
+  factura y nunca se aplicaba, así que html05 se puntuó ✅ por sus datos fiscales aunque la tabla del apartado 2.6
+  dijera ⚠️ (3/8). Con la regla aplicada, la nota de HTML de la fase C es 9,0 (no 9,5) y la de HTML+HTM 9,2 (no
+  9,6). En las notas publicadas de fases anteriores pasa lo mismo: con html05 en ⚠️, HTML (10 casos) baja 0,5 y
+  HTML+HTM (13 casos) unos 0,4 (cálculo; esas fases no se han vuelto a medir). html13 se calcula ahora con el
+  resultado (antes su texto era fijo): con la fase C da 4/10, como dice el apartado 2.6.

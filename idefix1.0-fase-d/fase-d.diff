@@ -1,0 +1,1358 @@
+diff -ru idefix1.0-fase-c/Idefix1.0/LEEME.txt idefix1.0-fase-d/Idefix1.0/LEEME.txt
+--- idefix1.0-fase-c/Idefix1.0/LEEME.txt	2026-10-02 13:18:44.208679762 +0000
++++ idefix1.0-fase-d/Idefix1.0/LEEME.txt	2026-10-02 14:02:22.418290290 +0000
+@@ -1,5 +1,5 @@
+-Idefix1.0 · versión SIN SERVIDOR con las FASES B y C
+-====================================================
++Idefix1.0 · versión SIN SERVIDOR con las FASES B, C y D
++=======================================================
+ 
+ CÓMO SE ABRE
+   Doble clic en index.html. Se abre en Chrome o Edge y funciona tal cual: sin servidor, sin Node.js,
+@@ -18,7 +18,16 @@
+   vendor-paquetes/       PDF.js 6.2.108, Tesseract.js 7.0.0, su núcleo y los modelos de idioma:
+                          archivos oficiales sin modificar, en base64 (ver vendor-paquetes/LEEME.txt).
+ 
+-FASE C (estructura de tablas y texto; detalle y pruebas en ../CAMBIOS-FASE-C.txt)
++FASE D (seguridad del contenido; detalle y pruebas en ../CAMBIOS-FASE-D.txt)
++  - Texto oculto marcado también en Word (propiedad «Oculto», blanco sin fondo, letra de 1 punto) y en PDF
++    (texto invisible, transparente, blanco sin nada debajo, diminuto o en una capa desactivada), y en HTML
++    también el oculto con las reglas de <style> (clases, ids), en blanco, de 1 px o fuera de la pantalla.
++    El texto se conserva: solo se marca, porque un texto que no se ve puede contener órdenes para una IA.
++  - Instrucciones dirigidas a una IA también en catalán, francés y euskera, y las sutiles («Nota para el
++    asistente…», «A partir de ahora actúas como…», «No menciones el…»).
++  - Es una AYUDA, no una garantía: que no se detecte nada no asegura que el documento esté limpio.
++
++FASE C (estructura de tablas y texto; detalle y pruebas en idefix1.0-fase-c/CAMBIOS-FASE-C.txt)
+   - Word: tablas con celdas combinadas (gridSpan, vMerge): cada importe queda bajo su columna.
+   - Base, IVA y total también cuando van en una tabla de dos columnas («Base imponible | 1.354,60 €»).
+   - PDF a dos columnas (informes, resoluciones): se leen columna a columna, en orden.
+diff -ru idefix1.0-fase-c/Idefix1.0/analizador-archivos.js idefix1.0-fase-d/Idefix1.0/analizador-archivos.js
+--- idefix1.0-fase-c/Idefix1.0/analizador-archivos.js	2026-10-02 13:18:44.196780749 +0000
++++ idefix1.0-fase-d/Idefix1.0/analizador-archivos.js	2026-10-02 14:02:22.402165929 +0000
+@@ -2,6 +2,24 @@
+    IDEFIX1.0 — AnalizadorArchivos 6.14.0 (esquema del JSON 6.14.0)
+    Archivo único: JavaScript, interfaz, hoja de estilos, worker núcleo y MARCO_FISCAL_LOCAL.
+ 
++   Fase D (auditoría de lectura, 2026-10-02): seguridad del contenido.
++   - D1 Texto oculto, que se conserva y se marca en seguridad_contenido:
++     · Word (texto_oculto_docx): w:vanish, w:specVanish, letra de 1 punto o
++       menos y blanco sin fondo de color, por formato directo o por estilos
++       (de carácter, de párrafo con basedOn y predeterminado) (DOCX_HIDDEN_TEXT).
++     · PDF (texto_oculto_pdf): modo invisible (Tr 3/7), relleno transparente,
++       blanco sin nada de color debajo, menos de 1 punto y capas opcionales
++       desactivadas, con las operaciones de dibujo de PDF.js (PDF_HIDDEN_TEXT).
++       La capa de texto de un escaneo con OCR no se marca
++       (PDF_INVISIBLE_TEXT_OVER_IMAGE).
++     · HTML: además de los estilos en línea, las reglas de los <style> con
++       selectores sencillos (etiqueta, .clase, #id, espacio y «>»), herencia y
++       especificidad: blanco sin fondo, 1 px, fuera de pantalla, alto 0 con
++       overflow oculto, clip y escala 0 (HTML_CSS_PARTIALLY_EVALUATED).
++   - D2 Instrucciones a una IA también en catalán, francés y euskera, y las
++     sutiles: «Nota para el asistente…», «a partir de ahora actúas como…»,
++     «no menciones el…». Son una ayuda: un patrón nunca es una garantía.
++
+    Fase C (auditoría de lectura, 2026-10-02): estructura de tablas y texto.
+    - C1 Word: tablas con gridSpan, vMerge y gridBefore en su geometría real
+      (cada importe bajo su columna; DOCX_MERGED_CELLS_EXPANDED).
+@@ -243,8 +261,11 @@
+      colspan); codificación por BOM, <meta charset> o detección UTF-8 /
+      windows-1252; entidades con nombre y numéricas.
+    - El texto oculto a la vista (hidden, display:none, visibility:hidden,
+-     font-size:0, opacity:0) se conserva y se marca como "texto_oculto_html"
+-     en seguridad_contenido: es un vector clásico de prompt injection.
++     font-size:0, opacity:0; desde la fase D también las reglas de <style>,
++     el blanco sin fondo, 1 px, fuera de pantalla, clip…) se conserva y se
++     marca como "texto_oculto_html" en seguridad_contenido: es un vector
++     clásico de prompt injection. Word y PDF: "texto_oculto_docx" y
++     "texto_oculto_pdf" (fase D).
+    - Un .xls que en realidad es una página HTML se rechaza (§5) con una
+      explicación específica.
+    - Formato específico: las filas de totales del propio documento
+@@ -1645,23 +1666,192 @@
+   return out;
+ }
+ 
+-function docxTexto(nodo) {
++/*
++ * Fase D (D1): texto que Word no muestra. Un run (w:r) está oculto si tiene w:vanish o w:specVanish, si su letra
++ * mide 1 punto o menos (w:sz ≤ 2, en medios puntos) o si es blanco (o casi) y no hay ningún fondo de color debajo
++ * (sombreado o resaltado del run, del párrafo, de la celda o de la tabla, ni color de página). Cuenta el formato
++ * directo, el del estilo de carácter, el del estilo de párrafo (con su herencia basedOn) y el predeterminado del
++ * documento. El texto se conserva tal cual; solo se anota dónde está oculto y por qué.
++ */
++const DOCX_FIN_MARCO = Object.freeze({ finMarco: true });
++/** Fase D (D1): motivos de texto oculto (Word, HTML y PDF), para los avisos. */
++const MOTIVOS_OCULTO = Object.freeze({
++  w_vanish: "propiedad «Oculto» (w:vanish)", w_specvanish: "w:specVanish", tamano_minimo: "letra de 1 punto o menos",
++  color_blanco: "texto blanco sin fondo de color", atributo_hidden: "atributo hidden", display_none: "display:none",
++  visibility_hidden: "visibility:hidden", font_size_cero: "tamaño de letra 0", font_size_minimo: "letra de 1 px o menos",
++  opacidad_cero: "opacidad 0", color_transparente: "color transparente", fuera_de_pantalla: "colocado fuera de la pantalla",
++  altura_cero: "alto o ancho 0 con overflow:hidden", recortado: "recortado con clip", escala_cero: "escala 0",
++  modo_invisible: "modo de dibujo invisible (Tr 3 o 7)", relleno_transparente: "relleno transparente",
++  capa_desactivada: "capa opcional desactivada"
++});
++const DOCX_LOCALES_MARCO = new Set(["p", "r", "tc", "tbl"]);
++const docxHijo = (el, local) => {
++  if (!el) return null;
++  for (const h of el.hijos) if (h.local === local) return h;
++  return null;
++};
++const docxVal = el => (el ? X.attr(el, "w:val") : null);
++const docxBlanco = c => /^[0-9a-f]{6}$/i.test(c) && [0, 2, 4].every(i => Number.parseInt(c.slice(i, i + 2), 16) >= 0xF0);
++
++/** ¿Pone color de fondo este sombreado (w:shd)? Un relleno que no es blanco ni automático, o una trama con color. */
++function docxShdConColor(shd) {
++  const fill = String(X.attr(shd, "w:fill") || "auto").toLowerCase();
++  const trama = String(X.attr(shd, "w:val") || "clear").toLowerCase();
++  const color = String(X.attr(shd, "w:color") || "auto").toLowerCase();
++  const tema = String(X.attr(shd, "w:themeFill") || "").toLowerCase();
++  return (fill !== "auto" && !docxBlanco(fill)) || (tema !== "" && !/^(?:background1|light1)$/.test(tema)) ||
++    (!["clear", "nil"].includes(trama) && !docxBlanco(color));
++}
++
++/** Fondo de color en unas propiedades (rPr, pPr, tcPr o tblPr): sombreado o resaltado. */
++function docxFondo(pr) {
++  if (!pr) return false;
++  for (const el of pr.hijos) {
++    if (el.local === "shd" && docxShdConColor(el)) return true;
++    if (el.local === "highlight" && String(X.attr(el, "w:val") || "none").toLowerCase() !== "none") return true;
++  }
++  return false;
++}
++
++/** Propiedad booleana de Word (<w:vanish/>, <w:vanish w:val="0"/>…): true, false o undefined si no aparece. */
++function docxBooleana(pr, local) {
++  const el = docxHijo(pr, local);
++  if (!el) return undefined;
++  return !["0", "false", "off"].includes(String(X.attr(el, "w:val") ?? "").trim().toLowerCase());
++}
++
++/** Lo que importa para ver el texto de unas propiedades de run (w:rPr). */
++function docxPropsRun(rPr) {
++  const props = {};
++  if (!rPr) return props;
++  const vanish = docxBooleana(rPr, "vanish");
++  if (vanish !== undefined) props.vanish = vanish;
++  const spec = docxBooleana(rPr, "specVanish");
++  if (spec !== undefined) props.specVanish = spec;
++  const color = docxHijo(rPr, "color");
++  if (color) props.color = String(X.attr(color, "w:val") || "auto").toLowerCase();
++  const sz = Number.parseFloat(docxVal(docxHijo(rPr, "sz")) || "");
++  if (Number.isFinite(sz)) props.sz = sz;
++  if (docxFondo(rPr)) props.fondo = true;
++  return props;
++}
++
++function docxMotivoOculto(m, ctx) {
++  if (m.vanish) return "w_vanish";
++  if (m.specVanish) return "w_specvanish";
++  if (Number.isFinite(m.sz) && m.sz <= 2) return "tamano_minimo";
++  if (m.color && docxBlanco(m.color) && !m.fondo && !ctx.fondoDocumento) return "color_blanco";
++  return null;
++}
++
++/** Estilos de word/styles.xml con su herencia (basedOn, como mucho 20 niveles) y el formato predeterminado. */
++async function docxEstilos(zip, opcionesXML) {
++  const r = { estilos: new Map(), base: {}, parrafoDefecto: null };
++  if (!zip.tiene("word/styles.xml")) return r;
++  const raiz = arbolXML(await zip.texto("word/styles.xml"), opcionesXML, LIMITES_ARBOL_XML.estilos);
++  const defecto = X.primero(raiz, "rPrDefault");
++  if (defecto) r.base = docxPropsRun(docxHijo(defecto, "rPr"));
++  const crudos = new Map();
++  for (const st of X.descendientes(raiz, "style")) {
++    const id = X.attr(st, "w:styleId");
++    if (!id || crudos.has(id) || crudos.size >= 10000) continue;
++    const tipo = X.attr(st, "w:type") || "paragraph";
++    const props = docxPropsRun(docxHijo(st, "rPr"));
++    if (tipo === "paragraph" && docxFondo(docxHijo(st, "pPr"))) props.fondo = true;
++    if (tipo === "table" && [...X.descendientes(st, "shd")].some(docxShdConColor)) props.fondo = true;
++    crudos.set(id, { basado: docxVal(docxHijo(st, "basedOn")), props });
++    if (tipo === "paragraph" && ["1", "true", "on"].includes(String(X.attr(st, "w:default") || "").toLowerCase())) r.parrafoDefecto = id;
++  }
++  const resolver = (id, nivel) => {
++    if (r.estilos.has(id)) return r.estilos.get(id);
++    const e = crudos.get(id);
++    if (!e) return {};
++    const props = { ...(e.basado && nivel < 20 ? resolver(e.basado, nivel + 1) : {}), ...e.props };
++    if (nivel === 0) r.estilos.set(id, props);
++    return props;
++  };
++  for (const id of crudos.keys()) resolver(id, 0);
++  return r;
++}
++
++/** Contexto de lectura de un documento: estilos, fondo de página y formato de partida. */
++async function docxContextoOcultos(zip, raiz, opcionesXML) {
++  const { estilos, base, parrafoDefecto } = await docxEstilos(zip, opcionesXML);
++  const fondo = docxHijo(docxHijo(raiz, "document"), "background");
++  const colorFondo = fondo ? String(X.attr(fondo, "w:color") || "auto").toLowerCase() : "auto";
++  const ctx = { estilos, parrafoDefecto, fondoDocumento: colorFondo !== "auto" && !docxBlanco(colorFondo), marcoBase: null };
++  ctx.marcoBase = { ...base, motivo: null };
++  ctx.marcoBase.motivo = docxMotivoOculto(ctx.marcoBase, ctx);
++  return ctx;
++}
++
++/** Propiedades que valen dentro de un párrafo, run, celda o tabla (lo de dentro manda sobre lo de fuera). */
++function docxMarco(n, padre, ctx) {
++  let marco = padre;
++  if (n.local === "r") {
++    const rPr = docxHijo(n, "rPr");
++    const rStyle = docxHijo(rPr, "rStyle");
++    marco = { ...padre, ...(ctx.estilos.get(docxVal(rStyle)) || {}), ...docxPropsRun(rPr) };
++  } else if (n.local === "p") {
++    const pPr = docxHijo(n, "pPr");
++    const pStyle = docxHijo(pPr, "pStyle");
++    marco = { ...padre, ...(ctx.estilos.get(pStyle ? docxVal(pStyle) : ctx.parrafoDefecto) || {}) };
++    if (docxFondo(pPr)) marco.fondo = true;
++  } else {
++    const pr = docxHijo(n, n.local === "tc" ? "tcPr" : "tblPr");
++    const estilo = n.local === "tbl" ? docxHijo(pr, "tblStyle") : null;
++    if (docxFondo(pr) || ctx.estilos.get(docxVal(estilo))?.fondo) marco = { ...padre, fondo: true };
++    else return padre;
++  }
++  if (padre.fondo) marco.fondo = true;
++  marco.motivo = docxMotivoOculto(marco, ctx);
++  return marco;
++}
++
++/**
++ * Texto de un nodo de Word. Con `ctx` y `ocultos`, además, se anotan en `ocultos` los tramos de texto oculto
++ * ({ motivo, texto }; los runs ocultos seguidos con el mismo motivo forman un solo tramo).
++ */
++function docxTexto(nodo, ctx = null, ocultos = null) {
+   const out = [];
+   const pila = [nodo];
++  const marcos = ctx ? [ctx.marcoBase] : [];
++  let tramo = null;
++  const cerrarTramo = () => {
++    const texto = tramo ? tramo.partes.join("").replace(/\s+/g, " ").trim() : "";
++    if (texto && ocultos.length < 1000) ocultos.push({ motivo: tramo.motivo, texto: texto.slice(0, 4000) });
++    tramo = null;
++  };
+   while (pila.length) {
+     const n = pila.pop();
++    if (n === DOCX_FIN_MARCO) { marcos.pop(); continue; }
+     if (!X.esElemento(n)) continue;
+-    if (n.local === "t") out.push(X.texto(n));
+-    else if (n.local === "tab") out.push("\t");
+-    else if (n.local === "br" || n.local === "cr") out.push("\n");
+-    else for (let i = n.hijos.length - 1; i >= 0; i--) pila.push(n.hijos[i]);
++    const s = n.local === "t" ? X.texto(n) : n.local === "tab" ? "\t" : n.local === "br" || n.local === "cr" ? "\n" : null;
++    if (s !== null) {
++      out.push(s);
++      const motivo = ocultos ? marcos[marcos.length - 1]?.motivo || null : null;
++      if (motivo) {
++        if (tramo?.motivo !== motivo) { if (tramo) cerrarTramo(); tramo = { motivo, partes: [] }; }
++        tramo.partes.push(s);
++      } else if (tramo) {
++        if (s.trim()) cerrarTramo(); else tramo.partes.push(s);
++      }
++      continue;
++    }
++    if (ctx && DOCX_LOCALES_MARCO.has(n.local)) {
++      marcos.push(docxMarco(n, marcos[marcos.length - 1], ctx));
++      pila.push(DOCX_FIN_MARCO);
++    }
++    for (let i = n.hijos.length - 1; i >= 0; i--) pila.push(n.hijos[i]);
+   }
++  if (tramo) cerrarTramo();
+   return out.join("");
+ }
+ 
+-function docxTextoCelda(celda) {
+-  const parrafos = X.hijos(celda).filter(n => n.local === "p").map(n => docxTexto(n).trim()).filter(Boolean);
+-  return parrafos.length ? parrafos.join("\n") : docxTexto(celda).trim();
++function docxTextoCelda(celda, ctx = null, ocultos = null) {
++  const ctxCelda = ctx ? { ...ctx, marcoBase: docxMarco(celda, ctx.marcoBase, ctx) } : null;
++  const parrafos = X.hijos(celda).filter(n => n.local === "p").map(n => docxTexto(n, ctxCelda, ocultos).trim()).filter(Boolean);
++  return parrafos.length ? parrafos.join("\n") : docxTexto(celda, ctxCelda, ocultos).trim();
+ }
+ 
+ /**
+@@ -1670,7 +1860,7 @@
+  * continúa la celda de arriba: su valor se repite y la celda lleva combinada_desde (la fila de origen), como en
+  * las tablas HTML con rowspan. Antes cada w:tc era una columna y los importes acababan bajo otra cabecera.
+  */
+-function docxFilasTabla(tabla, maxColumnas) {
++function docxFilasTabla(tabla, maxColumnas, ctx = null) {
+   const propiedad = (el, contenedor, local) => {
+     const pr = X.hijos(el).find(x => x.local === contenedor);
+     return pr ? X.hijos(pr).find(x => x.local === local) || null : null;
+@@ -1682,6 +1872,8 @@
+   const filas = [];
+   const origenes = [];
+   const arriba = []; // por columna: { valor, fila } de la última celda que empezó ahí
++  const ocultas = []; // Fase D (D1): [fila, columna, tramos ocultos]
++  const ctxTabla = ctx ? { ...ctx, marcoBase: docxMarco(tabla, ctx.marcoBase, ctx) } : null;
+   let combinadas = 0;
+   for (const tr of X.hijos(tabla).filter(x => x.local === "tr")) {
+     const fila = [];
+@@ -1699,7 +1891,9 @@
+         if (arriba[x].valor !== null) origen.set(x, arriba[x].fila);
+         fila.push(arriba[x].valor);
+       } else {
+-        const texto = docxTextoCelda(tc);
++        const tramos = [];
++        const texto = docxTextoCelda(tc, ctxTabla, ctxTabla ? tramos : null);
++        if (texto !== "" && tramos.length) ocultas.push([filas.length, x, tramos]);
+         fila.push(texto === "" ? null : texto);
+         arriba[x] = { valor: texto === "" ? null : texto, fila: filas.length + 1 };
+       }
+@@ -1711,14 +1905,19 @@
+     filas.push(fila);
+     origenes.push(origen);
+   }
+-  return { filas, origenes, combinadas };
++  return { filas, origenes, combinadas, ocultas };
+ }
+ 
+-async function extraerDOCX(zip, limites, diag, idMensaje, incrustados) {
++async function extraerDOCX(zip, limites, diag, idMensaje, incrustados, ocultos) {
+   const opcionesXML = { maxElementos: limites.maxElementosXML, maxProfundidad: limites.maxProfundidadXML };
+   progreso(idMensaje, 30, "Leyendo el documento Word");
+   const raiz = arbolXML(await zip.texto("word/document.xml"), opcionesXML, LIMITES_ARBOL_XML.documento);
+   registrarIncrustados(diag, incrustados);
++  // Fase D (D1): texto oculto (w:vanish, blanco sin fondo, letra de 1 punto). Se conserva y se anota en `ocultos`.
++  const ctx = await docxContextoOcultos(zip, raiz, opcionesXML);
++  const anotarOcultos = (tramos, campo) => {
++    for (const { motivo, texto } of tramos) if (ocultos.length < 1000) ocultos.push({ campo, motivo, texto, tipo: "texto_oculto_docx" });
++  };
+ 
+   if (X.contiene(raiz, "altChunk")) {
+     diag.marcar("docx-altchunk");
+@@ -1739,8 +1938,10 @@
+   for (const nodo of docxBloques(body)) {
+     if (nodo.local === "p") {
+       nParrafo++;
+-      const text = docxTexto(nodo).trim();
++      const tramos = [];
++      const text = docxTexto(nodo, ctx, tramos).trim();
+       if (!text) continue;
++      anotarOcultos(tramos, `/content/blocks/${blocks.length}/text`);
+       const pStyle = X.primero(nodo, "pStyle");
+       const estilo = pStyle ? (X.attr(pStyle, "w:val") || "") : "";
+       const esTitulo = /heading|t[ií]tulo/i.test(estilo);
+@@ -1757,7 +1958,8 @@
+     }
+ 
+     nTabla++;
+-    const { filas, origenes, combinadas } = docxFilasTabla(nodo, limites.maxColumnasExcel);
++    const { filas, origenes, combinadas, ocultas } = docxFilasTabla(nodo, limites.maxColumnasExcel, ctx);
++    ocultas.forEach(([f, c, tramos]) => anotarOcultos(tramos, `/content/tables/${tables.length}/rows/${f}/cells/${c}/raw`));
+     const maxCols = filas.reduce((m, f) => Math.max(m, f.length), 0);
+     const cabecera = filas[0] || [];
+     const columns = Array.from({ length: maxCols }, (_, i) => ({
+@@ -1807,8 +2009,10 @@
+     let n = 0;
+     for (const p of X.descendientes(arbol, "p")) {
+       if (parrafosSecundarios >= 5000) break;
+-      const text = docxTexto(p).trim();
++      const tramos = [];
++      const text = docxTexto(p, ctx, tramos).trim();
+       if (!text) continue;
++      anotarOcultos(tramos, `/content/blocks/${blocks.length}/text`);
+       n++;
+       parrafosSecundarios++;
+       blocks.push({ id: `b${String(++nBloque).padStart(6, "0")}`, kind: "paragraph", text, source: { part: parte, paragraph: n } });
+@@ -1831,7 +2035,7 @@
+     blocks,
+     tables,
+     fields: N.campos(blocks),
+-    statistics: { paragraphs: nParrafo, headings: nTitulos, tables: tables.length }
++    statistics: { paragraphs: nParrafo, headings: nTitulos, tables: tables.length, hiddenTextFragments: ocultos.length }
+   };
+ }
+ 
+@@ -3363,6 +3567,29 @@
+ /**
+  * paginas: [{ pageNumber, modo: "digital"|"ocr"|"hybrid", items: [...], ocr: [...] }]
+  */
++/**
++ * Fase D (D1): el texto oculto de cada página (calculado en la página con las operaciones de dibujo) se sitúa en el
++ * bloque donde quedó, buscando su texto sin espacios, para que seguridad_contenido diga dónde está.
++ */
++function pdfOcultosEnBloques(paginas, blocks) {
++  const ocultos = [];
++  const sinEspacios = t => String(t || "").replace(/\s+/g, "");
++  const compactos = new Map();
++  for (const pagina of paginas) {
++    for (const o of pagina.ocultos || []) {
++      const clave = sinEspacios(o.texto).slice(0, 40);
++      const i = blocks.findIndex((b, k) => {
++        if (b.kind === "table" || b.source?.page !== pagina.pageNumber) return false;
++        if (!compactos.has(k)) compactos.set(k, sinEspacios(b.text));
++        return compactos.get(k).includes(clave);
++      });
++      ocultos.push({ campo: i >= 0 ? `/content/blocks/${i}/text` : "/content/blocks", motivo: o.motivo, texto: o.texto,
++        tipo: "texto_oculto_pdf", pagina: pagina.pageNumber });
++    }
++  }
++  return ocultos;
++}
++
+ function estructurarPDF(paginas, idMensaje, documentoTipo, maxRegistros, seguridad) {
+   const diag = new Diagnostico();
+   const paginasColumnas = [];
+@@ -3427,8 +3654,17 @@
+   const conOCR = paginas.some(p => p.modo !== "digital");
+   if (blocks.some(b => b.kind === "ocr-text")) datos_especificos.normalizacion_ocr = D7.normalizar(blocks);
+   const semantico = SEMANTICA.construir(documentoTipo, { blocks, tables, fields }, datos_especificos, conOCR ? "ocr" : "heuristica");
+-  progreso(idMensaje, 98, "Revisando el contenido (instrucciones ocultas, fórmulas, Unicode)");
+-  const { textos, seguridad_contenido } = SEG.analizarContenido({ contenido: { blocks, tables, fields }, ...seguridad });
++  progreso(idMensaje, 98, "Revisando el contenido (instrucciones ocultas, texto oculto, Unicode)");
++  const ocultos = pdfOcultosEnBloques(paginas, blocks);
++  const { textos, seguridad_contenido } = SEG.analizarContenido({ contenido: { blocks, tables, fields }, ...seguridad, ocultos });
++  if (ocultos.length) {
++    const motivos = [...new Set(ocultos.map(o => o.motivo))];
++    const pags = [...new Set(ocultos.map(o => o.pagina))];
++    diag.add("PDF_HIDDEN_TEXT", "info",
++      `${ocultos.length} fragmento(s) de texto no se ven en la(s) página(s) ${pags.slice(0, 50).join(", ")} ` +
++      `(${motivos.map(m => MOTIVOS_OCULTO[m] || m).join(", ")}). Se conservan, pero se marcan en seguridad_contenido: ` +
++      "un texto invisible para una persona puede contener instrucciones para una IA.", null, { fragmentos: ocultos.length, motivos, pages: pags.slice(0, 1000) });
++  }
+   return { blocks, tables, fields, datos_especificos, semantico, textos, seguridad_contenido, ...diag.exportar() };
+ }
+ 
+@@ -4301,21 +4537,401 @@
+     return { nombre, attrs, autocierre, fin: j < n ? j + 1 : n };
+   }
+ 
+-  function motivoOculto(attrs) {
+-    for (const [n, v] of attrs) {
+-      if (n === "hidden") return "atributo_hidden";
+-      if (n === "type" && /^\s*hidden\s*$/i.test(v)) return "atributo_hidden";
+-      if (n !== "style") continue;
+-      const st = v.toLowerCase().replace(/\s+/g, "");
+-      if (/(?:^|;)display:none/.test(st)) return "display_none";
+-      if (/(?:^|;)visibility:(?:hidden|collapse)/.test(st)) return "visibility_hidden";
+-      if (/(?:^|;)font-size:0(?:\.0*)?(?:px|pt|em|rem|%)?(?:;|!|$)/.test(st)) return "font_size_cero";
+-      if (/(?:^|;)opacity:0(?:\.0*)?(?:;|!|$)/.test(st)) return "opacidad_cero";
+-      if (/(?:^|;)color:transparent/.test(st)) return "color_transparente";
++  /* ---------- Fase D (D1): estilos que ocultan texto ----------
++   * Antes solo se miraban hidden y unos pocos estilos en línea (display:none, visibility:hidden, font-size:0,
++   * opacity:0, color:transparent). Ahora se leen también las reglas de los <style> de la página (nunca se carga nada
++   * externo) con selectores sencillos —etiqueta, .clase, #id y sus combinaciones con espacio o «>»— y se calcula para
++   * cada elemento, como haría un navegador con la herencia y la especificidad: color blanco sin fondo de color, letra
++   * de 1 px o menos, colocación fuera de la pantalla, alto o ancho 0 con overflow oculto, recorte (clip) y escala 0.
++   * Las reglas con pseudoclases, atributos, hermanos o dentro de @media con medidas o @supports no se evalúan (se
++   * cuentan en el aviso HTML_CSS_PARTIALLY_EVALUATED). Es una ayuda: no sustituye a un navegador.
++   */
++  const PROPIEDADES_OCULTAR = new Set(["display", "visibility", "opacity", "font-size", "font", "color", "background",
++    "background-color", "background-image", "position", "left", "top", "right", "text-indent", "margin-left", "margin-top",
++    "height", "max-height", "width", "max-width", "overflow", "overflow-x", "overflow-y", "clip", "clip-path", "transform"]);
++  const BLANCOS_CSS = new Set(["white", "snow", "ghostwhite", "whitesmoke", "ivory", "floralwhite", "seashell", "mintcream",
++    "azure", "aliceblue", "honeydew", "lavenderblush"]);
++  const TAMANOS_CSS = new Map([["xx-small", 9], ["x-small", 10], ["small", 13], ["medium", 16], ["large", 18],
++    ["x-large", 24], ["xx-large", 32], ["xxx-large", 48]]);
++  const UNIDADES_PX = new Map([["px", 1], ["pt", 4 / 3], ["pc", 16], ["in", 96], ["cm", 96 / 2.54], ["mm", 96 / 25.4],
++    ["q", 96 / 101.6], ["vw", 12.8], ["vh", 8], ["vmin", 8], ["vmax", 12.8]]);
++  const PALABRAS_FONDO = new Set(["none", "repeat", "no-repeat", "repeat-x", "repeat-y", "space", "round", "scroll", "fixed",
++    "local", "center", "top", "bottom", "left", "right", "cover", "contain", "auto", "border-box", "padding-box",
++    "content-box", "text", "initial", "inherit", "unset", "revert", "transparent"]);
++  const MAX_REGLAS_CSS = 20000;
++  const RE_LONGITUD = /^([+-]?(?:\d+\.?\d*|\.\d+))(px|pt|pc|in|cm|mm|q|em|rem|ex|ch|vw|vh|vmin|vmax)?$/;
++
++  /** CSS sin comentarios y con los escapes resueltos (\6e one → none), como lo lee un navegador. */
++  const cssLimpio = s => String(s).replace(/\/\*[\s\S]*?(?:\*\/|$)/g, " ")
++    .replace(/\\([0-9a-fA-F]{1,6})[ \t\n\r\f]?|\\([^\n0-9a-fA-F])/g, (_, h, c) => {
++      if (c !== undefined) return c;
++      const cp = parseInt(h, 16);
++      return cp && cp <= 0x10FFFF && !(cp >= 0xD800 && cp <= 0xDFFF) ? String.fromCodePoint(cp) : "\uFFFD";
++    });
++
++  /**
++   * Declaraciones que pueden ocultar texto: [propiedad, valor, !important]. Se recorren carácter a carácter (los
++   * «;» dentro de comillas o paréntesis no separan) con coste lineal; como mucho 20.000 caracteres, 200 declaraciones
++   * y 2.000 caracteres por valor (ningún valor legítimo que importe aquí es más largo).
++   */
++  function declaracionesCSS(texto) {
++    const t = texto.length > 20000 ? texto.slice(0, 20000) : texto;
++    const out = [];
++    let inicio = 0;
++    let comilla = "";
++    let nivel = 0;
++    for (let i = 0; i <= t.length && out.length < 200; i++) {
++      const c = t[i];
++      if (comilla) { if (c === comilla) comilla = ""; continue; }
++      if (c === "\"" || c === "'") comilla = c;
++      else if (c === "(") nivel++;
++      else if (c === ")") nivel = Math.max(0, nivel - 1);
++      else if ((c === ";" && nivel === 0) || i === t.length) {
++        const d = t.slice(inicio, i);
++        inicio = i + 1;
++        const dp = d.indexOf(":");
++        const prop = dp > 0 ? d.slice(0, dp).trim().toLowerCase() : "";
++        if (!PROPIEDADES_OCULTAR.has(prop)) continue;
++        let valor = d.slice(dp + 1, dp + 1 + 2000).trim().toLowerCase();
++        const importante = valor.endsWith("important") && /!\s*important$/.test(valor.slice(-40));
++        if (importante) valor = valor.slice(0, valor.lastIndexOf("!")).trim();
++        out.push([prop, valor, importante]);
++      }
+     }
++    return out;
++  }
++
++  /** Longitud CSS en px (em respecto a `base`), o null si depende del contexto (%, auto, calc…). */
++  function longitudPx(v, base = 16) {
++    const x = String(v ?? "").trim();
++    if (x.length > 40) return null;
++    const m = RE_LONGITUD.exec(x);
++    if (!m) return null;
++    const n = Number(m[1]);
++    if (!m[2]) return n === 0 ? 0 : null;
++    if (m[2] === "em") return n * base;
++    if (m[2] === "rem") return n * 16;
++    if (m[2] === "ex" || m[2] === "ch") return n * base / 2;
++    return n * UNIDADES_PX.get(m[2]);
++  }
++
++  const alfaCSS = x => (x === undefined ? 1 : x.endsWith("%") ? parseFloat(x) / 100 : parseFloat(x));
++
++  /** Color CSS → "blanco", "transparente", "otro" o null (se hereda). */
++  function tipoColor(v) {
++    const c = String(v ?? "").trim();
++    if (!c || ["inherit", "unset", "currentcolor", "revert", "revert-layer"].includes(c)) return null;
++    if (c.length > 100) return "otro";
++    if (c === "transparent") return "transparente";
++    if (BLANCOS_CSS.has(c)) return "blanco";
++    let rgb = null;
++    let alfa = 1;
++    let m;
++    if ((m = /^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/.exec(c))) {
++      const h = m[1].length <= 4 ? [...m[1]].map(x => x + x).join("") : m[1];
++      rgb = [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16));
++      if (h.length === 8) alfa = parseInt(h.slice(6, 8), 16) / 255;
++    } else if ((m = /^(rgba?|hsla?)\(([^)]*)\)$/.exec(c))) {
++      const p = m[2].split(/[\s,/]+/).filter(Boolean);
++      alfa = alfaCSS(p[3]);
++      if (m[1].startsWith("hsl")) rgb = parseFloat(p[2]) >= 94 ? [255, 255, 255] : [0, 0, 0];
++      else rgb = p.slice(0, 3).map(x => (x.endsWith("%") ? parseFloat(x) * 2.55 : parseFloat(x)));
++    }
++    if (Number.isFinite(alfa) && alfa <= 0.05) return "transparente";
++    return rgb && rgb.length === 3 && rgb.every(x => Number.isFinite(x) && x >= 240) ? "blanco" : "otro";
++  }
++
++  /** ¿Pone un fondo que no es blanco (color, imagen o degradado)? */
++  function fondoCSS(prop, v) {
++    if (prop === "background-image") return v !== "none" && v !== "" && !["initial", "inherit", "unset"].includes(v);
++    if (prop === "background-color") return tipoColor(v) === "otro";
++    if (/(?:url|gradient|image-set)\(/.test(v)) return true;
++    const piezas = [];
++    let nivel = 0;
++    let actual = "";
++    for (const c of v.slice(0, 2000)) {
++      if (/\s/.test(c) && nivel === 0) { if (actual) piezas.push(actual); actual = ""; continue; }
++      if (c === "(") nivel++;
++      else if (c === ")") nivel = Math.max(0, nivel - 1);
++      actual += c;
++    }
++    if (actual) piezas.push(actual);
++    return piezas.some(t => !PALABRAS_FONDO.has(t) && !t.includes("/") && !/^[+-]?[\d.]/.test(t) && tipoColor(t) === "otro");
++  }
++
++  /** Tamaño de letra en px a partir del valor CSS y del tamaño del padre. */
++  function tamanoLetra(v, padre) {
++    if (v === undefined || v === null || v === "" || v === "inherit" || v === "unset" || v.length > 40) return padre;
++    if (v === "initial") return 16;
++    if (TAMANOS_CSS.has(v)) return TAMANOS_CSS.get(v);
++    if (v === "smaller") return padre / 1.2;
++    if (v === "larger") return padre * 1.2;
++    if (/^[+-]?(?:\d+\.?\d*|\.\d+)%$/.test(v)) return padre * parseFloat(v) / 100;
++    const px = longitudPx(v, padre);
++    return px === null || px < 0 ? padre : px;
++  }
++
++  /** Tamaño dentro del atajo font (p. ej. «font: 0/0 a», técnica clásica para ocultar texto). */
++  function tamanoDeFont(v) {
++    if (!v) return undefined;
++    for (const t of v.split(/\s+/).slice(0, 20)) {
++      const tam = t.split("/")[0];
++      if (tam.length > 40) continue;
++      if (TAMANOS_CSS.has(tam) || tam === "0" || /^[+-]?(?:\d+\.?\d*|\.\d+)(?:px|pt|pc|in|cm|mm|q|em|rem|ex|ch|vw|vh|vmin|vmax|%)$/.test(tam)) return tam;
++    }
++    return undefined;
++  }
++
++  /** Desplazamiento en px (un porcentaje de −100 % o menos cuenta como fuera de la pantalla). */
++  function desplazamiento(v, base) {
++    if (v === undefined || v.length > 40) return null;
++    if (/^-\d+(?:\.\d+)?%$/.test(v)) return parseFloat(v) <= -100 ? -10000 : null;
++    return longitudPx(v, base);
++  }
++
++  /** Lo que oculta al elemento y a TODO su contenido (los descendientes no pueden deshacerlo). */
++  function motivoFijo(attrs, v, tamano) {
++    for (const [an, val] of attrs) {
++      if (an === "hidden") return "atributo_hidden";
++      if (an === "type" && /^\s*hidden\s*$/i.test(val)) return "atributo_hidden";
++    }
++    if (v("display") === "none") return "display_none";
++    if (v("opacity") !== undefined && alfaCSS(v("opacity")) <= 0.05) return "opacidad_cero";
++    for (const m of (v("transform") || "").matchAll(/scale(?:x|y|3d)?\(([^()]*)\)/g)) {
++      if (m[1].split(/[\s,]+/).filter(Boolean).slice(0, 2).some(x => Number(x) === 0)) return "escala_cero";
++    }
++    const posicionado = ["absolute", "fixed"].includes(v("position"));
++    for (const p of posicionado ? ["left", "top", "right", "text-indent", "margin-left", "margin-top"] : ["text-indent", "margin-left", "margin-top"]) {
++      const x = desplazamiento(v(p), tamano);
++      if (x !== null && x <= -500) return "fuera_de_pantalla";
++    }
++    const recorta = ["overflow", "overflow-x", "overflow-y"].some(p => /^(?:hidden|clip)(?:\s|$)/.test(v(p) || ""));
++    if (recorta && ["height", "max-height", "width", "max-width"].some(p => { const x = longitudPx(v(p), tamano); return x !== null && x <= 1; })) {
++      return "altura_cero";
++    }
++    const clip = /^rect\(([^)]*)\)$/.exec(v("clip") || "");
++    const r = clip ? clip[1].split(/[\s,]+/).filter(Boolean).map(x => longitudPx(x, tamano)) : [];
++    if (r.length === 4 && r.every(x => x !== null) && (r[1] - r[3] <= 1 || r[2] - r[0] <= 1)) return "recortado";
++    if (/inset\(\s*(?:50|[5-9]\d|100)(?:\.\d+)?%|circle\(\s*0(?:px|%)?\s*(?:\)|at)/.test(v("clip-path") || "")) return "recortado";
+     return null;
+   }
+ 
++  /* Selectores sencillos: [{ etiqueta, clases, id, comb }], de izquierda a derecha; comb es el combinador con el anterior. */
++  function compilarSelector(texto) {
++    const re = /[ \t\n\r\f]*>[ \t\n\r\f]*|[ \t\n\r\f]+|(\*|[A-Za-z][A-Za-z0-9-]*)|\.(-?[_A-Za-z\u00A0-\uFFFF][_A-Za-z0-9\u00A0-\uFFFF-]*)|#(-?[_A-Za-z0-9\u00A0-\uFFFF-]+)/y;
++    const t = texto.trim();
++    const sel = [];
++    let actual = null;
++    let comb = " ";
++    let i = 0;
++    while (i < t.length) {
++      re.lastIndex = i;
++      const m = re.exec(t);
++      if (!m) return null;
++      i = re.lastIndex;
++      if (m[1] === undefined && m[2] === undefined && m[3] === undefined) {
++        if (!actual) return null;
++        comb = m[0].includes(">") ? ">" : " ";
++        actual = null;
++        continue;
++      }
++      if (!actual) {
++        if (sel.length >= 6) return null;
++        actual = { etiqueta: null, clases: [], id: null, comb };
++        sel.push(actual);
++        comb = " ";
++      }
++      if (m[1] !== undefined) {
++        if (actual.etiqueta || actual.clases.length || actual.id) return null;
++        actual.etiqueta = m[1] === "*" ? null : m[1].toLowerCase();
++      } else if (m[2] !== undefined) actual.clases.push(m[2]);
++      else actual.id = m[3];
++    }
++    return sel.length && actual ? sel : null;
++  }
++
++  const coincideCompuesto = (c, e) => (!c.etiqueta || c.etiqueta === e.nombre) && (!c.id || c.id === e.id) &&
++    c.clases.every(k => e.clases.includes(k));
++
++  /** ¿Se aplica el selector al elemento `e`, cuyos antepasados son `padres` (padres[0] es la raíz ficticia)? */
++  function coincideSelector(sel, e, padres) {
++    if (!coincideCompuesto(sel[sel.length - 1], e)) return false;
++    let k = padres.length - 1;
++    for (let j = sel.length - 2; j >= 0; j--) {
++      if (sel[j + 1].comb !== ">") while (k >= 1 && !coincideCompuesto(sel[j], padres[k])) k--;
++      if (k < 1 || !coincideCompuesto(sel[j], padres[k])) return false;
++      k--;
++    }
++    return true;
++  }
++
++  /** ¿Se aplica una consulta @media o el atributo media? true, false o null (condicional: no se evalúa). */
++  function mediaAplica(q) {
++    let resultado = false;
++    for (const c of String(q ?? "").toLowerCase().split(",")) {
++      const x = c.trim().replace(/^only\s+/, "");
++      if (!x || x === "all" || x === "screen") return true;
++      if (/^not\b/.test(x) || x.includes("(")) resultado = null;
++    }
++    return resultado;
++  }
++
++  function saltarBloque(t, llave) {
++    let nivel = 0;
++    for (let i = llave; i < t.length; i++) {
++      if (t[i] === "{") nivel++;
++      else if (t[i] === "}" && --nivel === 0) return i + 1;
++    }
++    return t.length;
++  }
++
++  function indexarRegla(hoja, sel, decl) {
++    const ult = sel[sel.length - 1];
++    const peso = sel.reduce((p, c) => p + (c.id ? 1e6 : 0) + c.clases.length * 1e3 + (c.etiqueta ? 1 : 0), 0);
++    const regla = { sel, decl, orden: hoja.n++, peso };
++    const meter = (mapa, k) => { const l = mapa.get(k); if (l) l.push(regla); else mapa.set(k, [regla]); };
++    if (ult.id) meter(hoja.porId, ult.id);
++    else if (ult.clases.length) meter(hoja.porClase, ult.clases[0]);
++    else if (ult.etiqueta) meter(hoja.porEtiqueta, ult.etiqueta);
++    else hoja.universales.push(regla);
++  }
++
++  /** Lee las reglas de una hoja de estilos (contenido de un <style>) que pueden ocultar texto. */
++  function leerCSS(css, hoja, aplica) {
++    const t = cssLimpio(css);
++    // Bloques @media/@supports abiertos: cuántos no se aplican (false) y cuántos son condicionales (null).
++    const pila = [];
++    const cuenta = { false: aplica === false ? 1 : 0, null: aplica === null ? 1 : 0 };
++    let i = 0;
++    let llave = -1;
++    let cierre = -1;
++    while (i < t.length && !hoja.truncada) {
++      // Se guarda la posición de la próxima «{» y «}» (-2: no hay más): cada tramo se busca una sola vez.
++      if (llave < i && llave !== -2) llave = t.indexOf("{", i) === -1 ? -2 : t.indexOf("{", i);
++      if (cierre < i && cierre !== -2) cierre = t.indexOf("}", i) === -1 ? -2 : t.indexOf("}", i);
++      if (cierre >= 0 && (llave < 0 || cierre < llave)) {
++        const cerrado = pila.length ? pila.pop() : true;
++        if (cerrado !== true) cuenta[String(cerrado)]--;
++        i = cierre + 1;
++        continue;
++      }
++      if (llave < 0) break;
++      const previo = t.slice(i, llave);
++      const cabecera = previo.slice(previo.lastIndexOf(";") + 1).trim();
++      const estado = cuenta.false > 0 ? false : cuenta.null > 0 ? null : true;
++      if (cabecera.startsWith("@")) {
++        const regla = (/^@([a-z-]+)/i.exec(cabecera.slice(0, 40))?.[1] || "").toLowerCase();
++        if (["media", "supports", "layer", "container", "scope"].includes(regla)) {
++          const valor = pila.length >= 100 ? null : regla === "media" ? mediaAplica(cabecera.slice(6, 2000)) : regla === "layer" ? true : null;
++          pila.push(valor);
++          if (valor !== true) cuenta[String(valor)]++;
++          i = llave + 1;
++        } else i = saltarBloque(t, llave);
++        continue;
++      }
++      const fin = cierre;
++      const decl = estado === false ? [] : declaracionesCSS(t.slice(llave + 1, fin < 0 ? t.length : fin));
++      i = fin < 0 ? t.length : fin + 1;
++      if (!decl.length) continue;
++      for (const s of cabecera.split(",")) {
++        const sel = estado === null ? null : compilarSelector(s);
++        if (!sel) hoja.sinEvaluar++;
++        else if (hoja.n >= MAX_REGLAS_CSS) hoja.truncada = true;
++        else indexarRegla(hoja, sel, decl);
++      }
++    }
++  }
++
++  /**
++   * Reglas de todos los <style> de la página (los que están dentro de comentarios, scripts o textarea no cuentan).
++   * Un <style media="print"> no se aplica en pantalla.
++   */
++  function hojaDeEstilos(src) {
++    const hoja = { porId: new Map(), porClase: new Map(), porEtiqueta: new Map(), universales: [], n: 0, sinEvaluar: 0,
++      truncada: false, hojas: 0, presupuesto: 5000000, agotado: false };
++    const re = /<!--|<(style|script|textarea|title|xmp|iframe|noembed|noframes|noscript)(?=[\s/>])/gi;
++    let m;
++    while ((m = re.exec(src)) && !hoja.truncada) {
++      if (m[0] === "<!--") {
++        const f = src.indexOf("-->", m.index + 4);
++        if (f < 0) break;
++        re.lastIndex = f + 3;
++        continue;
++      }
++      const nombre = m[1].toLowerCase();
++      const et = leerEtiqueta(src, m.index);
++      re.lastIndex = et.fin;
++      if (et.autocierre) continue;
++      const cierre = new RegExp(`</${nombre}(?=[\\s/>])`, "gi");
++      cierre.lastIndex = et.fin;
++      const c = cierre.exec(src);
++      const fin = c ? c.index : src.length;
++      if (nombre === "style") {
++        hoja.hojas++;
++        const media = et.attrs.find(([an]) => an === "media")?.[1];
++        const aplica = media === undefined ? true : mediaAplica(decodificarEntidades(media, { entidadesDesconocidas: 0 }));
++        if (aplica !== false) leerCSS(src.slice(et.fin, fin), hoja, aplica);
++      }
++      if (!c) break;
++      re.lastIndex = fin;
++    }
++    return hoja;
++  }
++
++  /** Declaraciones que valen para un elemento: presentación (bgcolor…), reglas de <style> y style="". */
++  function estiloElemento(e, attrs, padres, hoja) {
++    const decl = new Map();
++    const poner = lista => {
++      for (const [p, v, imp] of lista) {
++        const prev = decl.get(p);
++        if (!prev || imp || !prev[1]) decl.set(p, [v, imp]);
++      }
++    };
++    const pista = [];
++    for (const [an, v] of attrs) {
++      const valor = v.trim().toLowerCase();
++      if (an === "bgcolor") pista.push(["background-color", valor, false]);
++      else if (an === "background" && valor) pista.push(["background-image", "url()", false]);
++      else if ((an === "color" && e.nombre === "font") || (an === "text" && e.nombre === "body")) pista.push(["color", valor, false]);
++    }
++    poner(pista);
++    if (hoja.n && hoja.presupuesto > 0) {
++      const candidatas = [...hoja.universales, ...(hoja.porEtiqueta.get(e.nombre) || []), ...(e.id ? hoja.porId.get(e.id) || [] : [])];
++      for (const k of e.clases) candidatas.push(...(hoja.porClase.get(k) || []));
++      // Presupuesto de trabajo: una página con miles de reglas universales y miles de elementos no puede bloquear el
++      // análisis; si se agota, se sigue solo con los estilos en línea y el aviso lo dice.
++      hoja.presupuesto -= candidatas.reduce((suma, r) => suma + (r.sel.length > 1 ? padres.length : 1), 0);
++      if (hoja.presupuesto <= 0) hoja.agotado = true;
++      else candidatas.filter(r => coincideSelector(r.sel, e, padres)).sort((a, b) => a.peso - b.peso || a.orden - b.orden).forEach(r => poner(r.decl));
++    }
++    const style = attrs.find(([an]) => an === "style")?.[1];
++    if (style) poner(declaracionesCSS(cssLimpio(decodificarEntidades(style, { entidadesDesconocidas: 0 }))));
++    return decl;
++  }
++
++  /**
++   * Estado visual de un elemento: lo que hereda de su padre (color, fondo, tamaño de letra, visibilidad), lo que oculta
++   * todo su contenido (ocultoFijo) y el motivo por el que su texto no se ve (oculto), o null.
++   */
++  function estadoVisual(nombre, attrs, padres, hoja) {
++    const padre = padres[padres.length - 1];
++    const id = attrs.find(([an]) => an === "id")?.[1] || null;
++    const clases = (attrs.find(([an]) => an === "class")?.[1] || "").split(/[ \t\n\r\f]+/).filter(Boolean).slice(0, 64);
++    const e = { nombre, id, clases };
++    const d = estiloElemento(e, attrs, padres, hoja);
++    const v = p => d.get(p)?.[0];
++    const tamano = tamanoLetra(v("font-size") ?? tamanoDeFont(v("font")), padre.tamano);
++    const color = tipoColor(v("color")) ?? padre.color;
++    const vis = v("visibility");
++    const visibilidad = vis && !["inherit", "unset"].includes(vis) ? vis : padre.visibilidad;
++    const fondo = padre.fondo || ["background", "background-color", "background-image"].some(p => d.has(p) && fondoCSS(p, v(p)));
++    const ocultoFijo = padre.ocultoFijo || motivoFijo(attrs, v, tamano);
++    const oculto = ocultoFijo || (visibilidad === "hidden" || visibilidad === "collapse" ? "visibility_hidden" : null) ||
++      (tamano <= 0.01 ? "font_size_cero" : tamano <= 1 ? "font_size_minimo" : null) ||
++      (color === "transparente" ? "color_transparente" : color === "blanco" && !fondo ? "color_blanco" : null);
++    return { ...e, tamano, color, visibilidad, fondo, ocultoFijo, oculto };
++  }
++
+   /* ---------- Extracción ---------- */
+   function extraer(buffer, limites, diag, idMensaje) {
+     const { texto: bruto, codificacion, origen } = decodificar(buffer, diag);
+@@ -4337,7 +4953,10 @@
+     let titulo = null;
+     let idioma = null;
+ 
+-    const pila = [{ nombre: "#raiz", oculto: null, pre: false }];
++    // Fase D (D1): reglas de los <style> y estado visual heredable de la raíz (letra de 16 px, sin fondo de color).
++    const hoja = hojaDeEstilos(src);
++    const pila = [{ nombre: "#raiz", id: null, clases: [], tamano: 16, color: null, visibilidad: "visible", fondo: false,
++      ocultoFijo: null, oculto: null, pre: false }];
+     const cima = () => pila[pila.length - 1];
+     let saltando = null; // { nombre, prof }
+     let parrafo = { partes: [], nivel: null, oculto: null };
+@@ -4610,11 +5229,7 @@
+       if ((BLOQUE.has(nombre) || /^h[1-6]$/.test(nombre) || nombre === "table") && cima().nombre === "p") cerrarHasta(["p"]);
+ 
+       const padre = cima();
+-      const entrada = {
+-        nombre,
+-        oculto: padre.oculto || motivoOculto(et.attrs),
+-        pre: padre.pre || PRE.has(nombre)
+-      };
++      const entrada = { ...estadoVisual(nombre, et.attrs, pila, hoja), pre: padre.pre || PRE.has(nombre) };
+ 
+       if (nombre === "table") {
+         if (!tab?.celda) cerrarParrafo();
+@@ -4695,9 +5310,15 @@
+         `${cont.celdasCombinadasFilas} celda(s) combinada(s) en vertical (rowspan): su valor se repite en cada fila que abarcan ` +
+         "(esas celdas llevan source.combinada_desde con la fila de origen; al sumar, cuenta cada importe una sola vez).");
+     }
+-    if (cont.ignorados.style) {
+-      diag.add("HTML_CSS_NOT_EVALUATED", "info",
+-        "Las hojas de estilo no se evalúan: un texto oculto mediante clases CSS no puede detectarse (sí el oculto con atributos o estilos en línea).");
++    if (hoja.hojas) {
++      diag.add("HTML_CSS_PARTIALLY_EVALUATED", "info",
++        `Para detectar texto oculto se han evaluado ${hoja.n} regla(s) de los <style> de la página (selectores de etiqueta, ` +
++        ".clase, #id y sus combinaciones con espacio o «>»)." +
++        (hoja.sinEvaluar ? ` ${hoja.sinEvaluar} regla(s) con selectores complejos (pseudoclases, atributos, hermanos) o ` +
++          "condicionales (@media con medidas, @supports) no se evalúan." : "") +
++        (hoja.truncada ? ` Solo se leen las ${MAX_REGLAS_CSS} primeras reglas.` : "") +
++        (hoja.agotado ? " La página tiene tantas reglas y elementos que la evaluación de las reglas se detuvo; en el resto solo se miran los estilos en línea." : "") +
++        " Las hojas de estilo externas nunca se cargan.", null, { reglas: hoja.n, sin_evaluar: hoja.sinEvaluar });
+     }
+     if (celdasTruncadas) {
+       diag.truncado = true;
+@@ -4984,7 +5605,8 @@
+   const RE_ESPECIAL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u00AD\u034F\u061C\u115F\u1160\u180E\u200B-\u200F\u2028-\u202E\u2060-\u2064\u2066-\u2069\u3164\uFEFF\uFFA0]|\uDB40[\uDC00-\uDC7F\uDD00-\uDDEF]/;
+   const RE_ESPECIAL_G = new RegExp(RE_ESPECIAL.source, "g");
+   const RE_NO_ASCII = /[^\x00-\x7F]/;
+-  const RE_RAICES = /ign|olv|forg|disreg|overr|bypas|omit|descart|instr|indicac|orden|regla|norma|syst|sistem|assist|asist|user|usuar|develop|human|eres|seras|you|pretend|fing|nuev|new|updat|actualiz|prompt|jailb|mode|docum|inst\]|<\||<<|<\/?[a-z]|para|to |mensaje|nota|atenc/i;
++  // Fase D (D2): también raíces en catalán, francés y euskera, y las de las órdenes sutiles.
++  const RE_RAICES = /ign|olv|forg|disreg|overr|bypas|omit|descart|instr|indicac|orden|regla|norma|syst|sistem|assist|asist|user|usuar|develop|human|eres|seras|you|pretend|fing|nuev|new|updat|actualiz|prompt|jailb|mode|docum|inst\]|<\||<<|<\/?[a-z]|para|to |mensaje|nota|atenc|oblid|oubl|neglig|contourn|tenez pas|tiens pas|ahaz|baztert|argib|jarraib|agindu|menc|mention|revel|dig|aipa|parl|partir|endavant|desormais|dorenavant|maintenant|hemendik|actu|comport|semblant|joue|papel|ohar|mezu|laguntzaile|consign|nouvel|noves|berri|tout|dena|guzti/i;
+ 
+   /** Recorte que nunca parte un par sustituto UTF-16 (evita "�" en los fragmentos). */
+   const esAlto = c => c >= 0xD800 && c <= 0xDBFF;
+@@ -5058,23 +5680,45 @@
+ 
+   const S = "[^a-z0-9\\n]+"; // separador entre palabras (espacios, puntuación, invisibles ya quitados)
+   const RELLENO = `(?:${S}(?:all|any|every|the|your|my|of|these|those|todas?|todos|las|los|tus|sus|mis|estas|esas|de|el|la))*`;
++  const RELLENO_CA_FR = `(?:${S}(?:les|els|la|el|le|l|totes|tots|toutes|tous|tes|teves|vos|vostres|ces|aquestes|des|de|d|du))*`;
+   const PATRONES = [
+     ["prompt_injection", "ignorar_instrucciones_previas", "alta",
+       `(?:ignore|disregard|forget|override|bypass)${RELLENO}${S}(?:previous|prior|above|earlier|preceding|former|original|system)${S}(?:instructions?|prompts?|rules|directions|directives|guidelines|messages?)`],
+     ["prompt_injection", "ignorar_instrucciones", "alta",
+-      `(?:ignora|ignorad|ignoren|ignorar|olvida|olvidad|olviden|omite|omitid|descarta|desobedece|anula|saltate)${RELLENO}${S}(?:instrucciones|indicaciones|ordenes|reglas|normas|directrices|consignas)`],
++      `(?:ignora|ignorad|ignoren|ignorar|ignore|olvida|olvidad|olviden|olvide|omite|omitid|omita|descarta|descarte|desobedece|anula|saltate)${RELLENO}${S}(?:instrucciones|indicaciones|ordenes|reglas|normas|directrices|consignas)`],
++    // Fase D (D2): la misma orden en catalán, francés y euskera (en euskera el verbo va detrás).
++    ["prompt_injection", "ignorar_instrucciones_ca", "alta",
++      `(?:ignora|ignoreu|ignorar|oblida|oblideu|oblidar|omet|ometeu|descarta|descarteu)${RELLENO_CA_FR}${S}(?:instruccions|indicacions|ordres|regles|normes|directrius|consignes)`],
++    ["prompt_injection", "ignorar_instrucciones_fr", "alta",
++      `(?:ignore|ignorez|ignorer|oublie|oubliez|oublier|neglige|negligez|contourne|contournez|ne${S}(?:tiens|tenez)${S}pas${S}compte)${RELLENO_CA_FR}${S}(?:instructions|consignes|directives|regles|ordres|indications)`],
++    ["prompt_injection", "ignorar_instrucciones_eu", "alta",
++      `(?:(?:aurreko|lehengo|aurretiko|goiko)${S})?(?:argibide|jarraibide|instrukzio|agindu)(?:(?:ak|ok|ei)${S}(?:guztiak${S}|oro${S})?|${S}guztiak${S})(?:ahaztu|baztertu|ez${S}ikusi|alde${S}batera${S}utzi|ez${S}kasurik${S}egin)`],
++    ["prompt_injection", "ignorar_instrucciones_eu", "alta",
++      `(?:ahaztu|baztertu)${S}(?:aurreko${S}|lehengo${S})?(?:argibide|jarraibide|instrukzio|agindu)(?:ak|ok|ei)`],
+     ["prompt_injection", "olvidar_todo", "alta",
+-      `(?:olvida(?:te)?(?:${S}de)?${S}todo|forget${S}(?:everything|all))`],
++      `(?:olvida(?:te)?(?:${S}de)?${S}todo|forget${S}(?:everything|all)|oblida${S}ho${S}tot|oubliez?${S}tout|dena${S}ahaztu|ahaztu${S}(?:dena|guztia))`],
++    // Fase D (D2): «a partir de ahora actúas como…» y sus equivalentes; «vas» solo seguido de un cambio de papel.
+     ["prompt_injection", "cambio_de_rol", "alta",
+-      `(?:ahora${S}eres|a${S}partir${S}de${S}ahora${S}(?:eres|seras|actuaras|vas)|you${S}are${S}now|from${S}now${S}on${S}you|pretend${S}(?:to${S}be|you${S}are)|finge${S}(?:ser|que${S}eres))`],
++      `(?:ahora${S}eres|(?:a${S}partir${S}de${S}ahora|desde${S}ahora|de${S}ahora${S}en${S}adelante)${S}(?:eres|seras|actuas|actuaras|te${S}comportas|te${S}comportaras|vas${S}a${S}(?:actuar|ser|responder|comportarte|hacer${S}de))|ahora${S}(?:actuas|actuaras)${S}como|tu${S}nuevo${S}(?:rol|papel)|asume${S}el${S}(?:rol|papel)${S}de|you${S}are${S}now|from${S}now${S}on${S}you|your${S}new${S}role|you${S}will${S}now${S}act|pretend${S}(?:to${S}be|you${S}are)|finge${S}(?:ser|que${S}eres))`],
++    ["prompt_injection", "cambio_de_rol_ca", "alta",
++      `(?:(?:a${S}partir${S}d${S}?ara|d${S}?ara${S}endavant)${S}(?:ets|seras|actues|actuaras|et${S}comportes)|ara${S}ets${S}(?:un|una|el|la)${S}|fes${S}veure${S}que${S}ets)`],
++    ["prompt_injection", "cambio_de_rol_fr", "alta",
++      `(?:(?:a${S}partir${S}de${S}maintenant|desormais|dorenavant)${S}(?:tu${S}(?:es|seras|agis|agiras|joues|reponds)|vous${S}(?:etes|serez|agissez|agirez|jouez))|(?:tu${S}es|vous${S}etes)${S}(?:maintenant|desormais)${S}(?:un|une|le|la|l)|(?:fais|faites)${S}semblant${S}d${S}?etre|(?:joue|jouez)${S}le${S}role${S}d)`],
++    ["prompt_injection", "cambio_de_rol_eu", "alta",
++      `hemendik${S}aurrera${S}(?:zu${S})?(?:[a-z]+${S}){0,4}?(?:zara|izango${S}zara|jokatuko${S}duzu|arituko${S}zara)(?![a-z])`],
+     ["prompt_injection", "nuevas_instrucciones", "alta",
+-      `(?:(?:nuevas|new|updated|actualizadas|revised)${S}(?:instrucciones|instructions)|instrucciones${S}(?:nuevas|actualizadas))`],
++      `(?:(?:nuevas|new|updated|actualizadas|revised|noves|nouvelles)${S}(?:instrucciones|instructions|instruccions|consignes)|(?:instrucciones|instruccions)${S}(?:nuevas|actualizadas|noves)|(?:argibide|jarraibide)${S}berriak)`],
+     ["prompt_injection", "referencia_prompt_sistema", "alta",
+-      `(?:system${S}?prompt|prompt${S}del${S}sistema|jailbreak|developer${S}mode|modo${S}desarrollador)`],
++      `(?:system${S}?prompt|prompt${S}(?:del|du|de)${S}(?:sistema|systeme)|jailbreak|developer${S}mode|modo${S}desarrollador|mode${S}developpeur)`],
+     ["prompt_injection", "orden_de_ocultar_informacion", "alta",
+       `(?:no${S}(?:menciones|reportes|informes|incluyas|senales|marques|detectes)|oculta|omite)${S}(?:este|esta|estos|estas|el|la|los|las|ningun|ninguna)${S}(?:gastos?|facturas?|hallazgos?|riesgos?|datos?|operacion(?:es)?|irregularidad(?:es)?|incidencias?)`],
+     ["prompt_injection", "mensaje_dirigido_a_ia", "media",
+       `(?:para|to|atencion|attention)${S}(?:la${S}|el${S}|the${S})?(?:ia|ai|llm|chatgpt|gpt|claude|gemini|copilot|modelo${S}de${S}lenguaje|language${S}model|asistente${S}virtual|auditor${S}ia)`],
++    // Fase D (D2): órdenes sutiles. «Nota para el asistente: …» (y en ca, fr, en, eu) y «no menciones el/la…».
++    ["prompt_injection", "nota_para_el_asistente", "media",
++      `(?:(?:nota|mensaje|aviso|instrucciones?|indicaciones?)${S}(?:para|al|a)${S}(?:el${S}|la${S}|un${S}|una${S})?(?:asistente|ia|ai|llm|bot|chatbot|analizador${S}automatico|revisor${S}automatico)|(?:nota|missatge|instruccions?)${S}(?:per${S}a|a|al)${S}(?:l${S}|la${S}|el${S})?(?:assistent|ia|model${S}de${S}llenguatge)|(?:note|message|consignes?|instructions?)${S}(?:pour|a|to|for)${S}(?:l${S}|le${S}|la${S}|the${S})?(?:assistant|ia|ai|llm|chatbot|intelligence${S}artificielle|modele${S}de${S}langage|language${S}model)|(?:oharra|mezua|argibideak)${S}(?:laguntzaileari|laguntzailearentzat|adimen${S}artifizialari|iari))`],
++    ["prompt_injection", "orden_de_no_mencionar", "media",
++      `(?:no${S}(?:menciones|mencioneis|reveles|digas|comentes|hables${S}de|hagas${S}referencia${S}a)${S}(?:el|la|los|las|este|esta|estos|estas|ese|esa|nada|ningun|ninguna)|no${S}(?:mencionis|revelis|diguis|comentis|parlis${S}de)${S}(?:el|la|els|les|aquest|aquesta|res|cap)|ne${S}(?:mentionne|mentionnez|revele|revelez|dis|dites|signale|signalez|parle|parlez)${S}(?:pas|jamais|rien)|(?:do${S}not|don${S}t|never)${S}(?:mention|reveal|flag)${S}(?:this|these|that|the|any)|ez${S}(?:aipatu|jakinarazi|azaldu))`],
+     ["marcador_rol", "marcador_de_rol", "media",
+       `(?:^|\\n)[^a-z0-9\\n]{0,3}(?:system|assistant|user|developer|human)[^\\S\\n]*[:>\\]]`],
+     // En español "Usuario:" o "Sistema:" son rótulos habituales de formularios: severidad baja.
+@@ -5261,11 +5905,11 @@
+       patrones_sospechosos_detectados: hallazgos
+     });
+ 
+-    /** Texto oculto al lector humano (HTML) pero presente para una IA. */
+-    const oculto = (s, campo, motivo) => {
++    /** Texto oculto al lector humano (HTML; Word y PDF desde la fase D) pero presente para una IA. */
++    const oculto = (s, campo, motivo, tipo = "texto_oculto_html", pagina = null) => {
+       if (typeof s !== "string" || !s.trim()) return;
+-      anotar({ campo, tipo: "texto_oculto_html", patron: motivo, severidad: "media", posicion: 0, longitud: s.length,
+-        fragmento_seguro: fragmento(s, 0, 80) });
++      anotar({ campo, tipo, patron: motivo, severidad: "media", posicion: 0, longitud: s.length,
++        fragmento_seguro: fragmento(s, 0, 80), ...(pagina ? { pagina } : {}) });
+     };
+ 
+     return { cadena, formula, oculto, resultado };
+@@ -5302,7 +5946,7 @@
+    */
+   function analizarContenido({ contenido, nombreArchivo = null, metadatos = null, limites, ocultos = [] }) {
+     const a = crearAnalizador(limites);
+-    for (const o of ocultos) a.oculto(o.texto, o.campo, o.motivo);
++    for (const o of ocultos) a.oculto(o.texto, o.campo, o.motivo, o.tipo, o.pagina);
+     if (nombreArchivo) a.cadena(nombreArchivo, "/source/fileName", { nombreArchivo: true });
+     const meta = { ...(esObjetoPlano(contenido.metadata) ? contenido.metadata : {}), ...(metadatos || {}) };
+     for (const [k, v] of Object.entries(meta)) if (typeof v === "string") a.cadena(v, `/metadata/${k}`);
+@@ -6115,9 +6759,11 @@
+     progreso(idMensaje, 96, "Revisando el contenido (instrucciones ocultas, texto oculto, Unicode)");
+     Object.assign(contenido, SEG.analizarContenido({ contenido, nombreArchivo, limites, ocultos }));
+     if (ocultos.length) {
++      const motivos = [...new Set(ocultos.map(o => o.motivo))];
+       diag.add("HTML_HIDDEN_TEXT", "info",
+-        `${ocultos.length} fragmento(s) de texto están ocultos a la vista en la página (hidden, display:none…). ` +
+-        "Se conservan, pero se marcan en seguridad_contenido: un texto invisible para una persona puede contener instrucciones para una IA.");
++        `${ocultos.length} fragmento(s) de texto están ocultos a la vista en la página (${motivos.map(m => MOTIVOS_OCULTO[m] || m).join(", ")}). ` +
++        "Se conservan, pero se marcan en seguridad_contenido: un texto invisible para una persona puede contener instrucciones para una IA.",
++        null, { fragmentos: ocultos.length, motivos });
+     }
+     return { tipo: "html", sha256, contenido, imagen: null, ...diag.exportar() };
+   }
+@@ -6165,14 +6811,22 @@
+       `El documento contiene ${camposExternos} campo(s) que harían cargar contenido externo en Word (INCLUDEPICTURE, IMPORT). No se actualizan ni se descargan.`,
+       null, { count: camposExternos });
+   }
++  const ocultos = [];
+   const contenido = tipo === "docx"
+-    ? await extraerDOCX(partes, limites, diag, idMensaje, incrustados)
++    ? await extraerDOCX(partes, limites, diag, idMensaje, incrustados, ocultos)
+     : await extraerXLSX(partes, limites, diag, idMensaje, incrustados);
+   progreso(idMensaje, 94, "Aplicando el formato del tipo documental");
+   contenido.datos_especificos = datosEspecificos(documentoTipo, contenido, limites);
+   contenido.semantico = SEMANTICA.construir(documentoTipo, contenido, contenido.datos_especificos, "nativa");
+-  progreso(idMensaje, 97, "Revisando el contenido (instrucciones ocultas, fórmulas, Unicode)");
+-  Object.assign(contenido, SEG.analizarContenido({ contenido, nombreArchivo, limites }));
++  progreso(idMensaje, 97, "Revisando el contenido (instrucciones ocultas, texto oculto, fórmulas, Unicode)");
++  Object.assign(contenido, SEG.analizarContenido({ contenido, nombreArchivo, limites, ocultos }));
++  if (ocultos.length) {
++    const motivos = [...new Set(ocultos.map(o => o.motivo))];
++    diag.add("DOCX_HIDDEN_TEXT", "info",
++      `${ocultos.length} fragmento(s) de texto no se ven en Word (${motivos.map(m => MOTIVOS_OCULTO[m] || m).join(", ")}). ` +
++      "Se conservan, pero se marcan en seguridad_contenido: un texto invisible para una persona puede contener instrucciones para una IA.",
++      null, { fragmentos: ocultos.length, motivos });
++  }
+ 
+   return { tipo, sha256, contenido, imagen: null, ...diag.exportar() };
+ }
+@@ -6223,6 +6877,13 @@
+     Object.keys(it).every(k => ["text", "x", "y", "width", "height", "fontSize", "confianza"].includes(k));
+ }
+ 
++/** Fase D (D1): tramos de texto oculto de una página PDF ({ texto, motivo }). */
++const MOTIVOS_OCULTO_PDF = new Set(["modo_invisible", "relleno_transparente", "color_blanco", "tamano_minimo", "capa_desactivada"]);
++function validarOcultosPDF(lista) {
++  return Array.isArray(lista) && lista.length <= 200 && lista.every(o => esObjetoPlano(o) && Object.keys(o).length === 2 &&
++    typeof o.texto === "string" && o.texto.length > 0 && o.texto.length <= 4000 && MOTIVOS_OCULTO_PDF.has(o.motivo));
++}
++
+ function validarPaginasPDF(p) {
+   if (!Array.isArray(p.paginas) || p.paginas.length > 100000 || !Number.isSafeInteger(p.maxElementos) || p.maxElementos < 1) return false;
+   let total = 0;
+@@ -6230,7 +6891,8 @@
+     if (!esObjetoPlano(pag) || !Number.isSafeInteger(pag.pageNumber) || pag.pageNumber < 1 ||
+         !["digital", "ocr", "hybrid"].includes(pag.modo) || !Array.isArray(pag.items) || !Array.isArray(pag.ocr) ||
+         !(pag.palabras === undefined || (Array.isArray(pag.palabras) && pag.palabras.every(validarPalabraOCR))) ||
+-        !(pag.separadores === undefined || validarSeparadores(pag.separadores))) return false;
++        !(pag.separadores === undefined || validarSeparadores(pag.separadores)) ||
++        !(pag.ocultos === undefined || validarOcultosPDF(pag.ocultos))) return false;
+     total += pag.items.length + pag.ocr.length + (pag.palabras?.length || 0);
+     if (total > p.maxElementos) return false;
+     for (const it of pag.items) {
+@@ -7764,7 +8426,7 @@
+ }
+ });
+ /* AA:INCRUSTADOS:FIN */
+-const SHA256_WORKER_NUCLEO = "984339a2995409750aa626277eb9954f99e6798fa4a6e9365d30941074aa304e";
++const SHA256_WORKER_NUCLEO = "4b8fbc56587a251a1f4ab861c9fd25c3b5fd82f4d129c7faf0ef0c285ddec695";
+ 
+ /** Nombre de archivo más largo que se admite (el esquema del resultado permite 4096). */
+ const AA_MAX_LONGITUD_NOMBRE_ARCHIVO = 1024;
+@@ -9532,7 +10194,7 @@
+         campo: { type: "string", pattern: "^/[A-Za-z0-9_/]*$", maxLength: 300 },
+         tipo: { enum: ["prompt_injection", "marcador_rol", "suplantacion_delimitador", "formula_injection",
+           "formula_acceso_externo", "caracteres_invisibles", "control_bidireccional", "etiquetas_unicode",
+-          "selectores_variacion", "caracteres_control", "texto_oculto_html"] },
++          "selectores_variacion", "caracteres_control", "texto_oculto_html", "texto_oculto_docx", "texto_oculto_pdf"] },
+         patron: { type: "string", pattern: "^[a-z_]+$", maxLength: 60 },
+         severidad: { enum: ["alta", "media", "baja"] },
+         posicion: { type: "integer", minimum: 0 },
+@@ -9542,6 +10204,7 @@
+         caracteres: lista({ type: "string", pattern: "^U\\+[0-9A-F]{4,6}$" }),
+         texto_oculto: { type: "string", maxLength: 2000 },
+         oculto: { const: true },
++        pagina: { type: "integer", minimum: 1 },
+         evasion: { const: "separadores_entre_letras" },
+         funciones_externas: lista({ type: "string", pattern: "^[A-Z.]+$" }),
+         valor_exportacion_segura: { type: "string", pattern: "^'" }
+@@ -13298,6 +13961,198 @@
+    8) PDF.JS LOCAL
+    ========================================================================== */
+ 
++/*
++ * Fase D (D1): texto que una página PDF no muestra, calculado con la lista de operaciones de dibujo de PDF.js (la
++ * misma con la que se pinta la página; no se ejecuta nada del documento). Se marca el texto:
++ *   - dibujado en modo invisible (Tr 3 o 7) o con el relleno transparente (alfa ≤ 0,05);
++ *   - blanco (o casi) sin nada de color debajo (un rectángulo o una imagen pintados antes en ese sitio);
++ *   - de menos de 1 punto de alto;
++ *   - dentro de una capa opcional (OCG) desactivada.
++ * El texto invisible ENCIMA DE UNA IMAGEN es la capa de texto de un PDF escaneado con OCR: no se marca (se cuenta).
++ * Las posiciones son aproximadas (anchos de glifo de la fuente a 1/1000 de cuerpo): bastan para saber qué hay debajo.
++ */
++const AA_PDF_MAX_TRAMOS_OCULTOS = 200;
++// Topes por página para que un PDF hostil (miles de rectángulos y de textos blancos) no bloquee el análisis.
++const AA_PDF_MAX_FONDOS = 2000;
++const AA_PDF_MAX_TEXTOS_REVISADOS = 5000;
++const AA_PDF_TRAZADOS_RELLENO = new Set(["fill", "eoFill", "fillStroke", "eoFillStroke", "closeFillStroke", "closeEOFillStroke"]);
++
++function aaMulMatriz(a, b) {
++  return [a[0] * b[0] + a[2] * b[1], a[1] * b[0] + a[3] * b[1], a[0] * b[2] + a[2] * b[3], a[1] * b[2] + a[3] * b[3],
++    a[0] * b[4] + a[2] * b[5] + a[4], a[1] * b[4] + a[3] * b[5] + a[5]];
++}
++const aaPunto = (m, x, y) => [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[5]];
++function aaCajaTransformada(m, x0, y0, x1, y1) {
++  const p = [aaPunto(m, x0, y0), aaPunto(m, x1, y0), aaPunto(m, x0, y1), aaPunto(m, x1, y1)];
++  return [Math.min(...p.map(q => q[0])), Math.min(...p.map(q => q[1])), Math.max(...p.map(q => q[0])), Math.max(...p.map(q => q[1]))];
++}
++const aaDentro = (c, x, y) => x >= c[0] && x <= c[2] && y >= c[1] && y <= c[3];
++const aaMatriz6 = m => (m && m.length === 6 && Array.prototype.every.call(m, Number.isFinite) ? Array.from(m) : null);
++/** "#rrggbb" blanco o casi (los tres canales ≥ 0xF0). */
++const aaHexBlanco = c => typeof c === "string" && /^#[0-9a-f]{6}$/i.test(c) &&
++  [1, 3, 5].every(i => Number.parseInt(c.slice(i, i + 2), 16) >= 0xF0);
++
++/** Recorre las operaciones y devuelve los fragmentos de texto (con su caja y su estado) y lo que se pinta de fondo. */
++function aaRecorrerOperacionesPDF(OPS, fnArray, argsArray, capas) {
++  const ID = [1, 0, 0, 1, 0, 0];
++  let g = { ctm: ID, relleno: "#000000", trazo: "#000000", alfa: 1, modo: 0, tam: 0, tc: 0, tw: 0, th: 1, tl: 0, sube: 0 };
++  let tm = ID;
++  let tlm = ID;
++  const pila = [];
++  const marcas = [];
++  let marcasDesactivadas = 0;
++  let anotacion = 0;
++  const textos = [];
++  const fondos = [];
++  let incompleto = false;
++  let fondosDesbordados = false;
++  const nombre = new Map(Object.entries(OPS).map(([k, v]) => [v, k]));
++  const mover = (tx, ty) => { tlm = aaMulMatriz(tlm, [1, 0, 0, 1, tx, ty]); tm = tlm; };
++  const visible = props => {
++    try { return !capas || capas.isVisible(props) !== false; } catch { return true; }
++  };
++  const mostrar = (glifos, i) => {
++    if (!Array.isArray(glifos)) return;
++    let avance = 0;
++    let texto = "";
++    for (const gl of glifos) {
++      if (typeof gl === "number") {
++        avance += -gl / 1000 * g.tam * g.th;
++        if (gl < -250 && texto && !texto.endsWith(" ")) texto += " ";
++        continue;
++      }
++      if (!gl || typeof gl !== "object") continue;
++      texto += gl.isSpace ? " " : typeof gl.unicode === "string" ? gl.unicode : "";
++      avance += ((Number(gl.width) || 0) / 1000 * g.tam + g.tc + (gl.isSpace ? g.tw : 0)) * g.th;
++    }
++    const m = aaMulMatriz(g.ctm, tm);
++    tm = aaMulMatriz(tm, [1, 0, 0, 1, avance, 0]);
++    if (!texto.trim()) return;
++    const altura = Math.abs(g.tam) * Math.hypot(m[2], m[3]);
++    const rellena = [0, 2, 4, 6].includes(g.modo);
++    const traza = [1, 2, 5, 6].includes(g.modo);
++    if (textos.length >= 200000) { incompleto = true; return; }
++    textos.push({
++      i, texto, caja: aaCajaTransformada(m, 0, g.sube - 0.2 * g.tam, avance, g.sube + 0.8 * g.tam), altura,
++      invisible: g.modo === 3 || g.modo === 7,
++      transparente: rellena && !traza && (g.alfa <= 0.05 || g.relleno === "transparente"),
++      blanco: (rellena || traza) && (!rellena || aaHexBlanco(g.relleno)) && (!traza || aaHexBlanco(g.trazo)),
++      capaDesactivada: marcasDesactivadas > 0
++    });
++  };
++  const fondo = (caja, i, imagen) => {
++    if (fondos.length < AA_PDF_MAX_FONDOS) fondos.push({ caja, i, imagen });
++    else { incompleto = true; fondosDesbordados = true; }
++  };
++  const abrirMarca = v => { marcas.push(v); if (!v) marcasDesactivadas++; };
++  const acciones = {
++    save: () => { if (pila.length < 1000) pila.push(g); },
++    restore: () => { g = pila.pop() || g; },
++    transform: a => { const m = aaMatriz6(a); if (m) g = { ...g, ctm: aaMulMatriz(g.ctm, m) }; },
++    paintFormXObjectBegin: a => { if (pila.length < 1000) pila.push(g); const m = aaMatriz6(a?.[0]); if (m) g = { ...g, ctm: aaMulMatriz(g.ctm, m) }; },
++    paintFormXObjectEnd: () => { g = pila.pop() || g; },
++    beginText: () => { tm = ID; tlm = ID; },
++    setTextMatrix: a => { const m = aaMatriz6(a?.[0]) || aaMatriz6(a); if (m) { tm = m; tlm = m; } },
++    moveText: a => mover(Number(a?.[0]) || 0, Number(a?.[1]) || 0),
++    setLeadingMoveText: a => { g = { ...g, tl: -(Number(a?.[1]) || 0) }; mover(Number(a?.[0]) || 0, Number(a?.[1]) || 0); },
++    nextLine: () => mover(0, -g.tl),
++    setLeading: a => { g = { ...g, tl: Number(a?.[0]) || 0 }; },
++    setFont: a => { g = { ...g, tam: Number(a?.[1]) || 0 }; },
++    setCharSpacing: a => { g = { ...g, tc: Number(a?.[0]) || 0 }; },
++    setWordSpacing: a => { g = { ...g, tw: Number(a?.[0]) || 0 }; },
++    setHScale: a => { g = { ...g, th: Number.isFinite(Number(a?.[0])) ? Number(a[0]) / 100 : 1 }; },
++    setTextRise: a => { g = { ...g, sube: Number(a?.[0]) || 0 }; },
++    setTextRenderingMode: a => { g = { ...g, modo: Number(a?.[0]) || 0 }; },
++    setFillRGBColor: a => { g = { ...g, relleno: String(a?.[0] ?? "") }; },
++    setFillTransparent: () => { g = { ...g, relleno: "transparente" }; },
++    setFillColorN: () => { g = { ...g, relleno: "patron" }; },
++    setStrokeRGBColor: a => { g = { ...g, trazo: String(a?.[0] ?? "") }; },
++    setStrokeTransparent: () => { g = { ...g, trazo: "transparente" }; },
++    setGState: a => {
++      for (const par of Array.isArray(a?.[0]) ? a[0] : []) {
++        if (par?.[0] === "ca" && Number.isFinite(par[1])) g = { ...g, alfa: par[1] };
++        if (par?.[0] === "Font" && Number.isFinite(par[1]?.[1])) g = { ...g, tam: par[1][1] };
++      }
++    },
++    beginMarkedContent: () => abrirMarca(true),
++    beginMarkedContentProps: a => abrirMarca(a?.[0] === "OC" ? visible(a?.[1]) : true),
++    endMarkedContent: () => { if (marcas.length && marcas.pop() === false) marcasDesactivadas--; },
++    showText: (a, i) => mostrar(a?.[0], i),
++    constructPath: (a, i) => {
++      const tipo = nombre.get(a?.[0]);
++      const mm = a?.[2];
++      if (!AA_PDF_TRAZADOS_RELLENO.has(tipo) || !mm || mm.length < 4 || g.alfa <= 0.05 || aaHexBlanco(g.relleno) ||
++          g.relleno === "transparente") return;
++      fondo(aaCajaTransformada(g.ctm, mm[0], mm[1], mm[2], mm[3]), i, false);
++    },
++    shadingFill: (a, i) => fondo([-Infinity, -Infinity, Infinity, Infinity], i, false)
++  };
++  for (const op of ["paintImageXObject", "paintInlineImageXObject", "paintImageXObjectRepeat", "paintImageMaskXObject",
++    "paintImageMaskXObjectGroup", "paintInlineImageXObjectGroup", "paintImageMaskXObjectRepeat", "paintSolidColorImageMask"]) {
++    acciones[op] = (a, i) => fondo(aaCajaTransformada(g.ctm, 0, 0, 1, 1), i, true);
++  }
++  for (let i = 0; i < fnArray.length; i++) {
++    const op = nombre.get(fnArray[i]);
++    if (op === "beginAnnotation") anotacion++;
++    else if (op === "endAnnotation") anotacion = Math.max(0, anotacion - 1);
++    else if (!anotacion && Object.prototype.hasOwnProperty.call(acciones, op)) acciones[op](argsArray[i], i);
++  }
++  return { textos, fondos, incompleto, fondosDesbordados };
++}
++
++/**
++ * Motivo por el que no se ve un fragmento de texto, o null (y si es la capa de texto de un escaneo). Si la página tenía
++ * más rellenos de los que se registran (`desbordados`), no se sabe qué hay debajo del texto blanco: no se marca.
++ */
++function aaMotivoTextoOcultoPDF(t, fondos, desbordados) {
++  const cx = (t.caja[0] + t.caja[2]) / 2;
++  const cy = (t.caja[1] + t.caja[3]) / 2;
++  if (t.capaDesactivada) return "capa_desactivada";
++  if (t.invisible || t.transparente) {
++    if (fondos.some(f => f.imagen && aaDentro(f.caja, cx, cy))) return "capa_ocr";
++    return t.invisible ? "modo_invisible" : "relleno_transparente";
++  }
++  if (t.altura < 1) return "tamano_minimo";
++  if (t.blanco && !desbordados && !fondos.some(f => f.i < t.i && aaDentro(f.caja, cx, cy))) return "color_blanco";
++  return null;
++}
++
++/** Tramos de texto oculto de una página ({ texto, motivo }) y caracteres de la capa de texto de un escaneo. */
++function aaTextoOcultoPDF(OPS, fnArray, argsArray, capas) {
++  const recorrido = aaRecorrerOperacionesPDF(OPS, fnArray, argsArray, capas);
++  const { textos, fondos } = recorrido;
++  let { incompleto } = recorrido;
++  const ocultos = [];
++  let capaOCR = 0;
++  let revisados = 0;
++  let tramo = null;
++  const cerrar = () => {
++    const texto = tramo ? tramo.partes.join("").normalize("NFKC").replace(/\s+/g, " ").trim().slice(0, 4000) : "";
++    if (texto && ocultos.length < AA_PDF_MAX_TRAMOS_OCULTOS) ocultos.push({ texto, motivo: tramo.motivo });
++    tramo = null;
++  };
++  for (const t of textos) {
++    // Solo el texto que podría estar oculto se compara con lo pintado debajo (con un tope por página).
++    const candidato = t.capaDesactivada || t.invisible || t.transparente || t.blanco || t.altura < 1;
++    if (candidato && ++revisados > AA_PDF_MAX_TEXTOS_REVISADOS) { incompleto = true; break; }
++    const motivo = candidato ? aaMotivoTextoOcultoPDF(t, fondos, recorrido.fondosDesbordados) : null;
++    if (motivo === "capa_ocr") capaOCR += t.texto.replace(/\s/g, "").length;
++    if (!motivo || motivo === "capa_ocr") { if (tramo) cerrar(); continue; }
++    if (tramo && tramo.motivo !== motivo) cerrar();
++    if (!tramo) tramo = { motivo, partes: [] };
++    else {
++      const [x, y] = [t.caja[0], (t.caja[1] + t.caja[3]) / 2];
++      const pegado = Math.abs(y - tramo.y) < t.altura * 0.5 && Math.abs(x - tramo.x) < t.altura * 0.3;
++      if (!pegado) tramo.partes.push(" ");
++    }
++    tramo.partes.push(t.texto);
++    tramo.x = t.caja[2];
++    tramo.y = (t.caja[1] + t.caja[3]) / 2;
++  }
++  if (tramo) cerrar();
++  return { ocultos, capaOCR, incompleto };
++}
++
+ class RenderizadorPDFJSLocal {
+   constructor(pdfjsLibInicializado, { escala = 2, id = "pdfjs-local", integridad = null, base, variante = "", urlWorker } = {}) {
+     if (!pdfjsLibInicializado || typeof pdfjsLibInicializado.getDocument !== "function") {
+@@ -13548,6 +14403,14 @@
+     return Math.max(0, Math.min(1, area / pagina));
+   }
+ 
++  /** Fase D (D1): texto oculto de la página (ver aaTextoOcultoPDF). */
++  async _textoOcultoPagina(page, capas) {
++    const OPS = this.pdfjs.OPS;
++    if (!OPS) return null;
++    const { fnArray = [], argsArray = [] } = await page.getOperatorList();
++    return aaTextoOcultoPDF(OPS, fnArray, argsArray, capas);
++  }
++
+   /**
+    * Fase C (C4): viewport (escala 1) en el que el texto de la página va en horizontal. La dirección de cada
+    * fragmento sale de su matriz; si la mayoría de los caracteres va girada 90°, 180° o 270° respecto a la
+@@ -13774,6 +14637,10 @@
+       const pages = [];
+       const paginasSinCuadricula = [];
+       const paginasGiradas = [];
++      // Fase D (D1): capas opcionales (para saber qué texto está en una capa desactivada) y capa de texto de escaneos.
++      const capas = await pdf.getOptionalContentConfig?.({ intent: "display" }).catch(() => null) || null;
++      const paginasCapaOCR = [];
++      const paginasSinRevisarOcultos = [];
+       let ocrPages = 0;
+       let taggedPages = 0;
+       let directCharacters = 0;
+@@ -13815,6 +14682,15 @@
+           if (truncado) paginasTruncadas.push(pageNumber);
+           const chars = items.reduce((suma, it) => suma + it.text.replace(/\s/g, "").length, 0);
+           directCharacters += chars;
++          let ocultos = [];
++          if (chars > 0) {
++            const r = await this._textoOcultoPagina(page, capas).catch(() => null);
++            if (!r || r.incompleto) paginasSinRevisarOcultos.push(pageNumber);
++            if (r) {
++              ocultos = r.ocultos;
++              if (r.capaOCR >= minCharsPerPage) paginasCapaOCR.push(pageNumber);
++            }
++          }
+ 
+           const ocrRequired = pdfMode === "ocr-local" || (pdfMode === "automatico" && chars < minCharsPerPage);
+           // Fase B (B1): página MIXTA (escaneo con algo de texto digital, p. ej. el sello «copia auténtica» o el CSV
+@@ -13869,6 +14745,7 @@
+             modo,
+             mixta,
+             items: modo === "ocr" ? [] : items,
++            ocultos: modo === "ocr" ? [] : ocultos,
+             ocr: ocrBlocks,
+             palabras: modo === "digital" ? [] : ocrPalabras,
+             separadores: modo === "digital" ? [] : separadores
+@@ -13897,6 +14774,8 @@
+         paginasTruncadas,
+         paginasSinCuadricula,
+         paginasGiradas,
++        paginasCapaOCR,
++        paginasSinRevisarOcultos,
+         pages,
+         ocrPages,
+         taggedPages,
+@@ -16217,7 +17096,8 @@
+     };
+     this._addIssue(item, "CONTENT_SUSPICIOUS_PATTERNS", "info",
+       `Se detectaron ${total} patrón(es) sospechoso(s) en el contenido (instrucciones dirigidas a una IA, fórmulas, ` +
+-      "caracteres invisibles o bidireccionales). El texto se conserva íntegro y se marca en seguridad_contenido.",
++      "caracteres invisibles o bidireccionales, texto oculto). El texto se conserva íntegro y se marca en seguridad_contenido. " +
++      "Es una ayuda: que no se detecte nada no garantiza que el documento no contenga instrucciones.",
+       null, { por_tipo: { ...sc.resumen.por_tipo }, por_severidad: { ...sc.resumen.por_severidad } });
+   }
+ 
+@@ -17152,10 +18032,11 @@
+     this._setEstado(item, "procesando", 85, "Reconstruyendo texto, campos y tablas");
+     const paginasParaWorker = analysis.pages.map(page => ({
+       pageNumber: page.pageNumber, modo: page.modo, items: page.items, ocr: page.ocr,
++      ...(page.ocultos?.length ? { ocultos: page.ocultos } : {}),
+       ...(page.palabras?.length ? { palabras: page.palabras } : {}),
+       ...(page.palabras?.length && page.separadores?.length ? { separadores: page.separadores.slice(0, 5000) } : {})
+     }));
+-    for (const page of analysis.pages) { page.items = null; page.ocr = null; page.palabras = null; page.separadores = null; }
++    for (const page of analysis.pages) { page.items = null; page.ocr = null; page.palabras = null; page.separadores = null; page.ocultos = null; }
+ 
+     // Metadatos del PDF (título, autor…): texto controlado por quien creó el
+     // documento, así que también se revisan en el worker.
+@@ -17274,6 +18155,18 @@
+           "digital, se ha leído la imagen con OCR (bloques ocr-text).", { page: page.pageNumber }, page.mixta);
+       }
+     }
++    if (analysis.paginasCapaOCR?.length) {
++      this._addIssue(item, "PDF_INVISIBLE_TEXT_OVER_IMAGE", "info",
++        `La(s) página(s) ${analysis.paginasCapaOCR.slice(0, 50).join(", ")} tienen texto invisible encima de una imagen: es la ` +
++        "capa de texto habitual de un PDF escaneado con OCR. Se lee y no se marca como oculto, pero no se ha comprobado que " +
++        "coincida con lo que muestra la imagen.", null, { pages: analysis.paginasCapaOCR.slice(0, 1000) });
++    }
++    if (analysis.paginasSinRevisarOcultos?.length) {
++      this._addIssue(item, "PDF_HIDDEN_TEXT_NOT_CHECKED", "warning",
++        `No se pudo revisar del todo si hay texto oculto en la(s) página(s) ${analysis.paginasSinRevisarOcultos.slice(0, 50).join(", ")} ` +
++        "(PDF.js no dio sus operaciones de dibujo, o la página tiene tantos textos y rellenos que se alcanzó el tope de la revisión). " +
++        "Su texto se ha leído igual.", null, { pages: analysis.paginasSinRevisarOcultos.slice(0, 1000) });
++    }
+     if (analysis.paginasGiradas?.length) {
+       this._addIssue(item, "PDF_PAGE_READ_IN_TEXT_ORIENTATION", "info",
+         `En la(s) página(s) ${analysis.paginasGiradas.slice(0, 50).join(", ")} el texto va girado respecto a cómo se muestra ` +
+@@ -17531,6 +18424,8 @@
+       const oculto = n("etiquetas_unicode") + n("selectores_variacion");
+       if (oculto) partes.push(`${oculto} texto(s) oculto(s) con caracteres Unicode`);
+       if (n("texto_oculto_html")) partes.push(`${n("texto_oculto_html")} texto(s) oculto(s) a la vista en la página`);
++      if (n("texto_oculto_docx")) partes.push(`${n("texto_oculto_docx")} texto(s) que no se ven en Word`);
++      if (n("texto_oculto_pdf")) partes.push(`${n("texto_oculto_pdf")} texto(s) que no se ven en el PDF`);
+       const invis = n("caracteres_invisibles") + n("control_bidireccional") + n("caracteres_control");
+       if (invis) partes.push(`${invis} aviso(s) de caracteres invisibles o de control`);
+       const alta = (sc.porSeveridad.alta || 0) > 0;

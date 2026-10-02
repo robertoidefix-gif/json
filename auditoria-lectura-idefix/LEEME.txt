@@ -35,6 +35,11 @@ Fase C: ../idefix1.0-fase-c/ (apartado 15 del informe). Pruebas en resultados/fa
   resultados/faseC-casos/ (casos de la fase C), resultados/faseC-escenarios/ y resultados/capturas/faseC_*.png.
   Herramientas en herramientas/fase-c/. Ojo: pdf13 del corpus está mal construido (ver apartado 15).
 
+Fase D: ../idefix1.0-fase-d/ (apartado 16 del informe). Pruebas en resultados/faseD/ (corpus completo),
+  resultados/faseD-casos/ (texto oculto en HTML, Word y PDF; frases en ca/fr/eu y legítimas; documentos hostiles
+  en estres/), resultados/faseD-escenarios/ y resultados/capturas/faseD_*.png. Herramientas en herramientas/fase-d/.
+  consolidado_faseC-recalculado.json: la fase C con consolidar.py corregido (html05, ver apartado 16).
+
 Cómo repetirlo: apartado 11 del informe.
   Nota: herramientas/prueba-auditoria.html lleva el SRI del sellado usado en la auditoría; si sella su
   propia copia, cambie el atributo integrity por el que imprime sellar-idefix.py.
