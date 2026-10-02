@@ -1,0 +1,174 @@
+=====================================================================================================
+IDEFIX1.0 · FASE E (sobre la versión sin servidor + fases B, C y D) — CAMBIOS Y PRUEBAS
+(AnalizadorArchivos 6.14.0 · 2 de octubre de 2026)
+=====================================================================================================
+
+Lo que pediste: «Realiza la siguiente fase y al final quiero el código completo en un txt». La siguiente fase del
+informe de auditoría (apartado 9) es la E: OCR, punto 15 de la lista priorizada:
+  «jpg08 girada 0/7; png05 (≈72 ppp) 0/7 — Fotos de móvil y capturas reducidas sin datos — Detectar orientación
+   (probar giros o modelo OSD) y reescalar si el texto mide < 20 px».
+  E1 Orientación: texto girado 90°, 180° o 270° y escaneos torcidos (inclinación).
+  E2 Reescalado: letra demasiado pequeña para el OCR.
+Las dos están hechas. Se usa igual: doble clic en Idefix1.0/index.html (Chrome o Edge).
+El código completo está en Idefix1.0-fase-e-codigo-completo.txt (y en Idefix1.0-fase-e.zip).
+
+Leyenda: ✅ comprobado aquí · ⚠️ no demostrable aquí (se dice por qué).
+
+-----------------------------------------------------------------------------------------------------
+1. RESULTADO MEDIDO (corpus de 72 documentos, mismas reglas de veredicto que la auditoría)
+-----------------------------------------------------------------------------------------------------
+  Nota por formato             fase D  →  fase E
+  JPG                            2,5   →   7,5     (jpg08: ❌ → ✅)
+  PNG                            7,5   →   8,3     (png05: ⚠️ → ✅)
+  Imágenes (PNG+JPG+JPEG)        6,1   →   7,8
+  Sin cambios: JPEG 5,0 · PDF escaneado 8,0 · PDF digital 7,3 · DOCX 8,8 · XLSX 9,5 · XLS 10 · HTML 10 · HTM 10.
+
+  Casos que cambian (fase D → fase E):
+  jpg08  factura girada 90°               0/7 datos, texto 4 %, 8,5 s          → 7/7, texto 99 %, 1,7 s (OCR_ROTATED 90°)
+  png05  captura reducida (≈72 ppp)        6/7 datos, texto 95 %                → 7/7, texto 96 % (ampliada ×3)
+  pdfE2  PDF escaneado torcido 1,5°        texto 78 %, tabla de líneas 6 %, D7 0,50 → texto 94 %, tabla 44 %, D7 1,00
+                                                                                  (enderezado; sigue ⚠️)
+  pdfE3  libro escaneado en PDF            campos 95,4 %                         → 97,2 % (dibujado ×2,05; sigue ⚠️)
+  jpeg03 escaneo malo simulado             texto 83 %, tabla de líneas 12 %      → texto 86 %, tabla 25 % (enderezado y
+                                                                                  ampliado ×2; sigue ⚠️, ver 6)
+  Los otros 67 documentos: el contenido leído es IDÉNTICO al de la fase D (comparado documento a documento; también
+  los demás de OCR: png01, jpg02, png04, png07, png09, pdfE1, pdfE4, pdf09…). 0 peticiones externas.
+  Tiempo total del corpus: 42,7 s → 44,0 s (jpg08 tarda 6,8 s menos; pdfE3 +1,5 s y jpeg03 +2,8 s por la
+  ampliación; pdfE4, 5 páginas escaneadas, +1,1 s por las medidas).
+  Además, fuera del corpus: las fotos con orientación EXIF 5–8 (móvil en vertical) se RECHAZABAN como «dañadas»;
+  ahora se leen (ver 2 y 4).
+
+-----------------------------------------------------------------------------------------------------
+2. CÓMO FUNCIONA CADA CAMBIO
+-----------------------------------------------------------------------------------------------------
+Todo se mide en los PÍXELES, dentro del worker núcleo (sin red y sin OCR): ni se envía nada fuera ni se toca el
+archivo original. Tesseract 7 con los núcleos LSTM no trae la detección de orientación (OSD, necesita el motor
+antiguo), y probar los cuatro giros con OCR cuesta caro: en jpg08, cada giro equivocado tardaba de 3 a 8 s y daba
+texto basura (medido). Por eso la orientación se decide antes, con medidas de la imagen:
+  - Dirección de las líneas: se reduce la imagen (lado mayor ≤ 1.600 px), se pasa a blanco y negro (umbral de
+    Otsu) y, uniendo las letras de cada línea (suavizado horizontal, RLSA), el texto en su dirección forma tramos
+    largos (del 47 % al 74 % de la tinta en las pruebas) y en la otra dirección no (0 %). Se mide en horizontal y en
+    vertical; si ninguna es clara, no se gira nada.
+  - Derecho o del revés: en la escritura latina hay mucha más tinta por ENCIMA de la banda central de cada línea
+    (mayúsculas, cifras, b, d, f, h, k, l, t) que por debajo (g, j, p, q, y): de 7 a 43 veces más con el texto
+    derecho y de 0,02 a 0,15 del revés en las pruebas. Si la proporción está entre 0,5 y 2, la orientación es
+    dudosa: con el texto en horizontal se deja como está (aviso OCR_ORIENTATION_UNCERTAIN) y con el texto en
+    vertical se gira 90° y se avisa como dudoso (OCR_ROTATED de nivel warning).
+  - Inclinación (E1): el ángulo, entre −5° y 5°, con el que el perfil de filas es más nítido (pasos de 0,25° y
+    después de 0,05°). Si pasa de 0,3°, la imagen se endereza. Las líneas se miden ya enderezadas (con 2–3°, las
+    líneas de un escaneo torcido se mezclaban en el perfil).
+  - Tamaño (E2): la altura mediana de las líneas. Si es menor de 15 px (unos 11 px de mayúscula), la imagen se
+    amplía hasta unos 28 px por línea, como mucho ×3 y sin pasar de 12 Mpx ni de la memoria de trabajo. Con 20 px
+    (lo que sugería el informe) se ampliaban también líneas de 16–19 px que ya se leían bien, con un 40–75 % más de
+    tiempo y sin mejorar ningún veredicto (medido); con 15 px solo se amplían las que de verdad lo necesitan.
+Imágenes (PNG, JPEG): el worker devuelve la imagen ya girada, enderezada y ampliada, y DESPUÉS le quita la
+  cuadrícula (así los separadores de columna salen en su sitio). Las cajas del OCR vuelven a píxeles de la imagen
+  original si se amplió; si se giró o se enderezó, se refieren a la imagen girada (lo dicen los avisos).
+PDF escaneados (páginas solo de imagen): la página se dibuja, se mide y, si hay que girarla 90°/180° o ampliarla,
+  se vuelve a dibujar así UNA sola vez (como hizo la fase C con las páginas giradas); en esa segunda pasada se
+  endereza si está torcida. Las coordenadas siguen en puntos de la página (girada, si se giró). Las páginas mixtas
+  (texto digital + imagen) no se giran: su orientación la da el texto digital (fase C).
+Fotos con orientación EXIF (ERROR que había antes): una foto de móvil en vertical lleva la etiqueta Orientation 6
+  u 8; el navegador la decodifica ya girada y el ancho y el alto quedan cambiados respecto a la cabecera JPEG. La
+  validación los comparaba sin más y RECHAZABA la foto como «dañada o con contenido que no coincide con su
+  cabecera» (comprobado con la fase D). Ahora se aceptan ancho y alto cambiados; como el navegador y Tesseract ya
+  aplican el EXIF, la foto no se vuelve a girar.
+Cuadrícula con umbral adaptativo: para reconocer las líneas de una tabla, «oscuro» era siempre gris < 140; en un
+  escaneo desenfocado las líneas son gris medio (medianas de 121 a 150 en jpeg03) y se partían. Ahora el umbral es
+  el de Otsu de la imagen, entre 140 y 190.
+Avisos nuevos: OCR_ROTATED, OCR_DESKEWED, OCR_UPSCALED (info; OCR_ROTATED es warning si la orientación era dudosa)
+  y OCR_ORIENTATION_UNCERTAIN (info). Para imágenes van en la tarjeta; para PDF, con la lista de páginas.
+
+-----------------------------------------------------------------------------------------------------
+3. CAMBIOS POR ARCHIVO (líneas de Idefix1.0/analizador-archivos.js de esta carpeta, 19.284 líneas,
+   SHA-256 e1221df3a88cd5417d76bf0813b15c55cf5acae5deebdf5933dbcd2fab9f4b1b). Diff completo: fase-e.diff
+   Solo cambian analizador-archivos.js y el LEEME de la carpeta; páginas, demo y paquetes, iguales.
+-----------------------------------------------------------------------------------------------------
+  5–16        Cabecera: resumen de la fase E.
+  Worker núcleo (su SHA-256, SHA256_WORKER_NUCLEO en la línea 8804, se ha recalculado):
+  3102–3107   Fotos con orientación EXIF: se aceptan ancho y alto cambiados.
+  3459–3463   Cuadrícula: umbral de Otsu (140–190) para reconocer las líneas.
+  3552–3572   E1/E2: explicación y constantes (OCR_ALTURA_MINIMA_TEXTO 15, objetivo 28, ×3 como mucho).
+  3574–3612   Gris reducido y umbral de Otsu.
+  3616–3685   Líneas de texto: tramos de filas (3616), tramos largos tras el RLSA (3638), asimetría
+              ascendentes/descendentes (3656) y lineasTextoOCR (3677).
+  3687–3764   Imagen binaria (3687), inclinación (3702), cizalla (3740) e inclinación tras girar (3754).
+  3766–3812   geometriaTextoOCR (giro, altura, inclinación, dudoso) y escalaTextoOCR (3803).
+  3814–3854   Lienzo girado/enderezado/ampliado (3814) y enderezado de una página PDF (3834).
+  3856–3916   prepararImagenOCR: mide, transforma y DESPUÉS quita la cuadrícula.
+  5154–5220   leerCSS de la fase D dividida en funciones pequeñas (mismo comportamiento; ver 5).
+  7313–7317   Validación del mensaje: «geometria» (booleano opcional).
+  Página (hilo principal):
+  10028–10039 Validación de la respuesta: giro, escala, altura del texto, dudoso e inclinación.
+  14818–14826 _apuntarGeometriaOCR (páginas giradas, ampliadas, enderezadas o dudosas).
+  14930–14955 _dibujarPaginaParaOCR: dos pasadas (medir; volver a dibujar girada o ampliada; enderezar).
+  14957       _renderizarPagina admite la escala.
+  15062–15063, 15152, 15159  Listas por página y tamaño de la página girada.
+  18279–18285 _ocrImagen usa la imagen preparada y devuelve las cajas sin la ampliación.
+  18310–18318 _ocrSinAmpliacion.
+  18325–18345 _lienzoSinCuadricula: pide la geometría y recibe la página enderezada.
+  18352–18376 _imagenSinCuadricula: pide la geometría; separadores sin la ampliación.
+  18379–18440 Avisos de imagen (_avisarGeometriaOCR) y de páginas PDF (_avisarGeometriaPaginasOCR).
+  18514       preprocesarOCR pasa las opciones; 18655: avisos de las páginas del PDF.
+  ESLint (misma configuración que la auditoría), medido sobre ESTE archivo tal como se entrega: 36 errores y 70
+  avisos, los mismos que en la fase C; frente a la fase D, 0 nuevos y 1 menos (leerCSS, ver 5). Sin eval, new
+  Function, CDN ni scripts externos; las URL que aparecen en el archivo son las mismas que en la fase D.
+
+-----------------------------------------------------------------------------------------------------
+4. PRUEBAS (Chromium 141.0.7390.37 · página abierta como file:// · sobre una copia exacta de Idefix1.0/)
+   Resultados: auditoria-lectura-idefix/resultados/faseE/, faseE-casos/, faseE-escenarios/
+-----------------------------------------------------------------------------------------------------
+  ✅ Corpus completo (72 documentos): ver apartado 1.
+  ✅ Casos de la fase E (herramientas/fase-e/), 18 casos, 0 fallos:
+     - Factura girada 90°, 180° y 270°: se gira lo justo (giro leído = esperado), base, IVA y total correctos;
+       la misma factura derecha: ni se gira ni se avisa.
+     - Libro de facturas (tabla sin líneas) girado 90°: giro correcto y tabla con sus filas.
+     - Factura torcida 3° y −2° y PDF escaneado torcido 2,5°: enderezados con ±0,3° de error como mucho
+       (leídos: −3°, 2° y −2,5°) y los importes correctos.
+     - Foto con EXIF Orientation 6: se lee (la fase D la rechazaba como «dañada»: comprobado) y no se gira otra vez.
+     - NO se giran: imagen sin texto, una sola línea en una imagen grande, factura con un sello en vertical en el
+       margen y factura con un código de barras grande.
+     - Captura al 32 % (líneas de 7 px): ampliada ×3, importes correctos; la misma girada: se gira y se amplía.
+       Imagen de 3600×2200 con letra pequeña: ampliación limitada a ×1,23 (12 Mpx).
+     - PDF escaneados girados 90° y 180°: la página se vuelve a dibujar girada; importes correctos.
+     (Con la fase D, la factura girada, la captura reducida y el PDF girado no daban el total: comprobado.)
+  ✅ Imágenes grandes o engañosas: foto de 11,9 Mpx girada 90°: 4,7 s, girada y con el total correcto. Rayas
+     verticales en toda la imagen y una imagen de 40×20 px: no se giran (1,6 s y 0,1 s). Ruido puro: se para a los
+     120 s con PROCESSING_TIMEOUT, igual que en la fase D (ver 6).
+  ✅ Casos de las fases B, C y D, OCR desactivado y documentos hostiles de la fase D (todos terminan en menos de 1 s):
+     0 fallos.
+  ✅ Escenarios de seguridad: paquete de PDF.js alterado y worker núcleo alterado → no arranca y dice por qué;
+     ataque a la cola, navegador sin SIMD, sin OCR y demo: como en la fase D.
+  ✅ Por la interfaz (index.html, file://): jpg08 (aviso OCR_ROTATED), png05 (OCR_UPSCALED), jpeg03 (OCR_DESKEWED
+     y OCR_UPSCALED) y pdfE2 (OCR_DESKEWED): «complete» y total 1.639,07 €. 0 peticiones externas, consola limpia.
+  ✅ Arranque hasta la interfaz con OCR: 1,40 s de mediana (fase D: 1,39 s); memoria JS tras la recolección: 60 MB
+     (igual). Detalle en resultados/faseE-escenarios/verificacion_final_faseE.log.
+
+-----------------------------------------------------------------------------------------------------
+5. CORRECCIÓN DE LA FASE D (dicho claramente)
+-----------------------------------------------------------------------------------------------------
+  En CAMBIOS-FASE-D.txt escribí «ESLint: 0 avisos nuevos». La medida se hizo antes de los últimos cambios contra
+  documentos hostiles y no la repetí: la fase D tal como se entregó tiene 1 aviso nuevo (complejidad 35 de
+  leerCSS, el máximo es 25). No cambia el funcionamiento. En esta fase leerCSS se divide en funciones pequeñas
+  (siguienteCSS, abrirBloqueCSS, cerrarBloqueCSS, anotarReglaCSS) con el mismo comportamiento: los casos de la
+  fase D (HTML con CSS, 0 fallos) y los documentos hostiles (CSS patológico) dan lo mismo. He añadido la
+  corrección a CAMBIOS-FASE-D.txt.
+
+-----------------------------------------------------------------------------------------------------
+6. LÍMITES (dicho claramente)
+-----------------------------------------------------------------------------------------------------
+  - La orientación se decide con medidas de la imagen, no con OCR: con escritura que no sea latina (chino) o con
+    mucho texto en mayúsculas sin descendentes puede quedar «dudosa» y entonces no se gira (o se gira 90° y se
+    avisa). Funciona con documentos con varias líneas de texto; una o dos líneas sueltas no bastan para decidir.
+  - Solo se enderezan inclinaciones de hasta 5°; más torcido no se corrige (se lee como antes).
+  - jpeg03 (escaneo malo simulado, con ruido y desenfoque): sus líneas miden 14 px y se amplía ×2; el texto pasa
+    del 83 % al 86 % y la tabla del 12 % al 25 %, pero sigue ⚠️. En una versión intermedia, sin ampliar, el texto
+    llegaba al 93 % con la tabla en 0 %: con mucho ruido, ampliar ayuda a la tabla y no tanto al texto. No he
+    ajustado el umbral a este caso (sería ajustar a la medida del corpus).
+  - Una imagen de ruido puro (sin texto) agota el tiempo (120 s) y se para con «PROCESSING_TIMEOUT»: Tesseract se
+    atasca con el ruido. Pasaba igual en la fase D (comprobado); el límite de tiempo la corta de forma controlada.
+  - Las coordenadas de una imagen girada o enderezada se refieren a la imagen girada (los avisos lo dicen).
+  - Sigue pendiente la fase F (pdf07 varias facturas en un PDF, numeración de listas y revisiones de Word, mensajes
+    de PDF.js en inglés, CRLF antes de %PDF-…).
+  ⚠️ Solo probado en Chromium 141 en Linux (mismo motor que Chrome y Edge); no en Windows ni con fotos reales de
+     móvil (las de las pruebas son simuladas: giradas, reducidas, torcidas y con EXIF escritos con PIL).

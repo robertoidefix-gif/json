@@ -1,0 +1,186 @@
+{
+ "config": {
+  "ocr": true
+ },
+ "msInicio": 1226,
+ "resumen": [
+  {
+   "id": "s1",
+   "ok": true,
+   "ms": 4666,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "s2",
+   "ok": true,
+   "ms": 120003,
+   "error": null,
+   "estado": "failed"
+  },
+  {
+   "id": "s3",
+   "ok": true,
+   "ms": 1648,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "s4",
+   "ok": true,
+   "ms": 122,
+   "error": null,
+   "estado": "complete"
+  }
+ ],
+ "peticiones": [
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/prueba-auditoria.html",
+   "tipo": "document",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/tesseract-7.0.0.min.js.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/tesseract-7.0.0-worker.min.js.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/tessdata-spa.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/tessdata-cat.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/tessdata-eus.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/tessdata-eng.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/tessdata-fra.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/analizador-archivos.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/prueba-auditoria.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f1cc6e16-a7bf-4c16-b50f-65178bfbc83f",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/03e86905-bc97-4ebf-abe8-d311f6843aa9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/d713a6e8-55f2-4192-b297-cd28139494e4",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/e1c9d156-0282-44d1-9d4a-f3d730abef44",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f1cc6e16-a7bf-4c16-b50f-65178bfbc83f",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f1cc6e16-a7bf-4c16-b50f-65178bfbc83f",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f1cc6e16-a7bf-4c16-b50f-65178bfbc83f",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f1cc6e16-a7bf-4c16-b50f-65178bfbc83f",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f1cc6e16-a7bf-4c16-b50f-65178bfbc83f",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f1cc6e16-a7bf-4c16-b50f-65178bfbc83f",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f1cc6e16-a7bf-4c16-b50f-65178bfbc83f",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/86a601f3-df47-43b9-848e-a72d7bc3cd77",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f1cc6e16-a7bf-4c16-b50f-65178bfbc83f",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f1cc6e16-a7bf-4c16-b50f-65178bfbc83f",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f1cc6e16-a7bf-4c16-b50f-65178bfbc83f",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f1cc6e16-a7bf-4c16-b50f-65178bfbc83f",
+   "tipo": "script",
+   "metodo": "GET"
+  }
+ ],
+ "externas": [],
+ "consola": [],
+ "navegador": "141.0.7390.37"
+}

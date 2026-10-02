@@ -546,3 +546,27 @@ Punto | Estado | Archivo | Línea | Evidencia | Impacto | Corrección | Priorida
   9,6). En las notas publicadas de fases anteriores pasa lo mismo: con html05 en ⚠️, HTML (10 casos) baja 0,5 y
   HTML+HTM (13 casos) unos 0,4 (cálculo; esas fases no se han vuelto a medir). html13 se calcula ahora con el
   resultado (antes su texto era fijo): con la fase C da 4/10, como dice el apartado 2.6.
+
+17. ANEXO · FASE E APLICADA (2026-10-02)
+-----------------------------------------------------------------------------------------------------
+  Entrega: idefix1.0-fase-e/ (sobre la fase D; código completo .txt, fase-e.diff y CAMBIOS-FASE-E.txt con cada
+  cambio, su línea y sus pruebas). Pruebas: resultados/faseE/, resultados/faseE-casos/, resultados/faseE-escenarios/
+  y resultados/capturas/faseE_*.png. Herramientas: herramientas/fase-e/.
+  Punto de la lista priorizada resuelto: 15 (orientación y reescalado del OCR). La orientación se mide en los
+  píxeles (perfiles de proyección y asimetría ascendentes/descendentes) porque los núcleos LSTM de Tesseract no
+  traen la detección OSD y probar los cuatro giros con OCR costaba de 3 a 8 s por giro equivocado (medido).
+  Además se enderezan los escaneos torcidos (hasta 5°) y la cuadrícula se reconoce con un umbral adaptativo.
+  Medido con el mismo corpus y las mismas reglas:
+    Nota por formato      fase D → fase E       Nota por formato      fase D → fase E
+    JPG                    2,5  →  7,5          PNG                    7,5  →  8,3
+    Imágenes (las 3)       6,1  →  7,8          Sin cambios: JPEG 5,0 · PDF escaneado 8,0 · PDF digital 7,3 ·
+                                                DOCX 8,8 · XLSX 9,5 · XLS 10 · HTML 10 · HTM 10
+    - jpg08 0/7 → 7/7 (8,5 s → 1,7 s) · png05 6/7 → 7/7 · pdfE2 texto 78 % → 94 %, tabla 6 % → 44 % · pdfE3 campos
+      95,4 % → 97,2 % · jpeg03 texto 83 % → 86 %, tabla 12 % → 25 %. Los otros 67 documentos, idénticos.
+    - Casos de la fase E (cuatro giros, libro girado, ±3° y −2°, EXIF, sin texto, una línea, sello vertical, código
+      de barras, texto pequeño, tope de 12 Mpx y PDF escaneados girados y torcidos): 0 fallos.
+  Error que había y se corrige: las fotos con orientación EXIF 5–8 (móvil en vertical) se rechazaban como
+  «dañadas» porque el navegador las decodifica ya giradas (ancho y alto cambiados respecto a la cabecera).
+  Corrección de la fase D: su CAMBIOS decía «ESLint: 0 avisos nuevos», pero esa medida se hizo antes de los últimos
+  cambios; la fase D entregada tenía 1 aviso nuevo (complejidad de leerCSS). Se corrige en la fase E (leerCSS
+  dividida en funciones, mismo comportamiento) y se anota en CAMBIOS-FASE-D.txt.

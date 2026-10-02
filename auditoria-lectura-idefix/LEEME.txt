@@ -40,6 +40,11 @@ Fase D: ../idefix1.0-fase-d/ (apartado 16 del informe). Pruebas en resultados/fa
   en estres/), resultados/faseD-escenarios/ y resultados/capturas/faseD_*.png. Herramientas en herramientas/fase-d/.
   consolidado_faseC-recalculado.json: la fase C con consolidar.py corregido (html05, ver apartado 16).
 
+Fase E: ../idefix1.0-fase-e/ (apartado 17 del informe). Pruebas en resultados/faseE/ (corpus completo),
+  resultados/faseE-casos/ (orientación, inclinación, EXIF, texto pequeño y casos que no deben girarse; imágenes
+  grandes o engañosas en estres/), resultados/faseE-escenarios/ y resultados/capturas/faseE_*.png. Herramientas en
+  herramientas/fase-e/.
+
 Cómo repetirlo: apartado 11 del informe.
   Nota: herramientas/prueba-auditoria.html lleva el SRI del sellado usado en la auditoría; si sella su
   propia copia, cambie el atributo integrity por el que imprime sellar-idefix.py.

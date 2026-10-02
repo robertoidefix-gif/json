@@ -1,0 +1,25 @@
+herramientas/fase-e/ — cómo se comprobó la fase E
+==================================================
+Idefix se ejecuta tal cual en el navegador. Python y Node.js (Playwright) solo GENERAN y MIDEN aquí.
+
+  generar_casos_faseE.py      casos de la fase E con su verdad, hechos con png01 (factura) y png09 (libro sin
+                              cuadrícula) del corpus:
+                              - la factura girada 90°, 180° y 270° y derecha (no debe girarse ni avisarse);
+                              - el libro girado 90° (una tabla sin líneas no debe confundirse con texto vertical);
+                              - la factura torcida 3° y −2°; una foto con EXIF Orientation 6 (no debe girarse otra vez);
+                              - casos que NO deben girarse: imagen sin texto, una sola línea en una imagen grande, un
+                                sello en vertical en el margen y un código de barras grande;
+                              - texto pequeño: captura al 32 % (y además girada) y una imagen grande con letra
+                                pequeña (la ampliación no puede pasar de 12 Mpx);
+                              - PDF escaneados girados 90° y 180° y torcidos 2,5°.
+                              Ojo: PIL rotate(g) gira g grados a la IZQUIERDA; para enderezar hay que girar g grados a
+                              la derecha (el giro esperado es g).
+  verificar_casos_faseE.py    comprueba esos casos (avisos, giro y grados leídos, importes, texto y tablas).
+  generar_estres_faseE.py     imágenes grandes o engañosas: foto de 11,9 Mpx girada, ruido puro, rayas verticales
+                              y una imagen de 40×20 px.
+  verificacion_final_faseE.sh corpus completo, casos de las fases B, C, D y E, documentos hostiles, OCR desactivado,
+                              escenarios por la interfaz, demo, tiempos y memoria sobre una copia exacta de
+                              idefix1.0-fase-e/Idefix1.0 (rutas de este entorno: ajústalas antes de usarlo).
+  ../fase-b/resellar-nucleo.py  recalcula SHA256_WORKER_NUCLEO tras cambiar el worker núcleo.
+Resultados: resultados/faseE/ (corpus), resultados/faseE-casos/, resultados/faseE-escenarios/ y
+resultados/capturas/faseE_*.png.

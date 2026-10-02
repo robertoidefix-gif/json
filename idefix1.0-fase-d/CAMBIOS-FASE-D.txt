@@ -156,6 +156,10 @@ D2 · Instrucciones a una IA (tipo prompt_injection). Nuevos patrones sobre el t
   18158–18169 Avisos PDF_INVISIBLE_TEXT_OVER_IMAGE y PDF_HIDDEN_TEXT_NOT_CHECKED.
   18427–18428 Tarjeta: «… texto(s) que no se ven en Word» y «… en el PDF».
   ESLint (misma configuración que la auditoría): 36 errores y 70 avisos, los mismos que en la fase C: 0 nuevos.
+  CORRECCIÓN (comprobada en la fase E): esa medida se hizo ANTES de los últimos cambios contra documentos hostiles
+  y no se repitió. Sobre este archivo tal como se entregó, ESLint da 36 errores y 71 avisos: 1 aviso nuevo, la
+  complejidad de leerCSS (35; el máximo es 25). No cambia el funcionamiento; en la fase E leerCSS se divide en
+  funciones pequeñas y el aviso desaparece (ver idefix1.0-fase-e/CAMBIOS-FASE-E.txt).
   Sin eval, new Function, CDN ni scripts externos.
 
 -----------------------------------------------------------------------------------------------------

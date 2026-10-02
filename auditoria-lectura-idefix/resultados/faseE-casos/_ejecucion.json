@@ -1,0 +1,524 @@
+{
+ "config": {
+  "ocr": true
+ },
+ "msInicio": 1227,
+ "resumen": [
+  {
+   "id": "e1r90",
+   "ok": true,
+   "ms": 1544,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "e1r180",
+   "ok": true,
+   "ms": 1215,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "e1r270",
+   "ok": true,
+   "ms": 1376,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "e1r0",
+   "ok": true,
+   "ms": 1197,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "e1lib",
+   "ok": true,
+   "ms": 3177,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "e1i3",
+   "ok": true,
+   "ms": 1348,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "e1i-2",
+   "ok": true,
+   "ms": 1449,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "e1exif",
+   "ok": true,
+   "ms": 1333,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "e1sin",
+   "ok": true,
+   "ms": 624,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "e1poco",
+   "ok": true,
+   "ms": 379,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "e1sello",
+   "ok": true,
+   "ms": 1487,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "e1barras",
+   "ok": true,
+   "ms": 1285,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "e2peq",
+   "ok": true,
+   "ms": 1157,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "e2peqr",
+   "ok": true,
+   "ms": 1365,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "e2tope",
+   "ok": true,
+   "ms": 3348,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "e1pdf",
+   "ok": true,
+   "ms": 1751,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "e1pdfi",
+   "ok": true,
+   "ms": 1705,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "e1pdf180",
+   "ok": true,
+   "ms": 1685,
+   "error": null,
+   "estado": "complete"
+  }
+ ],
+ "peticiones": [
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/prueba-auditoria.html",
+   "tipo": "document",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/tesseract-7.0.0.min.js.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/tesseract-7.0.0-worker.min.js.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/tessdata-spa.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/tessdata-cat.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/tessdata-eus.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/tessdata-eng.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/tessdata-fra.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/analizador-archivos.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/prueba-auditoria.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/45fdbc83-e83c-4645-aa7a-4a37f9fec909",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/bf878cc3-d608-45fd-b757-4c5b496c2dbd",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/400ab782-b11e-4b19-a372-2973288c0662",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/21a547b2-c00f-42da-8bdd-27133c38ba06",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalE/base/vendor-paquetes/pdfjs-6.2.108-legacy-fuentes.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/21a547b2-c00f-42da-8bdd-27133c38ba06",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/21a547b2-c00f-42da-8bdd-27133c38ba06",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/1c48ea76-d4f8-4727-a01b-b8b36990202a",
+   "tipo": "script",
+   "metodo": "GET"
+  }
+ ],
+ "externas": [],
+ "consola": [],
+ "navegador": "141.0.7390.37"
+}

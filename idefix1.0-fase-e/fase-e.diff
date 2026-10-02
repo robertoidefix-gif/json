@@ -1,0 +1,919 @@
+diff -ru idefix1.0-fase-d/Idefix1.0/LEEME.txt idefix1.0-fase-e/Idefix1.0/LEEME.txt
+--- idefix1.0-fase-d/Idefix1.0/LEEME.txt	2026-10-02 14:02:22.418290290 +0000
++++ idefix1.0-fase-e/Idefix1.0/LEEME.txt	2026-10-02 17:15:26.603707993 +0000
+@@ -1,5 +1,5 @@
+-Idefix1.0 · versión SIN SERVIDOR con las FASES B, C y D
+-=======================================================
++Idefix1.0 · versión SIN SERVIDOR con las FASES B, C, D y E
++==========================================================
+ 
+ CÓMO SE ABRE
+   Doble clic en index.html. Se abre en Chrome o Edge y funciona tal cual: sin servidor, sin Node.js,
+@@ -18,7 +18,14 @@
+   vendor-paquetes/       PDF.js 6.2.108, Tesseract.js 7.0.0, su núcleo y los modelos de idioma:
+                          archivos oficiales sin modificar, en base64 (ver vendor-paquetes/LEEME.txt).
+ 
+-FASE D (seguridad del contenido; detalle y pruebas en ../CAMBIOS-FASE-D.txt)
++FASE E (OCR de fotos y escaneos; detalle y pruebas en ../CAMBIOS-FASE-E.txt)
++  - Fotos y escaneos girados 90°, 180° o 270°: se leen en su orientación (antes salía texto sin sentido).
++  - Escaneos torcidos (hasta 5°): se enderezan antes del OCR.
++  - Capturas o escaneos con letra muy pequeña: se amplían para el OCR.
++  - Fotos de móvil con orientación EXIF: ya no se rechazan como «dañadas».
++  - Todo se mide en los píxeles, sin enviar nada fuera y sin modificar el archivo original.
++
++FASE D (seguridad del contenido; detalle y pruebas en idefix1.0-fase-d/CAMBIOS-FASE-D.txt)
+   - Texto oculto marcado también en Word (propiedad «Oculto», blanco sin fondo, letra de 1 punto) y en PDF
+     (texto invisible, transparente, blanco sin nada debajo, diminuto o en una capa desactivada), y en HTML
+     también el oculto con las reglas de <style> (clases, ids), en blanco, de 1 px o fuera de la pantalla.
+diff -ru idefix1.0-fase-d/Idefix1.0/analizador-archivos.js idefix1.0-fase-e/Idefix1.0/analizador-archivos.js
+--- idefix1.0-fase-d/Idefix1.0/analizador-archivos.js	2026-10-02 14:02:22.402165929 +0000
++++ idefix1.0-fase-e/Idefix1.0/analizador-archivos.js	2026-10-02 17:15:26.236146512 +0000
+@@ -2,6 +2,17 @@
+    IDEFIX1.0 — AnalizadorArchivos 6.14.0 (esquema del JSON 6.14.0)
+    Archivo único: JavaScript, interfaz, hoja de estilos, worker núcleo y MARCO_FISCAL_LOCAL.
+ 
++   Fase E (auditoría de lectura, 2026-10-02): OCR de fotos y escaneos.
++   - E1 Orientación: antes del OCR se mide en el worker núcleo (sin OCR, con
++     perfiles de proyección) si el texto va en vertical y si está del revés
++     (ascendentes frente a descendentes); la imagen se gira y, si está torcida
++     (hasta 5°), se endereza (OCR_ROTATED, OCR_DESKEWED). Las páginas PDF solo
++     escaneadas se vuelven a dibujar giradas. Las fotos con orientación EXIF
++     5–8 ya no se rechazan como «dañadas».
++   - E2 Reescalado: si las líneas miden menos de 15 px, la imagen se amplía
++     (hasta ×3 y sin pasar de 12 Mpx) o la página se dibuja a más resolución
++     (OCR_UPSCALED). La cuadrícula se reconoce con un umbral adaptativo.
++
+    Fase D (auditoría de lectura, 2026-10-02): seguridad del contenido.
+    - D1 Texto oculto, que se conserva y se marca en seguridad_contenido:
+      · Word (texto_oculto_docx): w:vanish, w:specVanish, letra de 1 punto o
+@@ -3088,7 +3099,11 @@
+     throw rechazar("imagen_invalida");
+   }
+   try {
+-    if (bitmap.width !== dim.width || bitmap.height !== dim.height) throw rechazar("imagen_invalida");
++    // Fase E: una foto con la orientación EXIF 5–8 (móvil en vertical) se decodifica ya girada: ancho y alto quedan
++    // cambiados respecto a la cabecera JPEG. Antes se rechazaba como «dañada».
++    const igual = bitmap.width === dim.width && bitmap.height === dim.height;
++    const girada = bitmap.width === dim.height && bitmap.height === dim.width;
++    if (!igual && !girada) throw rechazar("imagen_invalida");
+     const pixeles = comprobarMemoriaImagen(bitmap.width, bitmap.height, limites);
+     return { width: bitmap.width, height: bitmap.height, pixels: pixeles };
+   } finally {
+@@ -3441,9 +3456,11 @@
+   const total = w * h;
+   const luz = new Uint8Array(total);
+   for (let i = 0, j = 0; i < total; i++, j += 4) luz[i] = (rgba[j] * 77 + rgba[j + 1] * 150 + rgba[j + 2] * 29) >> 8;
+-  // Marcas por píxel: 1 oscuro · 2 en línea horizontal · 4 en línea vertical · 8 borrar.
++  // Marcas por píxel: 1 oscuro · 2 en línea horizontal · 4 en línea vertical · 8 borrar. Fase E: «oscuro» con el umbral
++  // de Otsu de la imagen (entre 140 y 190): en un escaneo desenfocado las líneas son gris medio y con 140 se partían.
+   const m = new Uint8Array(total);
+-  for (let i = 0; i < total; i++) if (luz[i] < 140) m[i] = 1;
++  const oscuro = Math.max(140, Math.min(190, umbralOtsuOCR(luz)));
++  for (let i = 0; i < total; i++) if (luz[i] < oscuro) m[i] = 1;
+   const grosor = Math.max(4, Math.round(Math.min(w, h) * 0.006));
+   const { horizontales, verticales, tramosV } = marcarLineasCuadricula(m, w, h);
+   if (!horizontales && !verticales) return { horizontales, verticales, separadores: [] };
+@@ -3531,34 +3548,373 @@
+   return separadores.slice(0, 2000).map(sp => ({ x: sp.suma / sp.n, y1: sp.y1, y2: sp.y2 }));
+ }
+ 
++/*
++ * Fase E (E1 y E2): orientación y tamaño del texto de una imagen ANTES del OCR, midiendo sus píxeles (sin OCR y sin
++ * red). Antes, una foto o un escaneo girado 90° daba basura (jpg08: 0/7 datos, texto 4 %, 8,5 s) y una captura
++ * reducida con letras de unos 8 px de alto se leía mal (png05: confianza media 0,35).
++ *   - Dirección de las líneas: tras unir las letras de cada línea (suavizado horizontal, RLSA), el texto en su
++ *     dirección forma tramos largos y en la otra no. Se mide en horizontal y en vertical (imagen transpuesta).
++ *   - Derecho o del revés: en la escritura latina hay mucha más tinta por ENCIMA de la banda central de cada línea
++ *     (mayúsculas, cifras, b, d, f, h, k, l, t) que por debajo (g, j, p, q, y). En las pruebas: de 7 a 43 veces más
++ *     con el texto derecho y de 0,02 a 0,14 del revés.
++ *   - Altura del texto: mediana de la altura de las líneas. Si es menor que OCR_ALTURA_MINIMA_TEXTO, la imagen se
++ *     amplía para el OCR (Tesseract necesita letras de unos 20–30 px).
++ *   - Inclinación (escaneo torcido): el ángulo, entre −5° y 5°, con el que el perfil de las filas es más nítido. Si
++ *     pasa de 0,3°, se endereza (y así también la cuadrícula se reconoce y se quita).
++ * Si las medidas no son claras, la imagen se deja como está (giro 0, escala 1, sin enderezar).
++ */
++const OCR_ALTURA_MINIMA_TEXTO = 15;
++const OCR_ALTURA_OBJETIVO_TEXTO = 28;
++const OCR_ESCALA_MAXIMA = 3;
++const OCR_LADO_ANALISIS = 1600;
++const OCR_INCLINACION_MAXIMA = 5;
++const OCR_INCLINACION_MINIMA = 0.3;
++
++/** Gris reducido (lado mayor ≤ OCR_LADO_ANALISIS, media de cada bloque) de unos píxeles RGBA. */
++function grisReducidoOCR(rgba, w, h) {
++  const f = Math.min(1, OCR_LADO_ANALISIS / Math.max(w, h));
++  const w2 = Math.max(1, Math.round(w * f));
++  const h2 = Math.max(1, Math.round(h * f));
++  const suma = new Float64Array(w2 * h2);
++  const cuenta = new Uint32Array(w2 * h2);
++  for (let y = 0; y < h; y++) {
++    const fy = Math.min(h2 - 1, Math.floor(y * f)) * w2;
++    for (let x = 0, j = y * w * 4; x < w; x++, j += 4) {
++      const k = fy + Math.min(w2 - 1, Math.floor(x * f));
++      suma[k] += (rgba[j] * 77 + rgba[j + 1] * 150 + rgba[j + 2] * 29) >> 8;
++      cuenta[k]++;
++    }
++  }
++  const gris = new Uint8Array(w2 * h2);
++  for (let k = 0; k < gris.length; k++) gris[k] = cuenta[k] ? suma[k] / cuenta[k] : 255;
++  return { gris, w: w2, h: h2, f };
++}
++
++/** Umbral de Otsu del histograma de grises. */
++function umbralOtsuOCR(gris) {
++  const hist = new Float64Array(256);
++  for (const v of gris) hist[v]++;
++  let total = 0;
++  let suma = 0;
++  for (let i = 0; i < 256; i++) { total += hist[i]; suma += i * hist[i]; }
++  let sB = 0;
++  let wB = 0;
++  let mejor = -1;
++  let umbral = 128;
++  for (let i = 0; i < 256; i++) {
++    wB += hist[i];
++    const wF = total - wB;
++    if (!wB || !wF) continue;
++    sB += i * hist[i];
++    const v = wB * wF * (sB / wB - (suma - sB) / wF) ** 2;
++    if (v > mejor) { mejor = v; umbral = i; }
++  }
++  return umbral;
++}
++
++/** Perfil de filas de una imagen binaria (1 = tinta) y tramos de filas con tinta (posibles líneas de texto). */
++function tramosFilasOCR(b, w, h) {
++  const fila = new Uint32Array(h);
++  let max = 0;
++  for (let y = 0; y < h; y++) {
++    let s = 0;
++    for (let x = 0, i = y * w; x < w; x++, i++) s += b[i];
++    fila[y] = s;
++    if (s > max) max = s;
++  }
++  const umbral = Math.max(1, max * 0.02);
++  const tramos = [];
++  for (let y = 0; y < h;) {
++    if (fila[y] < umbral) { y++; continue; }
++    let y2 = y;
++    while (y2 < h && fila[y2] >= umbral) y2++;
++    if (y2 - y >= 3) tramos.push([y, y2]);
++    y = y2;
++  }
++  return { fila, tramos };
++}
++
++/** Fracción de la tinta que, uniendo los huecos de menos de `hueco` px de cada fila (RLSA), forma tramos de ≥ `largo` px. */
++function fraccionTramosLargosOCR(b, w, h, hueco, largo) {
++  let tinta = 0;
++  let larga = 0;
++  for (let y = 0; y < h; y++) {
++    let ini = -1;
++    let fin = -1;
++    for (let x = 0, i = y * w; x <= w; x++, i++) {
++      if (x < w && !b[i]) continue;
++      if (x < w && ini >= 0 && x - fin - 1 <= hueco) { fin = x; continue; }
++      if (ini >= 0) { const n = fin - ini + 1; tinta += n; if (n >= largo) larga += n; }
++      ini = x;
++      fin = x;
++    }
++  }
++  return tinta ? larga / tinta : 0;
++}
++
++/** Tinta por encima de la banda central de cada línea / tinta por debajo (> 1: texto derecho). */
++function asimetriaLineasOCR(fila, tramos) {
++  let arriba = 0;
++  let abajo = 0;
++  for (const [a, z] of tramos) {
++    if (z - a < 5) continue;
++    let pico = 0;
++    for (let y = a; y < z; y++) pico = Math.max(pico, fila[y]);
++    let t = a;
++    while (t < z && fila[t] < pico * 0.5) t++;
++    let u = z - 1;
++    while (u > t && fila[u] < pico * 0.5) u--;
++    for (let y = a; y < t; y++) arriba += fila[y];
++    for (let y = u + 1; y < z; y++) abajo += fila[y];
++  }
++  return (arriba + 1) / (abajo + 1);
++}
++
++/**
++ * Líneas de texto de una imagen binaria (1 = tinta) leídas en horizontal: cuántas hay, su altura mediana, la fracción
++ * de la tinta que forma tramos largos al unir las letras (RLSA) y la asimetría ascendentes/descendentes.
++ */
++function lineasTextoOCR(b, w, h) {
++  const { fila, tramos } = tramosFilasOCR(b, w, h);
++  if (!tramos.length) return { n: 0, med: 0, frac: 0, asimetria: 1 };
++  const alturas = tramos.map(([a, z]) => z - a).sort((x, y) => x - y);
++  const med = alturas[alturas.length >> 1];
++  const frac = fraccionTramosLargosOCR(b, w, h, Math.max(2, Math.round(med * 0.6)), Math.max(8, med * 4));
++  return { n: tramos.length, med, frac, asimetria: asimetriaLineasOCR(fila, tramos) };
++}
++
++/** Imagen binaria reducida (1 = tinta) de unos píxeles RGBA, o null si casi no hay tinta o casi todo lo es. */
++function binariaReducidaOCR(rgba, w, h) {
++  const { gris, w: w2, h: h2, f } = grisReducidoOCR(rgba, w, h);
++  const umbral = umbralOtsuOCR(gris);
++  const b = new Uint8Array(gris.length);
++  let tinta = 0;
++  for (let k = 0; k < gris.length; k++) if (gris[k] < umbral && gris[k] < 200) { b[k] = 1; tinta++; }
++  if (tinta < gris.length * 0.002 || tinta > gris.length * 0.5) return null;
++  return { b, w: w2, h: h2, f };
++}
++
++/**
++ * Inclinación de las líneas de texto (grados; positivo: bajan hacia la derecha) de una imagen binaria con el texto
++ * en horizontal: el ángulo de −5° a 5° con el que la suma de los cuadrados del perfil de filas es mayor (pasos de
++ * 0,25° y después de 0,05°). Como mucho se usan 150.000 puntos de tinta.
++ */
++function inclinacionTextoOCR(b, w, h) {
++  let n = 0;
++  for (const v of b) n += v;
++  const paso = Math.max(1, Math.ceil(n / 150000));
++  const xs = new Float64Array(Math.ceil(n / paso) + 1);
++  const ys = new Float64Array(xs.length);
++  let m = 0;
++  for (let i = 0, k = 0; i < b.length; i++) {
++    if (!b[i] || k++ % paso) continue;
++    xs[m] = i % w;
++    ys[m] = (i - xs[m]) / w;
++    m++;
++  }
++  const margen = Math.ceil(w * Math.tan(OCR_INCLINACION_MAXIMA * Math.PI / 180)) + 2;
++  const bins = new Float64Array(h + 2 * margen);
++  const puntuar = grados => {
++    const t = Math.tan(grados * Math.PI / 180);
++    bins.fill(0);
++    for (let j = 0; j < m; j++) bins[Math.round(ys[j] - xs[j] * t) + margen]++;
++    let s = 0;
++    for (const v of bins) s += v * v;
++    return s;
++  };
++  let mejor = 0;
++  let mejorPunt = puntuar(0);
++  for (let a = -OCR_INCLINACION_MAXIMA; a <= OCR_INCLINACION_MAXIMA + 1e-9; a += 0.25) {
++    const s = puntuar(a);
++    if (s > mejorPunt) { mejorPunt = s; mejor = a; }
++  }
++  const centro = mejor;
++  for (let a = centro - 0.2; a <= centro + 0.2 + 1e-9; a += 0.05) {
++    const s = puntuar(a);
++    if (s > mejorPunt) { mejorPunt = s; mejor = a; }
++  }
++  return Math.round(mejor * 100) / 100;
++}
++
++/** Corrige una inclinación pequeña de una imagen binaria desplazando cada columna (cizalla; mismo tamaño). */
++function cizalladaOCR(b, w, h, grados) {
++  const t = Math.tan(grados * Math.PI / 180);
++  const o = new Uint8Array(b.length);
++  for (let y = 0; y < h; y++) {
++    for (let x = 0, i = y * w; x < w; x++, i++) {
++      if (!b[i]) continue;
++      const y2 = Math.round(y - x * t);
++      if (y2 >= 0 && y2 < h) o[y2 * w + x] = 1;
++    }
++  }
++  return o;
++}
++
++/** Inclinación de unos píxeles RGBA con el texto ya en horizontal (0 si no hay datos o es menor que la mínima). */
++function inclinacionPixelesOCR(rgba, w, h) {
++  const r = binariaReducidaOCR(rgba, w, h);
++  if (!r) return 0;
++  const a = inclinacionTextoOCR(r.b, r.w, r.h);
++  return Math.abs(a) >= OCR_INCLINACION_MINIMA ? a : 0;
++}
++
++/**
++ * Orientación y altura del texto de unos píxeles RGBA (w × h).
++ * @returns {{ giro: 0|90|180|270, alturaTexto: number|null, dudoso: boolean }} giro: grados en el sentido de las agujas
++ *   del reloj que hay que girar la imagen para que el texto quede derecho; alturaTexto en píxeles de la imagen.
++ */
++function geometriaTextoOCR(rgba, w, h) {
++  const sinDatos = { giro: 0, alturaTexto: null, dudoso: false, inclinacion: 0 };
++  if (w < 16 || h < 16) return sinDatos;
++  const bin = binariaReducidaOCR(rgba, w, h);
++  if (!bin) return sinDatos;
++  const { b, w: w2, h: h2, f } = bin;
++  const t = new Uint8Array(b.length);
++  for (let y = 0; y < h2; y++) for (let x = 0; x < w2; x++) t[x * h2 + y] = b[y * w2 + x];
++  // Las líneas se miden ya sin la inclinación (con 2–3° las líneas de un escaneo torcido se mezclan en el perfil).
++  const aH = inclinacionTextoOCR(b, w2, h2);
++  const aV = inclinacionTextoOCR(t, h2, w2);
++  const H = lineasTextoOCR(Math.abs(aH) >= OCR_INCLINACION_MINIMA ? cizalladaOCR(b, w2, h2, aH) : b, w2, h2);
++  const V = lineasTextoOCR(Math.abs(aV) >= OCR_INCLINACION_MINIMA ? cizalladaOCR(t, h2, w2, aV) : t, h2, w2);
++  const creible = (L, lado) => L.n >= 3 && L.med <= lado * 0.08;
++  const pH = creible(H, h2) ? H.frac : 0;
++  const pV = creible(V, w2) ? V.frac : 0;
++  let giro = 0;
++  let dudoso = false;
++  let L = H;
++  if (pH >= 0.25 && pH >= 2 * pV) {
++    if (H.asimetria <= 0.5) giro = 180;
++    else if (H.asimetria < 2) dudoso = true;
++  } else if (pV >= 0.25 && pV >= 2 * pH) {
++    L = V;
++    // En la imagen transpuesta, la parte de arriba de las letras queda a la izquierda si el texto se giró 90° a la izquierda.
++    giro = V.asimetria >= 2 ? 90 : V.asimetria <= 0.5 ? 270 : 90;
++    dudoso = V.asimetria > 0.5 && V.asimetria < 2;
++  } else {
++    return { giro: 0, alturaTexto: creible(H, h2) ? H.med / f : null, dudoso: false, inclinacion: 0 };
++  }
++  // La inclinación se mide con el texto en horizontal (girado 180°, las líneas tienen la misma pendiente); con el
++  // texto en vertical se mide después de girar la imagen (inclinacionPixelesOCR).
++  const inclinacion = L === H && Math.abs(aH) >= OCR_INCLINACION_MINIMA ? aH : 0;
++  return { giro, alturaTexto: L.med / f, dudoso, inclinacion };
++}
++
++/** Escala para el OCR: ampliar si el texto mide menos de OCR_ALTURA_MINIMA_TEXTO, sin pasar de los límites. */
++function escalaTextoOCR(alturaTexto, w, h, maxPixeles) {
++  if (!(alturaTexto > 0) || alturaTexto >= OCR_ALTURA_MINIMA_TEXTO) return 1;
++  const porPixeles = Math.sqrt(maxPixeles / Math.max(1, w * h));
++  const escala = Math.min(OCR_ESCALA_MAXIMA, OCR_ALTURA_OBJETIVO_TEXTO / alturaTexto, porPixeles);
++  return escala >= 1.15 ? Math.round(escala * 100) / 100 : 1;
++}
++
++/**
++ * Dibuja una imagen girada (grados en el sentido de las agujas del reloj; giro de 90° más el enderezado) y ampliada
++ * en un lienzo nuevo del tamaño justo, sobre fondo blanco.
++ */
++function lienzoTransformadoOCR(fuente, w, h, giro, escala) {
++  const rad = giro * Math.PI / 180;
++  const c = Math.abs(Math.cos(rad));
++  const s = Math.abs(Math.sin(rad));
++  const ancho = Math.max(1, Math.round((w * c + h * s) * escala));
++  const alto = Math.max(1, Math.round((w * s + h * c) * escala));
++  const lienzo = new OffscreenCanvas(ancho, alto);
++  const ctx = lienzo.getContext("2d", { willReadFrequently: true });
++  ctx.fillStyle = "#fff";
++  ctx.fillRect(0, 0, ancho, alto);
++  ctx.imageSmoothingEnabled = true;
++  ctx.imageSmoothingQuality = "high";
++  ctx.translate(ancho / 2, alto / 2);
++  ctx.rotate(rad);
++  ctx.scale(escala, escala);
++  ctx.drawImage(fuente, -w / 2, -h / 2);
++  return { lienzo, ctx, ancho, alto };
++}
++
++/** Endereza unos píxeles RGBA (giro de −inclinación alrededor del centro, mismo tamaño, esquinas en blanco). */
++function enderezarPixelesOCR(datos, w, h, inclinacion) {
++  const origen = new OffscreenCanvas(w, h);
++  origen.getContext("2d").putImageData(new ImageData(datos, w, h), 0, 0);
++  const destino = new OffscreenCanvas(w, h);
++  const ctx = destino.getContext("2d", { willReadFrequently: true });
++  ctx.fillStyle = "#fff";
++  ctx.fillRect(0, 0, w, h);
++  ctx.imageSmoothingEnabled = true;
++  ctx.imageSmoothingQuality = "high";
++  ctx.translate(w / 2, h / 2);
++  ctx.rotate(-inclinacion * Math.PI / 180);
++  ctx.drawImage(origen, -w / 2, -h / 2);
++  const salida = ctx.getImageData(0, 0, w, h).data;
++  origen.width = 1;
++  destino.width = 1;
++  return salida;
++}
++
+ /**
+  * Fase B (B4): prepara una imagen para el OCR dentro de este worker (sin red): o bien los píxeles RGBA de una
+  * página PDF ya dibujada, o bien el archivo de imagen, que se decodifica aquí (nunca en la página).
+  * Devuelve los píxeles o un PNG sin cuadrícula, o null si no había cuadrícula que quitar.
++ * Fase E: con geometria = true se miden antes la orientación y la altura del texto. Una imagen se devuelve ya
++ * girada y ampliada (y después sin cuadrícula, para que los separadores de columna salgan en su sitio); de una
++ * página PDF solo se devuelven las medidas: la página se vuelve a dibujar con ese giro y esa escala.
+  */
+ async function prepararImagenOCR(p) {
++  const sinGeometria = { giro: 0, escala: 1, alturaTexto: null, dudoso: false, inclinacion: 0 };
+   if (p.rgba) {
+-    const tramos = quitarCuadricula(new Uint8ClampedArray(p.rgba), p.width, p.height);
+-    return { rgba: p.rgba, png: null, ...tramos };
++    let datos = new Uint8ClampedArray(p.rgba);
++    const g = p.geometria ? geometriaTextoOCR(datos, p.width, p.height) : null;
++    const geometria = g ? { giro: g.giro, alturaTexto: g.alturaTexto, dudoso: g.dudoso,
++      escala: escalaTextoOCR(g.alturaTexto, p.width, p.height, Infinity), inclinacion: 0 } : sinGeometria;
++    // Página con el texto en horizontal pero torcida: se endereza aquí mismo (mismo tamaño, esquinas en blanco). Si
++    // hay que girarla 90° o 180°, la página la vuelve a dibujar girada y la endereza en la segunda pasada.
++    if (g && g.giro === 0 && g.inclinacion && typeof OffscreenCanvas === "function") {
++      datos = enderezarPixelesOCR(datos, p.width, p.height, g.inclinacion);
++      geometria.inclinacion = g.inclinacion;
++    }
++    const tramos = quitarCuadricula(datos, p.width, p.height);
++    return { rgba: datos.buffer, png: null, ...tramos, ...geometria };
+   }
+   if (typeof createImageBitmap !== "function" || typeof OffscreenCanvas !== "function") {
+-    return { rgba: null, png: null, horizontales: 0, verticales: 0, separadores: [] };
++    return { rgba: null, png: null, horizontales: 0, verticales: 0, separadores: [], ...sinGeometria };
+   }
+   const bitmap = await createImageBitmap(new Blob([p.imagen]));
+   try {
+     comprobarMemoriaImagen(bitmap.width, bitmap.height, p.limites);
+-    const lienzo = new OffscreenCanvas(bitmap.width, bitmap.height);
+-    const ctx = lienzo.getContext("2d", { willReadFrequently: true });
++    let ancho = bitmap.width;
++    let alto = bitmap.height;
++    let lienzo = new OffscreenCanvas(ancho, alto);
++    let ctx = lienzo.getContext("2d", { willReadFrequently: true });
+     // Fondo blanco: las zonas transparentes cuentan como papel, no como tinta.
+     ctx.fillStyle = "#fff";
+-    ctx.fillRect(0, 0, bitmap.width, bitmap.height);
++    ctx.fillRect(0, 0, ancho, alto);
+     ctx.drawImage(bitmap, 0, 0);
+-    const datos = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
+-    const tramos = quitarCuadricula(datos.data, bitmap.width, bitmap.height);
+-    if (!tramos.horizontales && !tramos.verticales) return { rgba: null, png: null, ...tramos };
+-    ctx.putImageData(datos, 0, 0);
++    let datos = ctx.getImageData(0, 0, ancho, alto);
++    let geometria = sinGeometria;
++    if (p.geometria) {
++      const g = geometriaTextoOCR(datos.data, ancho, alto);
++      // La ampliación no puede pasar del máximo de píxeles ni de la memoria de trabajo (con el factor del OCR).
++      const maxPixeles = Math.min(p.limites.maxPixelesImagen, Math.floor(p.limites.maxMemoriaTrabajoBytes / (4 * 3)));
++      geometria = { giro: g.giro, alturaTexto: g.alturaTexto, dudoso: g.dudoso, escala: escalaTextoOCR(g.alturaTexto, ancho, alto, maxPixeles),
++        inclinacion: g.inclinacion };
++      if (g.giro % 180) {
++        // Texto en vertical: la inclinación se mide con la imagen ya girada.
++        const girada = lienzoTransformadoOCR(bitmap, bitmap.width, bitmap.height, g.giro, 1);
++        geometria.inclinacion = inclinacionPixelesOCR(girada.ctx.getImageData(0, 0, girada.ancho, girada.alto).data, girada.ancho, girada.alto);
++        girada.lienzo.width = 1;
++      }
++      if (geometria.giro || geometria.escala !== 1 || geometria.inclinacion) {
++        ({ lienzo, ctx, ancho, alto } = lienzoTransformadoOCR(bitmap, bitmap.width, bitmap.height, geometria.giro - geometria.inclinacion,
++          geometria.escala));
++        datos = ctx.getImageData(0, 0, ancho, alto);
++      }
++    }
++    const tramos = quitarCuadricula(datos.data, ancho, alto);
++    const conCuadricula = tramos.horizontales || tramos.verticales;
++    if (!conCuadricula && !geometria.giro && geometria.escala === 1 && !geometria.inclinacion) {
++      return { rgba: null, png: null, ...tramos, ...geometria };
++    }
++    if (conCuadricula) ctx.putImageData(datos, 0, 0);
+     const png = await (await lienzo.convertToBlob({ type: "image/png" })).arrayBuffer();
+-    return { rgba: null, png, ...tramos };
++    return { rgba: null, png, ...tramos, ...geometria };
+   } finally {
+     bitmap.close();
+   }
+@@ -4796,49 +5152,66 @@
+     else hoja.universales.push(regla);
+   }
+ 
++  /*
++   * Lectura de una hoja de estilos (contenido de un <style>) en pasos pequeños. Fase E: antes era una sola función
++   * con complejidad 35 (ESLint pide 25 como mucho); el comportamiento es el mismo.
++   * st: { t: texto, i: posición, llave/cierre: próxima «{» y «}» (-2: no hay más), pila de @media/@supports abiertos
++   * y cuenta de los que no se aplican (false) y de los condicionales (null) }.
++   */
++  // Se guarda la posición de la próxima «{» o «}»: cada tramo del texto se busca una sola vez.
++  function siguienteCSS(st, caracter, clave) {
++    if (st[clave] < st.i && st[clave] !== -2) {
++      const k = st.t.indexOf(caracter, st.i);
++      st[clave] = k === -1 ? -2 : k;
++    }
++    return st[clave];
++  }
++
++  const estadoBloquesCSS = st => (st.cuenta.false > 0 ? false : st.cuenta.null > 0 ? null : true);
++
++  function abrirBloqueCSS(st, cabecera, llave) {
++    const regla = (/^@([a-z-]+)/i.exec(cabecera.slice(0, 40))?.[1] || "").toLowerCase();
++    if (!["media", "supports", "layer", "container", "scope"].includes(regla)) {
++      st.i = saltarBloque(st.t, llave);
++      return;
++    }
++    const valor = st.pila.length >= 100 ? null : regla === "media" ? mediaAplica(cabecera.slice(6, 2000)) : regla === "layer" ? true : null;
++    st.pila.push(valor);
++    if (valor !== true) st.cuenta[String(valor)]++;
++    st.i = llave + 1;
++  }
++
++  function cerrarBloqueCSS(st, cierre) {
++    const cerrado = st.pila.length ? st.pila.pop() : true;
++    if (cerrado !== true) st.cuenta[String(cerrado)]--;
++    st.i = cierre + 1;
++  }
++
++  function anotarReglaCSS(hoja, cabecera, decl, estado) {
++    for (const s of cabecera.split(",")) {
++      const sel = estado === null ? null : compilarSelector(s);
++      if (!sel) hoja.sinEvaluar++;
++      else if (hoja.n >= MAX_REGLAS_CSS) hoja.truncada = true;
++      else indexarRegla(hoja, sel, decl);
++    }
++  }
++
+   /** Lee las reglas de una hoja de estilos (contenido de un <style>) que pueden ocultar texto. */
+   function leerCSS(css, hoja, aplica) {
+-    const t = cssLimpio(css);
+-    // Bloques @media/@supports abiertos: cuántos no se aplican (false) y cuántos son condicionales (null).
+-    const pila = [];
+-    const cuenta = { false: aplica === false ? 1 : 0, null: aplica === null ? 1 : 0 };
+-    let i = 0;
+-    let llave = -1;
+-    let cierre = -1;
+-    while (i < t.length && !hoja.truncada) {
+-      // Se guarda la posición de la próxima «{» y «}» (-2: no hay más): cada tramo se busca una sola vez.
+-      if (llave < i && llave !== -2) llave = t.indexOf("{", i) === -1 ? -2 : t.indexOf("{", i);
+-      if (cierre < i && cierre !== -2) cierre = t.indexOf("}", i) === -1 ? -2 : t.indexOf("}", i);
+-      if (cierre >= 0 && (llave < 0 || cierre < llave)) {
+-        const cerrado = pila.length ? pila.pop() : true;
+-        if (cerrado !== true) cuenta[String(cerrado)]--;
+-        i = cierre + 1;
+-        continue;
+-      }
++    const st = { t: cssLimpio(css), i: 0, llave: -1, cierre: -1, pila: [],
++      cuenta: { false: aplica === false ? 1 : 0, null: aplica === null ? 1 : 0 } };
++    while (st.i < st.t.length && !hoja.truncada) {
++      const llave = siguienteCSS(st, "{", "llave");
++      const cierre = siguienteCSS(st, "}", "cierre");
++      if (cierre >= 0 && (llave < 0 || cierre < llave)) { cerrarBloqueCSS(st, cierre); continue; }
+       if (llave < 0) break;
+-      const previo = t.slice(i, llave);
++      const previo = st.t.slice(st.i, llave);
+       const cabecera = previo.slice(previo.lastIndexOf(";") + 1).trim();
+-      const estado = cuenta.false > 0 ? false : cuenta.null > 0 ? null : true;
+-      if (cabecera.startsWith("@")) {
+-        const regla = (/^@([a-z-]+)/i.exec(cabecera.slice(0, 40))?.[1] || "").toLowerCase();
+-        if (["media", "supports", "layer", "container", "scope"].includes(regla)) {
+-          const valor = pila.length >= 100 ? null : regla === "media" ? mediaAplica(cabecera.slice(6, 2000)) : regla === "layer" ? true : null;
+-          pila.push(valor);
+-          if (valor !== true) cuenta[String(valor)]++;
+-          i = llave + 1;
+-        } else i = saltarBloque(t, llave);
+-        continue;
+-      }
+-      const fin = cierre;
+-      const decl = estado === false ? [] : declaracionesCSS(t.slice(llave + 1, fin < 0 ? t.length : fin));
+-      i = fin < 0 ? t.length : fin + 1;
+-      if (!decl.length) continue;
+-      for (const s of cabecera.split(",")) {
+-        const sel = estado === null ? null : compilarSelector(s);
+-        if (!sel) hoja.sinEvaluar++;
+-        else if (hoja.n >= MAX_REGLAS_CSS) hoja.truncada = true;
+-        else indexarRegla(hoja, sel, decl);
+-      }
++      if (cabecera.startsWith("@")) { abrirBloqueCSS(st, cabecera, llave); continue; }
++      const estado = estadoBloquesCSS(st);
++      const decl = estado === false ? [] : declaracionesCSS(st.t.slice(llave + 1, cierre < 0 ? st.t.length : cierre));
++      st.i = cierre < 0 ? st.t.length : cierre + 1;
++      if (decl.length) anotarReglaCSS(hoja, cabecera, decl, estado);
+     }
+   }
+ 
+@@ -6939,7 +7312,9 @@
+   }
+   if (msg.tipo === "cuadricula") {
+     // Fase B (B4): o píxeles RGBA de una página PDF dibujada, o el archivo de imagen con sus límites.
+-    const claves = Object.keys(p).sort().join(",");
++    // Fase E: «geometria» (opcional, booleano) pide medir antes la orientación y la altura del texto.
++    if (p.geometria !== undefined && typeof p.geometria !== "boolean") return "payload";
++    const claves = Object.keys(p).filter(k => k !== "geometria").sort().join(",");
+     if (claves === "height,rgba,width") {
+       return Number.isSafeInteger(p.width) && Number.isSafeInteger(p.height) && p.width > 0 && p.height > 0 &&
+         p.rgba instanceof ArrayBuffer && p.rgba.byteLength === p.width * p.height * 4 ? null : "payload";
+@@ -8426,7 +8801,7 @@
+ }
+ });
+ /* AA:INCRUSTADOS:FIN */
+-const SHA256_WORKER_NUCLEO = "4b8fbc56587a251a1f4ab861c9fd25c3b5fd82f4d129c7faf0ef0c285ddec695";
++const SHA256_WORKER_NUCLEO = "e255291970e24ec25294c4b0aaeb2c74042b2a43f914009018eff9712b435db7";
+ 
+ /** Nombre de archivo más largo que se admite (el esquema del resultado permite 4096). */
+ const AA_MAX_LONGITUD_NOMBRE_ARCHIVO = 1024;
+@@ -9654,7 +10029,11 @@
+       const tramos = ["horizontales", "verticales"].every(k => Number.isSafeInteger(p[k]) && p[k] >= 0);
+       const separadores = Array.isArray(p.separadores) && p.separadores.length <= 5000 && p.separadores.every(sp =>
+         aaEsObjetoPlano(sp) && Object.keys(sp).length === 3 && ["x", "y1", "y2"].every(k => Number.isFinite(sp[k])));
+-      if (Object.keys(p).length !== 5 || !tramos || !separadores || !(p.rgba === null || p.rgba instanceof ArrayBuffer) ||
++      // Fase E: giro (0, 90, 180 o 270), escala (1 a 3), altura del texto (px o null) y si la orientación es dudosa.
++      const geometria = [0, 90, 180, 270].includes(p.giro) && Number.isFinite(p.escala) && p.escala >= 1 && p.escala <= 3 &&
++        (p.alturaTexto === null || (Number.isFinite(p.alturaTexto) && p.alturaTexto >= 0)) && typeof p.dudoso === "boolean" &&
++        Number.isFinite(p.inclinacion) && Math.abs(p.inclinacion) <= 5;
++      if (Object.keys(p).length !== 10 || !tramos || !separadores || !geometria || !(p.rgba === null || p.rgba instanceof ArrayBuffer) ||
+           !(p.png === null || p.png instanceof ArrayBuffer) || (p.rgba !== null && p.png !== null)) {
+         throw new Error("El worker núcleo devolvió una imagen para el OCR no válida.");
+       }
+@@ -14436,6 +14815,16 @@
+     return page.getViewport({ scale: 1, rotation: ((viewport.rotation - angulo) % 360 + 360) % 360 });
+   }
+ 
++  /** Fase E: apunta lo que se hizo con una página escaneada y devuelve su vista girada (o null si no se giró). */
++  _apuntarGeometriaOCR(geometriaOCR, g, pagina, page) {
++    if (g.escala > 1) geometriaOCR.ampliadas.push({ pagina, escala: g.escala, altura: g.alturaTexto });
++    if (g.inclinacion) geometriaOCR.enderezadas.push({ pagina, grados: g.inclinacion });
++    if (g.dudoso && !g.giro) geometriaOCR.dudosas.push(pagina);
++    if (!g.giro) return null;
++    geometriaOCR.giradas.push({ pagina, giro: g.giro, dudoso: g.dudoso });
++    return page.getViewport({ scale: 1, rotation: g.rotacion });
++  }
++
+   /** Fase B (B1): fracción de la página ocupada por las cajas del texto digital. */
+   _coberturaTexto(items, viewport) {
+     const pagina = Math.abs(viewport.width * viewport.height) || 1;
+@@ -14468,9 +14857,7 @@
+    * núcleo) y, además de las líneas, se devuelven las palabras con su caja (en puntos de la página) para
+    * reconstruir tablas.
+    */
+-  async _ocrPagina(rendered, { ocrProvider, preprocesarOCR, signal, maxItemsPerPage }) {
+-    let cuadricula = null;
+-    if (preprocesarOCR) cuadricula = await preprocesarOCR(rendered.canvas, signal);
++  async _ocrPagina(rendered, { ocrProvider, cuadricula, signal, maxItemsPerPage }) {
+     const ocrResult = await ocrProvider.detectar(rendered.canvas, { signal });
+     const scale = rendered.scale || 1;
+     const num = v => (Number.isFinite(Number(v)) ? Number(v) : 0);
+@@ -14507,8 +14894,10 @@
+     try {
+       // Único paso de PDF que sigue en el hilo principal: PDF.js solo
+       // dibuja páginas en un canvas de la página (limitado en píxeles).
+-      rendered = await this._renderizarPagina(page, { signal, maxPixelsPerPage, maxWorkingBytes, rotation });
+-      const leido = await this._ocrPagina(rendered, { ocrProvider, preprocesarOCR, signal, maxItemsPerPage });
++      let cuadricula = null;
++      ({ rendered, cuadricula, geometria: r.geometria } = await this._dibujarPaginaParaOCR(page,
++        { soloOCR, preprocesarOCR, signal, maxPixelsPerPage, maxWorkingBytes, rotation }));
++      const leido = await this._ocrPagina(rendered, { ocrProvider, cuadricula, signal, maxItemsPerPage });
+       r.sinCuadricula = !!(leido.cuadricula?.horizontales || leido.cuadricula?.verticales);
+       r.ocrStatus = ["complete", "unavailable", "failed"].includes(leido.ocrResult?.status) ? leido.ocrResult.status : "failed";
+       r.ocrEngine = leido.ocrResult?.engine || ocrProvider.id || null;
+@@ -14536,18 +14925,47 @@
+     }
+   }
+ 
+-  async _renderizarPagina(page, { signal = null, maxPixelsPerPage, maxWorkingBytes, rotation = undefined }) {
++  /**
++   * Fase E: dibuja la página para el OCR. En una página solo escaneada se miden antes la orientación, el tamaño y la
++   * inclinación del texto; si hay que girarla 90°/180° o ampliarla, se vuelve a dibujar así (una sola vez) y en esa
++   * segunda pasada se endereza. Devuelve { rendered, cuadricula, geometria (o null) }.
++   */
++  async _dibujarPaginaParaOCR(page, { soloOCR, preprocesarOCR, signal, maxPixelsPerPage, maxWorkingBytes, rotation }) {
++    let rendered = await this._renderizarPagina(page, { signal, maxPixelsPerPage, maxWorkingBytes, rotation });
++    if (!preprocesarOCR) return { rendered, cuadricula: null, geometria: null };
++    try {
++      let cuadricula = await preprocesarOCR(rendered.canvas, signal, { geometria: soloOCR });
++      if (!soloOCR) return { rendered, cuadricula, geometria: null };
++      if (!cuadricula.giro && !(cuadricula.escala > 1)) {
++        return { rendered, cuadricula, geometria: { giro: 0, dudoso: cuadricula.dudoso, alturaTexto: cuadricula.alturaTexto,
++          inclinacion: cuadricula.inclinacion, escala: 1, rotacion: null } };
++      }
++      const primera = cuadricula;
++      const rotacion = (((rotation ?? page.rotate ?? 0) + primera.giro) % 360 + 360) % 360;
++      rendered.canvas.width = 1;
++      rendered.canvas.height = 1;
++      rendered = await this._renderizarPagina(page, { signal, maxPixelsPerPage, maxWorkingBytes, rotation: rotacion, escala: this.escala * primera.escala });
++      cuadricula = await preprocesarOCR(rendered.canvas, signal, { geometria: true });
++      return { rendered, cuadricula, geometria: { giro: primera.giro, dudoso: primera.dudoso, alturaTexto: primera.alturaTexto,
++        inclinacion: cuadricula.inclinacion, escala: Math.round(rendered.scale / this.escala * 100) / 100, rotacion } };
++    } catch (error) {
++      if (rendered?.canvas) { rendered.canvas.width = 1; rendered.canvas.height = 1; }
++      throw error;
++    }
++  }
++
++  async _renderizarPagina(page, { signal = null, maxPixelsPerPage, maxWorkingBytes, rotation = undefined, escala = this.escala }) {
+     // El límite efectivo es el menor entre píxeles configurados y memoria.
+     const limitePixeles = Math.max(
+       1,
+       Math.min(maxPixelsPerPage, Math.floor(maxWorkingBytes / (4 * FACTOR_MEMORIA_OCR)))
+     );
+ 
+-    let viewport = page.getViewport({ scale: this.escala, rotation });
++    let viewport = page.getViewport({ scale: escala, rotation });
+     const initialPixels = Math.ceil(viewport.width) * Math.ceil(viewport.height);
+ 
+     if (initialPixels > limitePixeles) {
+-      viewport = page.getViewport({ scale: this.escala * Math.sqrt(limitePixeles / initialPixels) * 0.999, rotation });
++      viewport = page.getViewport({ scale: escala * Math.sqrt(limitePixeles / initialPixels) * 0.999, rotation });
+     }
+ 
+     const width = Math.max(1, Math.ceil(viewport.width));
+@@ -14574,7 +14992,7 @@
+     try {
+       await renderTask.promise;
+       if (signal?.aborted) throw aaErrorAbort(signal, "Renderizado cancelado.");
+-      return { canvas, scale: viewport.scale || this.escala };
++      return { canvas, scale: viewport.scale || escala };
+     } catch (error) {
+       canvas.width = 1;
+       canvas.height = 1;
+@@ -14641,6 +15059,8 @@
+       const capas = await pdf.getOptionalContentConfig?.({ intent: "display" }).catch(() => null) || null;
+       const paginasCapaOCR = [];
+       const paginasSinRevisarOcultos = [];
++      // Fase E: páginas escaneadas que el OCR leyó giradas, ampliadas o enderezadas.
++      const geometriaOCR = { giradas: [], ampliadas: [], enderezadas: [], dudosas: [] };
+       let ocrPages = 0;
+       let taggedPages = 0;
+       let directCharacters = 0;
+@@ -14708,6 +15128,7 @@
+           const ocrHibrido = mixta !== null && pdfMode === "automatico";
+ 
+           let modo = "digital";
++          let vistaOCR = null;
+           let ocrBlocks = [];
+           let ocrPalabras = [];
+           let separadores = [];
+@@ -14728,14 +15149,15 @@
+                 ocrProvider, preprocesarOCR, signal, maxPixelsPerPage, maxWorkingBytes, maxItemsPerPage, rotation: viewport.rotation });
+               ({ modo, extractionType, ocrStatus, ocrEngine, ocrUsed, ocrBlocks, ocrPalabras, separadores } = r);
+               if (r.sinCuadricula) paginasSinCuadricula.push(pageNumber);
++              if (r.geometria && modo === "ocr") vistaOCR = this._apuntarGeometriaOCR(geometriaOCR, r.geometria, pageNumber, page);
+               if (ocrStatus !== "complete") allComplete = false;
+             }
+           }
+ 
+           pages.push({
+             pageNumber,
+-            width: viewport.width,
+-            height: viewport.height,
++            width: (vistaOCR || viewport).width,
++            height: (vistaOCR || viewport).height,
+             complete: (!ocrRequired && !mixta) || ocrStatus === "complete",
+             extractionType,
+             directCharacters: chars,
+@@ -14776,6 +15198,7 @@
+         paginasGiradas,
+         paginasCapaOCR,
+         paginasSinRevisarOcultos,
++        geometriaOCR,
+         pages,
+         ocrPages,
+         taggedPages,
+@@ -17853,11 +18276,13 @@
+       return { status: "unavailable", engine: null, blocks: [] };
+     }
+     try {
+-      // Fase B (B4): sin la cuadrícula de las tablas, Tesseract lee el texto de las celdas.
++      // Fase B (B4): sin la cuadrícula de las tablas, Tesseract lee el texto de las celdas. Fase E: y con el texto
++      // derecho y de un tamaño legible (la imagen se gira y se amplía si hace falta).
+       this._setEstado(item, "procesando", 54, "Preparando la imagen para el OCR");
+       const sinCuadricula = await this._imagenSinCuadricula(item);
+       this._setEstado(item, "procesando", 58, "Ejecutando OCR local");
+-      const resultado = await proveedor.detectar(sinCuadricula?.imagen || fuente, { signal: item.controller.signal });
++      const resultado = this._ocrSinAmpliacion(await proveedor.detectar(sinCuadricula?.imagen || fuente, { signal: item.controller.signal }),
++        sinCuadricula);
+       const status = ["complete", "unavailable", "failed"].includes(resultado?.status) ? resultado.status : "failed";
+       const engine = String(resultado?.engine || proveedor.id || "ocr-local");
+       if (status !== "complete") {
+@@ -17882,30 +18307,40 @@
+     }
+   }
+ 
++  /** Fase E: las cajas del OCR de una imagen ampliada vuelven a píxeles de la imagen original. */
++  _ocrSinAmpliacion(resultado, preparada) {
++    const escala = preparada?.escala || 1;
++    if (escala === 1 || !resultado) return resultado;
++    const reducir = c => (c ? { ...c, x: c.x / escala, y: c.y / escala, width: c.width / escala, height: c.height / escala } : c);
++    return { ...resultado,
++      blocks: (resultado.blocks || []).map(b => ({ ...b, boundingBox: reducir(b?.boundingBox || null) })),
++      words: (resultado.words || []).map(w => ({ ...w, boundingBox: reducir(w?.boundingBox || null) })) };
++  }
++
+   /**
+    * Fase B (B4): quita la cuadrícula de una página PDF ya dibujada. Los píxeles se tratan en el worker núcleo y
+    * vuelven al lienzo. Si no se puede, el OCR sigue con la página tal cual.
+    * @returns {Promise<{ horizontales: number, verticales: number, separadores: Array<{x:number,y1:number,y2:number}> }>}
+    */
+-  async _lienzoSinCuadricula(canvas, item, signal) {
++  async _lienzoSinCuadricula(canvas, item, signal, { geometria = false } = {}) {
+     const ctx = canvas.getContext("2d");
+     const { width, height } = canvas;
+     const rgba = ctx.getImageData(0, 0, width, height).data.buffer;
++    const nada = { horizontales: 0, verticales: 0, separadores: [], giro: 0, escala: 1, alturaTexto: null, dudoso: false, inclinacion: 0 };
+     try {
+       const limites = this._limitesNucleo();
+-      const msg = await aaEjecutarWorkerNucleo({ tipo: "cuadricula", payload: { rgba, width, height }, transfer: [rgba], limites,
++      const msg = await aaEjecutarWorkerNucleo({ tipo: "cuadricula", payload: { rgba, width, height, geometria }, transfer: [rgba], limites,
+         signal, timeoutMs: this.config.maxDuracionArchivoMs + 1000 });
+-      if (msg.tipo === "error" || !msg.payload.rgba || msg.payload.rgba.byteLength !== width * height * 4) {
+-        return { horizontales: 0, verticales: 0, separadores: [] };
+-      }
+-      const { horizontales, verticales, separadores } = msg.payload;
+-      if (horizontales || verticales) ctx.putImageData(new ImageData(new Uint8ClampedArray(msg.payload.rgba), width, height), 0, 0);
+-      return { horizontales, verticales, separadores };
++      if (msg.tipo === "error" || !msg.payload.rgba || msg.payload.rgba.byteLength !== width * height * 4) return nada;
++      const { horizontales, verticales, separadores, giro, escala, alturaTexto, dudoso, inclinacion } = msg.payload;
++      // Fase E: la página vuelve sin cuadrícula y, si estaba torcida, enderezada.
++      if (horizontales || verticales || inclinacion) ctx.putImageData(new ImageData(new Uint8ClampedArray(msg.payload.rgba), width, height), 0, 0);
++      return { horizontales, verticales, separadores, giro, escala, alturaTexto, dudoso, inclinacion };
+     } catch (error) {
+       if (error?.name === "AbortError" || error?.name === "TimeoutError") throw error;
+       this._addIssue(item, "OCR_GRID_NOT_CHECKED", "info",
+         `No se pudo comprobar si la página tiene cuadrícula (${String(error?.message || error).slice(0, 200)}); el OCR usa la página tal cual.`);
+-      return { horizontales: 0, verticales: 0, separadores: [] };
++      return nada;
+     }
+   }
+ 
+@@ -17918,16 +18353,21 @@
+     try {
+       const imagen = await item.file.arrayBuffer();
+       const limites = this._limitesNucleo();
+-      const msg = await aaEjecutarWorkerNucleo({ tipo: "cuadricula", payload: { imagen, limites }, transfer: [imagen], limites,
++      const msg = await aaEjecutarWorkerNucleo({ tipo: "cuadricula", payload: { imagen, limites, geometria: true }, transfer: [imagen], limites,
+         signal: item.controller.signal, timeoutMs: this.config.maxDuracionArchivoMs + 1000 });
+       if (msg.tipo === "error") throw new Error(msg.payload.mensaje);
+-      const { png, horizontales, verticales, separadores } = msg.payload;
++      const { png, horizontales, verticales, separadores, giro, escala, alturaTexto, dudoso, inclinacion } = msg.payload;
+       if (!png) return null;
+-      this._addIssue(item, "OCR_GRID_REMOVED", "info",
+-        `Antes del OCR se borraron las líneas de la cuadrícula (${horizontales} tramo(s) horizontal(es) y ${verticales} vertical(es)) ` +
+-        "para que no se confundan con letras; las líneas verticales se usan para separar las columnas. El archivo original no se modifica.",
+-        null, { horizontales, verticales });
+-      return { imagen: new Blob([png], { type: "image/png" }), separadores };
++      if (horizontales || verticales) {
++        this._addIssue(item, "OCR_GRID_REMOVED", "info",
++          `Antes del OCR se borraron las líneas de la cuadrícula (${horizontales} tramo(s) horizontal(es) y ${verticales} vertical(es)) ` +
++          "para que no se confundan con letras; las líneas verticales se usan para separar las columnas. El archivo original no se modifica.",
++          null, { horizontales, verticales });
++      }
++      this._avisarGeometriaOCR(item, { giro, escala, alturaTexto, dudoso, inclinacion });
++      // Los separadores de columna, como las cajas del OCR, en píxeles de la imagen sin ampliar.
++      return { imagen: new Blob([png], { type: "image/png" }), escala,
++        separadores: separadores.map(sp => ({ x: sp.x / escala, y1: sp.y1 / escala, y2: sp.y2 / escala })) };
+     } catch (error) {
+       if (error?.name === "AbortError" || error?.name === "TimeoutError") throw error;
+       this._addIssue(item, "OCR_GRID_NOT_CHECKED", "info",
+@@ -17936,6 +18376,63 @@
+     }
+   }
+ 
++  /**
++   * Fase E: avisos de la orientación, la ampliación y el enderezado aplicados a una imagen antes del OCR.
++   * @param {{ giro: number, escala: number, alturaTexto: number|null, dudoso: boolean, inclinacion: number }} g
++   */
++  _avisarGeometriaOCR(item, { giro, escala, alturaTexto, dudoso, inclinacion = 0 }) {
++    const grados = v => String(Math.round(v * 100) / 100).replace(".", ",");
++    if (giro) {
++      this._addIssue(item, "OCR_ROTATED", dudoso ? "warning" : "info",
++        `El texto de la imagen estaba girado: se ha leído girándola ${giro}° en el sentido de las agujas del reloj` +
++        (dudoso ? " (las líneas iban en vertical, pero no estaba claro hacia qué lado: compruébalo con el documento)" : "") +
++        ". Las coordenadas (boundingBox) se refieren a la imagen girada; el archivo original no se modifica.", null, { giro, dudoso });
++    } else if (dudoso) {
++      this._addIssue(item, "OCR_ORIENTATION_UNCERTAIN", "info", "No está claro si el texto de la imagen está derecho o del revés; se ha leído tal cual.");
++    }
++    if (inclinacion) {
++      this._addIssue(item, "OCR_DESKEWED", "info",
++        `La imagen estaba torcida ${grados(inclinacion)}°: se ha enderezado para el OCR (las coordenadas se refieren a la imagen enderezada).`,
++        null, { grados: inclinacion });
++    }
++    if (escala > 1) {
++      this._addIssue(item, "OCR_UPSCALED", "info",
++        `El texto de la imagen es pequeño (unos ${Math.round(alturaTexto)} px por línea): para el OCR se ha ampliado ×${grados(escala)}. ` +
++        "Las coordenadas siguen en píxeles de la imagen original.", null, { escala, altura_texto_px: Math.round(alturaTexto * 10) / 10 });
++    }
++  }
++
++  /** Fase E: los mismos avisos para las páginas escaneadas de un PDF. */
++  _avisarGeometriaPaginasOCR(item, g) {
++    if (!g) return;
++    const lista = arr => arr.slice(0, 50).map(x => x.pagina).join(", ");
++    if (g.giradas.length) {
++      const dudosas = g.giradas.filter(x => x.dudoso);
++      this._addIssue(item, "OCR_ROTATED", dudosas.length ? "warning" : "info",
++        `El texto escaneado de la(s) página(s) ${lista(g.giradas)} estaba girado: se ha leído en su orientación ` +
++        `(${g.giradas.slice(0, 50).map(x => `${x.pagina}: ${x.giro}°`).join(", ")}, en el sentido de las agujas del reloj)` +
++        (dudosas.length ? `; en la(s) página(s) ${lista(dudosas)} no estaba claro hacia qué lado: compruébalo` : "") +
++        ". Las coordenadas de esas páginas se refieren a la página girada.", null, { pages: g.giradas.slice(0, 1000) });
++    }
++    if (g.dudosas.length) {
++      this._addIssue(item, "OCR_ORIENTATION_UNCERTAIN", "info",
++        `No está claro si el texto escaneado de la(s) página(s) ${g.dudosas.slice(0, 50).join(", ")} está derecho o del revés; se ha leído tal cual.`,
++        null, { pages: g.dudosas.slice(0, 1000) });
++    }
++    if (g.enderezadas.length) {
++      this._addIssue(item, "OCR_DESKEWED", "info",
++        `La(s) página(s) escaneada(s) ${lista(g.enderezadas)} estaban torcidas ` +
++        `(${g.enderezadas.slice(0, 50).map(x => `${x.pagina}: ${String(x.grados).replace(".", ",")}°`).join(", ")}): se han enderezado para el OCR.`,
++        null, { pages: g.enderezadas.slice(0, 1000) });
++    }
++    if (g.ampliadas.length) {
++      this._addIssue(item, "OCR_UPSCALED", "info",
++        `El texto escaneado de la(s) página(s) ${lista(g.ampliadas)} es pequeño: para el OCR se han dibujado a más resolución ` +
++        `(${g.ampliadas.slice(0, 50).map(x => `${x.pagina}: ×${String(x.escala).replace(".", ",")}`).join(", ")}). Las coordenadas no cambian (puntos de la página).`,
++        null, { pages: g.ampliadas.slice(0, 1000) });
++    }
++  }
++
+   /** Un único worker Tesseract por instancia, creado una sola vez. */
+   async _obtenerProveedorOCR() {
+     if (!aaOcrActivo(this.config)) return null;
+@@ -18014,7 +18511,7 @@
+       maxItemsPerPage: this.config.maxElementosTextoPaginaPDF,
+       maxItemsTotal: this.config.maxElementosTextoPDF,
+       // Fase B (B4): la cuadrícula de las tablas se quita en el worker núcleo antes del OCR.
+-      preprocesarOCR: (canvas, signal) => this._lienzoSinCuadricula(canvas, item, signal),
++      preprocesarOCR: (canvas, signal, opciones) => this._lienzoSinCuadricula(canvas, item, signal, opciones),
+       onProgress: info => {
+         const ratio = Number(info?.ratio);
+         if (!Number.isFinite(ratio)) return;
+@@ -18155,6 +18652,7 @@
+           "digital, se ha leído la imagen con OCR (bloques ocr-text).", { page: page.pageNumber }, page.mixta);
+       }
+     }
++    this._avisarGeometriaPaginasOCR(item, analysis.geometriaOCR);
+     if (analysis.paginasCapaOCR?.length) {
+       this._addIssue(item, "PDF_INVISIBLE_TEXT_OVER_IMAGE", "info",
+         `La(s) página(s) ${analysis.paginasCapaOCR.slice(0, 50).join(", ")} tienen texto invisible encima de una imagen: es la ` +

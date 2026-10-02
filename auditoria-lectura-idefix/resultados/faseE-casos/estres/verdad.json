@@ -1,0 +1,50 @@
+[
+ {
+  "id": "s1",
+  "archivo": "s1_12mpx_girada.jpg",
+  "cajetilla": "otros",
+  "verdad": "estres",
+  "checks": [],
+  "mime": "",
+  "nota": "Foto de 11,9 Mpx con la factura girada 90°",
+  "esperado": {
+   "termina": true
+  }
+ },
+ {
+  "id": "s2",
+  "archivo": "s2_ruido.png",
+  "cajetilla": "otros",
+  "verdad": "estres",
+  "checks": [],
+  "mime": "",
+  "nota": "Ruido (2000×1500): sin texto",
+  "esperado": {
+   "termina": true
+  }
+ },
+ {
+  "id": "s3",
+  "archivo": "s3_rayas.png",
+  "cajetilla": "otros",
+  "verdad": "estres",
+  "checks": [],
+  "mime": "",
+  "nota": "Rayas verticales en toda la imagen (2400×1600)",
+  "esperado": {
+   "termina": true
+  }
+ },
+ {
+  "id": "s4",
+  "archivo": "s4_diminuta.png",
+  "cajetilla": "otros",
+  "verdad": "estres",
+  "checks": [],
+  "mime": "",
+  "nota": "Imagen de 40×20 px toda negra",
+  "esperado": {
+   "termina": true
+  }
+ }
+]

@@ -24,7 +24,8 @@ Si su navegador tiene `file://` bloqueado por política de empresa, use el servi
 | [`idefix1.0-sin-servidor/`](idefix1.0-sin-servidor/) | **Idefix1.0 sin servidor**: doble clic en `Idefix1.0/index.html`, sin servidor, sin Node.js y sin sellar nada. Librerías oficiales en `vendor-paquetes/` (cargadas con `<script>` y comprobadas por SHA-256), código completo .txt, diff y [`CAMBIOS-SIN-SERVIDOR.txt`](idefix1.0-sin-servidor/CAMBIOS-SIN-SERVIDOR.txt) |
 | [`idefix1.0-fase-b/`](idefix1.0-fase-b/) | **Idefix1.0 sin servidor + fase B**: lo mismo, con mejor lectura (PDF escaneados con sello o CSV, rowspan en HTML, XLSX sin referencias, cuadrícula y tablas en el OCR). Código completo .txt, diff y [`CAMBIOS-FASE-B.txt`](idefix1.0-fase-b/CAMBIOS-FASE-B.txt) |
 | [`idefix1.0-fase-c/`](idefix1.0-fase-c/) | **Idefix1.0 sin servidor + fases B y C**: además, tablas de Word combinadas, totales en tabla, PDF a dos columnas y girados, fragmentos HTML y filas con onclick. Código completo .txt, diff y [`CAMBIOS-FASE-C.txt`](idefix1.0-fase-c/CAMBIOS-FASE-C.txt) |
-| [`idefix1.0-fase-d/`](idefix1.0-fase-d/) | **Idefix1.0 sin servidor + fases B, C y D (recomendada)**: además, marca el texto oculto en Word, PDF y HTML/CSS y detecta instrucciones a una IA en catalán, francés, euskera y las sutiles (es una ayuda, no una garantía). Código completo .txt, diff y [`CAMBIOS-FASE-D.txt`](idefix1.0-fase-d/CAMBIOS-FASE-D.txt) |
+| [`idefix1.0-fase-d/`](idefix1.0-fase-d/) | **Idefix1.0 sin servidor + fases B, C y D**: además, marca el texto oculto en Word, PDF y HTML/CSS y detecta instrucciones a una IA en catalán, francés, euskera y las sutiles (es una ayuda, no una garantía). Código completo .txt, diff y [`CAMBIOS-FASE-D.txt`](idefix1.0-fase-d/CAMBIOS-FASE-D.txt) |
+| [`idefix1.0-fase-e/`](idefix1.0-fase-e/) | **Idefix1.0 sin servidor + fases B, C, D y E (recomendada)**: además, lee fotos y escaneos girados (90°, 180°, 270°) o torcidos, amplía la letra pequeña antes del OCR y acepta las fotos de móvil con orientación EXIF. Código completo .txt, diff y [`CAMBIOS-FASE-E.txt`](idefix1.0-fase-e/CAMBIOS-FASE-E.txt) |
 
 ## Estructura
 
@@ -37,7 +38,8 @@ idefix1.0-fase-a/          Idefix1.0 con la fase A aplicada (archivos, código c
 idefix1.0-sin-servidor/    Idefix1.0 sin servidor: Idefix1.0/ se abre con doble clic (código completo .txt, diff y cambios)
 idefix1.0-fase-b/          Idefix1.0 sin servidor + fase B (código completo .txt, diff y cambios)
 idefix1.0-fase-c/          Idefix1.0 sin servidor + fases B y C (código completo .txt, diff y cambios)
-idefix1.0-fase-d/          Idefix1.0 sin servidor + fases B, C y D (recomendada; código completo .txt, diff y cambios)
+idefix1.0-fase-d/          Idefix1.0 sin servidor + fases B, C y D (código completo .txt, diff y cambios)
+idefix1.0-fase-e/          Idefix1.0 sin servidor + fases B, C, D y E (recomendada; código completo .txt, diff y cambios)
 ```
 
 Bibliotecas de terceros (incluidas como paquetes verificados por SHA-256): Tesseract.js 7.0.0 y

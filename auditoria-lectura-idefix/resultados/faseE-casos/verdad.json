@@ -1,0 +1,402 @@
+[
+ {
+  "id": "e1r90",
+  "archivo": "e1_factura_r90.png",
+  "cajetilla": "otros",
+  "verdad": "faseE",
+  "checks": [],
+  "mime": "",
+  "nota": "Factura girada 90° a la izquierda: hay que girarla 90° a la derecha",
+  "esperado": {
+   "importes": {
+    "base_imponible": 1354.6,
+    "cuota_iva": 284.47,
+    "total": 1639.07
+   },
+   "contiene": [
+    "Número de factura: A-2025/0157",
+    "NIF emisor: B12345674",
+    "Total factura: 1.639,07 €"
+   ],
+   "aviso": "OCR_ROTATED",
+   "giro": 90
+  }
+ },
+ {
+  "id": "e1r180",
+  "archivo": "e1_factura_r180.png",
+  "cajetilla": "otros",
+  "verdad": "faseE",
+  "checks": [],
+  "mime": "",
+  "nota": "Factura girada 180° a la izquierda: hay que girarla 180° a la derecha",
+  "esperado": {
+   "importes": {
+    "base_imponible": 1354.6,
+    "cuota_iva": 284.47,
+    "total": 1639.07
+   },
+   "contiene": [
+    "Número de factura: A-2025/0157",
+    "NIF emisor: B12345674",
+    "Total factura: 1.639,07 €"
+   ],
+   "aviso": "OCR_ROTATED",
+   "giro": 180
+  }
+ },
+ {
+  "id": "e1r270",
+  "archivo": "e1_factura_r270.png",
+  "cajetilla": "otros",
+  "verdad": "faseE",
+  "checks": [],
+  "mime": "",
+  "nota": "Factura girada 270° a la izquierda: hay que girarla 270° a la derecha",
+  "esperado": {
+   "importes": {
+    "base_imponible": 1354.6,
+    "cuota_iva": 284.47,
+    "total": 1639.07
+   },
+   "contiene": [
+    "Número de factura: A-2025/0157",
+    "NIF emisor: B12345674",
+    "Total factura: 1.639,07 €"
+   ],
+   "aviso": "OCR_ROTATED",
+   "giro": 270
+  }
+ },
+ {
+  "id": "e1r0",
+  "archivo": "e1_factura_derecha.png",
+  "cajetilla": "otros",
+  "verdad": "faseE",
+  "checks": [],
+  "mime": "",
+  "nota": "La misma factura derecha: no se gira ni se avisa",
+  "esperado": {
+   "importes": {
+    "base_imponible": 1354.6,
+    "cuota_iva": 284.47,
+    "total": 1639.07
+   },
+   "contiene": [
+    "Número de factura: A-2025/0157",
+    "NIF emisor: B12345674",
+    "Total factura: 1.639,07 €"
+   ],
+   "sin_aviso": [
+    "OCR_ROTATED",
+    "OCR_DESKEWED",
+    "OCR_UPSCALED"
+   ]
+  }
+ },
+ {
+  "id": "e1lib",
+  "archivo": "e1_libro_r90.png",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "faseE",
+  "checks": [],
+  "mime": "",
+  "nota": "Libro de facturas (tabla sin líneas) girado 90°",
+  "esperado": {
+   "aviso": "OCR_ROTATED",
+   "giro": 90,
+   "contiene": [
+    "2025/0101",
+    "B87654323",
+    "Ferretería Núñez, S.L."
+   ],
+   "tabla_filas": 12
+  }
+ },
+ {
+  "id": "e1i3",
+  "archivo": "e1_inclinada_3.png",
+  "cajetilla": "otros",
+  "verdad": "faseE",
+  "checks": [],
+  "mime": "",
+  "nota": "Factura torcida 3° (escaneo)",
+  "esperado": {
+   "importes": {
+    "base_imponible": 1354.6,
+    "cuota_iva": 284.47,
+    "total": 1639.07
+   },
+   "contiene": [
+    "Número de factura: A-2025/0157",
+    "NIF emisor: B12345674",
+    "Total factura: 1.639,07 €"
+   ],
+   "aviso": "OCR_DESKEWED",
+   "grados": -3
+  }
+ },
+ {
+  "id": "e1i-2",
+  "archivo": "e1_inclinada_menos2.png",
+  "cajetilla": "otros",
+  "verdad": "faseE",
+  "checks": [],
+  "mime": "",
+  "nota": "Factura torcida -2° (escaneo)",
+  "esperado": {
+   "importes": {
+    "base_imponible": 1354.6,
+    "cuota_iva": 284.47,
+    "total": 1639.07
+   },
+   "contiene": [
+    "Número de factura: A-2025/0157",
+    "NIF emisor: B12345674",
+    "Total factura: 1.639,07 €"
+   ],
+   "aviso": "OCR_DESKEWED",
+   "grados": 2
+  }
+ },
+ {
+  "id": "e1exif",
+  "archivo": "e1_exif6.jpg",
+  "cajetilla": "otros",
+  "verdad": "faseE",
+  "checks": [],
+  "mime": "",
+  "nota": "Foto con EXIF Orientation 6 (el visor la gira): ya se ve derecha, no hay que girarla (antes de la fase E se rechazaba como «dañada»: ancho y alto cambiados respecto a la cabecera)",
+  "esperado": {
+   "importes": {
+    "base_imponible": 1354.6,
+    "cuota_iva": 284.47,
+    "total": 1639.07
+   },
+   "contiene": [
+    "Número de factura: A-2025/0157",
+    "NIF emisor: B12345674",
+    "Total factura: 1.639,07 €"
+   ],
+   "sin_aviso": [
+    "OCR_ROTATED"
+   ]
+  }
+ },
+ {
+  "id": "e1sin",
+  "archivo": "e1_sin_texto.png",
+  "cajetilla": "otros",
+  "verdad": "faseE",
+  "checks": [],
+  "mime": "",
+  "nota": "Imagen sin texto (degradado y un círculo): ni se gira ni se amplía, y no falla",
+  "esperado": {
+   "sin_aviso": [
+    "OCR_ROTATED",
+    "OCR_DESKEWED",
+    "OCR_UPSCALED"
+   ],
+   "estado": [
+    "complete",
+    "partial"
+   ]
+  }
+ },
+ {
+  "id": "e1poco",
+  "archivo": "e1_poco_texto.png",
+  "cajetilla": "otros",
+  "verdad": "faseE",
+  "checks": [],
+  "mime": "",
+  "nota": "Una sola línea de texto en una imagen grande: no hay datos para girar",
+  "esperado": {
+   "contiene": [
+    "Total factura: 1.639,07 €"
+   ],
+   "sin_aviso": [
+    "OCR_ROTATED"
+   ]
+  }
+ },
+ {
+  "id": "e1sello",
+  "archivo": "e1_sello_vertical.png",
+  "cajetilla": "otros",
+  "verdad": "faseE",
+  "checks": [],
+  "mime": "",
+  "nota": "Factura derecha con un sello en vertical en el margen: no se gira",
+  "esperado": {
+   "importes": {
+    "base_imponible": 1354.6,
+    "cuota_iva": 284.47,
+    "total": 1639.07
+   },
+   "contiene": [
+    "Número de factura: A-2025/0157",
+    "NIF emisor: B12345674",
+    "Total factura: 1.639,07 €"
+   ],
+   "sin_aviso": [
+    "OCR_ROTATED"
+   ]
+  }
+ },
+ {
+  "id": "e1barras",
+  "archivo": "e1_codigo_barras.png",
+  "cajetilla": "otros",
+  "verdad": "faseE",
+  "checks": [],
+  "mime": "",
+  "nota": "Factura derecha con un código de barras grande debajo: no se gira",
+  "esperado": {
+   "importes": {
+    "base_imponible": 1354.6,
+    "cuota_iva": 284.47,
+    "total": 1639.07
+   },
+   "contiene": [
+    "Número de factura: A-2025/0157",
+    "NIF emisor: B12345674",
+    "Total factura: 1.639,07 €"
+   ],
+   "sin_aviso": [
+    "OCR_ROTATED"
+   ]
+  }
+ },
+ {
+  "id": "e2peq",
+  "archivo": "e2_pequena.png",
+  "cajetilla": "otros",
+  "verdad": "faseE",
+  "checks": [],
+  "mime": "",
+  "nota": "Captura reducida al 32 % (483×296 px, líneas de unos 7 px)",
+  "esperado": {
+   "importes": {
+    "base_imponible": 1354.6,
+    "cuota_iva": 284.47,
+    "total": 1639.07
+   },
+   "contiene": [
+    "Número de factura: A-2025/0157",
+    "NIF emisor: B12345674",
+    "Total factura: 1.639,07 €"
+   ],
+   "aviso": "OCR_UPSCALED"
+  }
+ },
+ {
+  "id": "e2peqr",
+  "archivo": "e2_pequena_r270.png",
+  "cajetilla": "otros",
+  "verdad": "faseE",
+  "checks": [],
+  "mime": "",
+  "nota": "La captura reducida y girada 90° a la derecha: se gira (270°) y se amplía",
+  "esperado": {
+   "importes": {
+    "base_imponible": 1354.6,
+    "cuota_iva": 284.47,
+    "total": 1639.07
+   },
+   "contiene": [
+    "Número de factura: A-2025/0157",
+    "NIF emisor: B12345674",
+    "Total factura: 1.639,07 €"
+   ],
+   "aviso": "OCR_UPSCALED",
+   "aviso2": "OCR_ROTATED",
+   "giro": 270
+  }
+ },
+ {
+  "id": "e2tope",
+  "archivo": "e2_grande_letra_pequena.png",
+  "cajetilla": "otros",
+  "verdad": "faseE",
+  "checks": [],
+  "mime": "",
+  "nota": "3600×2200 px con letra pequeña: la ampliación se limita a 12 Mpx (×1,23 como mucho: √(12 / 7,92))",
+  "esperado": {
+   "aviso": "OCR_UPSCALED",
+   "escala_maxima": 1.24,
+   "contiene": [
+    "NIF emisor: B12345674"
+   ]
+  }
+ },
+ {
+  "id": "e1pdf",
+  "archivo": "e1_pdf_r90.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseE",
+  "checks": [],
+  "mime": "",
+  "nota": "PDF escaneado con la factura girada 90° en una página vertical",
+  "esperado": {
+   "importes": {
+    "base_imponible": 1354.6,
+    "cuota_iva": 284.47,
+    "total": 1639.07
+   },
+   "contiene": [
+    "Número de factura: A-2025/0157",
+    "NIF emisor: B12345674",
+    "Total factura: 1.639,07 €"
+   ],
+   "aviso": "OCR_ROTATED",
+   "giro": 90
+  }
+ },
+ {
+  "id": "e1pdfi",
+  "archivo": "e1_pdf_inclinada.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseE",
+  "checks": [],
+  "mime": "",
+  "nota": "PDF escaneado torcido 2,5°",
+  "esperado": {
+   "importes": {
+    "base_imponible": 1354.6,
+    "cuota_iva": 284.47,
+    "total": 1639.07
+   },
+   "contiene": [
+    "Número de factura: A-2025/0157",
+    "NIF emisor: B12345674",
+    "Total factura: 1.639,07 €"
+   ],
+   "aviso": "OCR_DESKEWED",
+   "grados": -2.5
+  }
+ },
+ {
+  "id": "e1pdf180",
+  "archivo": "e1_pdf_r180.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseE",
+  "checks": [],
+  "mime": "",
+  "nota": "PDF escaneado del revés",
+  "esperado": {
+   "importes": {
+    "base_imponible": 1354.6,
+    "cuota_iva": 284.47,
+    "total": 1639.07
+   },
+   "contiene": [
+    "Número de factura: A-2025/0157",
+    "NIF emisor: B12345674",
+    "Total factura: 1.639,07 €"
+   ],
+   "aviso": "OCR_ROTATED",
+   "giro": 180
+  }
+ }
+]
