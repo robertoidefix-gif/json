@@ -1,0 +1,38 @@
+[
+ {
+  "id": "efx",
+  "archivo": "ef_xlsx_15000_combinadas.xlsx",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "estres",
+  "checks": [],
+  "mime": "",
+  "nota": "15.000 rangos combinados y F2:F1048576 en 30.000 filas"
+ },
+ {
+  "id": "efp",
+  "archivo": "ef_pdf_300_facturas.pdf",
+  "cajetilla": "otros",
+  "verdad": "estres",
+  "checks": [],
+  "mime": "",
+  "nota": "300 facturas, una por página"
+ },
+ {
+  "id": "efc",
+  "archivo": "ef_pdf_continuaciones.pdf",
+  "cajetilla": "otros",
+  "verdad": "estres",
+  "checks": [],
+  "mime": "",
+  "nota": "40 páginas de tabla con dos líneas de continuación por fila"
+ },
+ {
+  "id": "efd",
+  "archivo": "ef_docx_20000_numerados.docx",
+  "cajetilla": "otros",
+  "verdad": "estres",
+  "checks": [],
+  "mime": "",
+  "nota": "20.000 párrafos numerados en tres niveles"
+ }
+]

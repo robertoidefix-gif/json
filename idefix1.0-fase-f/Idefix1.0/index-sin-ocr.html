@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Versión SIN SERVIDOR: se abre con doble clic (file://) en Chrome o Edge. No hay nada que instalar ni configurar.
+     CSP: solo se ejecutan los scripts de esta carpeta y los blob: creados con bytes cuyo SHA-256 se ha comprobado
+     (worker núcleo, PDF.js y Tesseract); connect-src 'none': la página no puede hacer ninguna petición de red.
+     style-src 'self': los estilos van incrustados en el JS y se aplican con adoptedStyleSheets, sin 'unsafe-inline'. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' blob:; worker-src blob:; connect-src 'none'; style-src 'self'; img-src 'none'; font-src 'none'; media-src 'none'; manifest-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Idefix1.0 · Analizador (sin OCR)</title>
+</head>
+<body>
+<div id="analizadorArchivos"></div>
+<!-- Sin OCR: las imágenes y los PDF escaneados no se leen (para leerlos, usa index.html).
+     Solo PDF.js 6.2.108 (vendor-paquetes/, con su SHA-256 comprobado antes de usarlo; ver index.html). -->
+<script src="vendor-paquetes/pdfjs-6.2.108-legacy-pdf.mjs.paquete.js"></script>
+<script src="vendor-paquetes/pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js"></script>
+<script src="analizador-archivos.js" data-ocr="false"></script>
+</body>
+</html>

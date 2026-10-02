@@ -1,0 +1,92 @@
+f2a · 100 bytes (cabecera de correo) antes de %PDF-: se lee con aviso informativo
+  ✅ estado complete (esperado complete)
+  ✅ aviso PDF_HEADER_OFFSET: El PDF tiene 100 byte(s) antes de su cabecera «%PDF-» (suele deberse a cómo se descargó o se guardó). Se ha leído igualm
+  ✅ PDF_HEADER_OFFSET.details.bytesPrevios = 100 (leído: 100)
+  ✅ texto contiene 'Número de factura: A-2025/0901'
+f2b · 1.030 bytes antes de %PDF- (más de 1.024): no es un PDF admisible
+  ✅ estado failed (esperado failed)
+  ✅ aviso FORMAT_REJECTED: FORMATO NO ADMITIDO: el contenido real del archivo no corresponde a ningún formato admitido (la extensión y el tipo decl
+  ✅ sin el aviso PDF_HEADER_OFFSET
+  ✅ mensaje con «FORMATO NO ADMITIDO»
+f2c · bytes previos y después %PDF- seguido de basura: rechazo controlado, sin texto técnico en inglés
+  ✅ estado failed (esperado failed)
+  ✅ ningún mensaje contiene «Invalid PDF structure»
+  ✅ ningún mensaje contiene «No password given»
+f2d · página HTML que contiene «%PDF-» en sus primeros bytes: sigue siendo HTML
+  ✅ estado complete (esperado complete)
+  ✅ sin el aviso PDF_HEADER_OFFSET
+  ✅ formato detectado html (leído: html)
+  ✅ texto contiene 'La firma %PDF-1.4 aparece'
+f1a · PDF con contraseña SOLO de propietario (restricciones de impresión y copia): se abre sin contraseña
+  ✅ estado complete (esperado complete)
+  ✅ sin el aviso FORMAT_REJECTED
+  ✅ texto contiene 'Número de factura: A-2025/0902'
+f1b · PDF con contraseña de apertura: rechazo en español, el texto técnico va en los detalles
+  ✅ estado failed (esperado failed)
+  ✅ aviso FORMAT_REJECTED: PDF PROTEGIDO CON CONTRASEÑA.
+
+El PDF está cifrado y no se puede leer sin su contraseña de apertura; esta aplicación no 
+  ✅ mensaje con «PDF PROTEGIDO CON CONTRASEÑA»
+  ✅ ningún mensaje contiene «No password given»
+  ✅ FORMAT_REJECTED.details.motivoTecnico = 'PasswordException: No password given' (leído: 'PasswordException: No password given')
+f3a · cuadro de texto solo con mc:Fallback (VML): se lee una vez
+  ✅ estado complete (esperado complete)
+  ✅ 'Importe del cuadro VML: 300,00 €' aparece 1 vez/veces (leído: 1)
+f3b · dos mc:Choice y un mc:Fallback: solo cuenta el primer Choice
+  ✅ estado complete (esperado complete)
+  ✅ 'Opción A del cuadro' aparece 1 vez/veces (leído: 1)
+  ✅ 'Opción B del cuadro' aparece 0 vez/veces (leído: 0)
+  ✅ 'Opción C del cuadro' aparece 0 vez/veces (leído: 0)
+f3c · cuadro de texto (Choice y Fallback) en el encabezado: se lee una vez
+  ✅ estado complete (esperado complete)
+  ✅ 'Referencia de cabecera: EXP-77' aparece 1 vez/veces (leído: 1)
+f4 · numeración de varios niveles, continuación entre numId, reinicio, romanos, «Artículo %1.-», viñeta, decimalZero, numId 0 y lista en una celda
+  ✅ estado complete (esperado complete)
+  ✅ aviso DOCX_LIST_NUMBERING: Se ha añadido a 13 párrafo(s) la numeración automática de Word («1.», «a)», «I.»…), calculada con word/numbering.xml por
+  ✅ texto contiene 'III. Romano en celda'
+  ✅ párrafos con su número: todos correctos
+f5 · inserción, eliminación, movimiento (moveFrom/moveTo) y cambio de formato sin aceptar
+  ✅ estado partial (esperado partial)
+  ✅ aviso DOCX_TRACKED_CHANGES: El documento tiene revisiones del control de cambios sin aceptar (1 inserción(es), 1 eliminación(es), 1 movimiento(s), 1
+  ✅ DOCX_TRACKED_CHANGES.details.inserciones = 1 (leído: 1)
+  ✅ DOCX_TRACKED_CHANGES.details.eliminaciones = 1 (leído: 1)
+  ✅ DOCX_TRACKED_CHANGES.details.movimientos = 1 (leído: 1)
+  ✅ DOCX_TRACKED_CHANGES.details.cambiosFormato = 1 (leído: 1)
+  ✅ texto contiene 'Importe: 950,00 €'
+  ✅ 'Cláusula movida de sitio.' aparece 1 vez/veces (leído: 1)
+  ✅ 'ANTIGUO' aparece 0 vez/veces (leído: 0)
+f6a · Serie combinada en vertical (B2:B4, B5:B7), J2:J1048576, rango con origen vacío y combinada horizontal
+  ✅ estado complete (esperado complete)
+  ✅ aviso XLSX_MERGED_CELLS_EXPANDED: La hoja "Sheet" tiene 5 rango(s) de celdas combinadas. El valor de un rango combinado en vertical se repite en cada fila
+  ✅ XLSX_MERGED_CELLS_EXPANDED.details.ranges = 5 (leído: 5)
+  ✅ XLSX_MERGED_CELLS_EXPANDED.details.repeatedCells = 10 (leído: 10)
+  ✅ fila «2025/0003», columna «Serie» = 'A' (leído: 'A')
+  ✅ fila «2025/0006», columna «Serie» = 'B' (leído: 'B')
+  ✅ fila «2025/0004», columna «Nota» = 'revisada' (leído: 'revisada')
+  ✅ 10 celdas con combinada_desde (leídas: 10)
+  ✅ tiempo 1000 ms ≤ 15000 ms
+f6b · el mismo libro en .xls (registro MERGECELLS de BIFF8)
+  ✅ estado complete (esperado complete)
+  ✅ aviso XLSX_MERGED_CELLS_EXPANDED: La hoja "Libro" tiene 2 rango(s) de celdas combinadas. El valor de un rango combinado en vertical se repite en cada fila
+  ✅ fila «2025/0003», columna «Serie» = 'A' (leído: 'A')
+  ✅ fila «2025/0006», columna «Serie» = 'B' (leído: 'B')
+  ✅ 4 celdas con combinada_desde (leídas: 4)
+f7 · conceptos de 3 y 2 líneas (una continuación en mayúscula, entre filas) y una nota en mayúscula pegada debajo de la tabla, que no debe unirse
+  ✅ estado complete (esperado complete)
+  ✅ aviso PDF_TABLE_MULTILINE_CELLS: 4 línea(s) sin importes se han unido a la celda de la fila anterior (textos que ocupan dos o más líneas dentro de una mi
+  ✅ fila «400,00», columna «Concepto» = 'Mantenimiento anual de la instalación eléctrica del local comercial' (leído: 'Mantenimiento anual de la instalación eléctrica del local comercial')
+  ✅ fila «100,00», columna «Concepto» = 'Servicio de Limpieza Integral' (leído: 'Servicio de Limpieza Integral')
+  ✅ fila «120,00», columna «Concepto» = 'Retirada de escombros' (leído: 'Retirada de escombros')
+  ✅ ninguna celda contiene «Observaciones»
+f8a · una factura de dos páginas (número repetido en la 2.ª) y otra en la 3.ª: dos facturas
+  ✅ estado complete (esperado complete)
+  ✅ facturas_detectadas = [['A-2025/0950', 1, 2, 605.0], ['A-2025/0951', 3, 3, 60.5]] (leídas: [['A-2025/0950', 1, 2, 605], ['A-2025/0951', 3, 3, 60.5]])
+f8b · dos facturas en la misma página: no se parte (no se puede hacer con seguridad)
+  ✅ estado complete (esperado complete)
+  ✅ facturas_detectadas = [] (leídas: [])
+f8c · una sola factura: documento.numero_documento como siempre, sin facturas_detectadas
+  ✅ estado complete (esperado complete)
+  ✅ facturas_detectadas = [] (leídas: [])
+  ✅ documento.numero_documento = 'A-2025/0901' (leído: 'A-2025/0901')
+
+FALLOS: 0

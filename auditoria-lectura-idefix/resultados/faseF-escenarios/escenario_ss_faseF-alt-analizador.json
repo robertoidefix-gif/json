@@ -1,0 +1,20 @@
+{
+ "nombre": "faseF-alt-analizador",
+ "msArranque": 257,
+ "errorArranque": "El analizador no se ha iniciado\nEl worker núcleo incrustado no coincide con su SHA-256 (SHA256_WORKER_NUCLEO): el archivo se ha modificado.\nNo se ha procesado ningún archivo. Corrige la causa indicada y recarga la página.",
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "tesseract-7.0.0.min.js.paquete.js",
+  "tesseract-7.0.0-worker.min.js.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tessdata-spa.traineddata.gz.paquete.js",
+  "tessdata-cat.traineddata.gz.paquete.js",
+  "tessdata-eus.traineddata.gz.paquete.js",
+  "tessdata-eng.traineddata.gz.paquete.js",
+  "tessdata-fra.traineddata.gz.paquete.js"
+ ],
+ "externas": [],
+ "consola": []
+}

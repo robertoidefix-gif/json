@@ -1,0 +1,20 @@
+{
+ "nombre": "faseF-alt-pdf",
+ "msArranque": 275,
+ "errorArranque": "El analizador no se ha iniciado\nNo se pudo cargar PDF.js LOCAL 6.2.108: Integridad fallida en vendor/pdfjs-legacy/build/pdf.mjs: el contenido de vendor-paquetes/pdfjs-6.2.108-legacy-pdf.mjs.paquete.js no coincide con el SHA-256 del archivo oficial.\nNo se ha procesado ningún archivo. Corrige la causa indicada y recarga la página.",
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "tesseract-7.0.0.min.js.paquete.js",
+  "tesseract-7.0.0-worker.min.js.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tessdata-spa.traineddata.gz.paquete.js",
+  "tessdata-cat.traineddata.gz.paquete.js",
+  "tessdata-eus.traineddata.gz.paquete.js",
+  "tessdata-eng.traineddata.gz.paquete.js",
+  "tessdata-fra.traineddata.gz.paquete.js"
+ ],
+ "externas": [],
+ "consola": []
+}

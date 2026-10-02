@@ -257,8 +257,14 @@ def check(ch, res, texto, bloques_txt, r_bruto):
         sem_num = valor((res.get("documento") or {}).get("numero_documento"))
         tot = valor(((res.get("importes") or {}).get("inferidos") or {}).get("total"))
         ops = res.get("operaciones") or []
-        return False, (f"texto: {sum(presentes)}/3 números presentes; documento.numero_documento={sem_num!r}; "
-                       f"importes.inferidos.total={tot!r}; operaciones={len(ops)}")
+        # Fase F (F8): cada factura del PDF en documento.facturas_detectadas (número y total, en orden).
+        fd = (res.get("documento") or {}).get("facturas_detectadas") or []
+        nums = [valor(f.get("numero_documento")) for f in fd]
+        tots = [valor(f.get("total")) for f in fd]
+        ok = nums == ch["numeros"] and len(tots) == len(ch["totales"]) and all(
+            isinstance(a, (int, float)) and abs(a - b) < 0.005 for a, b in zip(tots, ch["totales"]))
+        return ok, (f"texto: {sum(presentes)}/3 números presentes; facturas_detectadas={len(fd)} {nums} totales {tots}; "
+                    f"documento.numero_documento={sem_num!r}; importes.inferidos.total={tot!r}; operaciones={len(ops)}")
     if t == "sin_tablas_falsas":
         n = len((res.get("content") or {}).get("tables", []))
         return n == 0, f"{n} tabla(s) detectada(s)"

@@ -1,0 +1,80 @@
+{
+ "nombre": "faseF-sin-ocr",
+ "msArranque": 268,
+ "errorArranque": null,
+ "panelInicial": {
+  "resumen": "OCR (imágenes y PDF escaneados): desactivado",
+  "aviso": null,
+  "marcados": []
+ },
+ "panelFinal": {
+  "resumen": "OCR (imágenes y PDF escaneados): desactivado",
+  "aviso": null,
+  "marcados": []
+ },
+ "documentos": [
+  {
+   "archivo": "png01_factura.png",
+   "estado": "partial",
+   "ocr": "not-requested",
+   "idiomas": null,
+   "total": null,
+   "texto": "",
+   "avisos": [
+    "IMAGE_OCR_DISABLED: El OCR está desactivado: no se ha leído el texto de la imagen y su contenido no está incluido."
+   ]
+  },
+  {
+   "archivo": "pdfE1_factura_escaneada.pdf",
+   "estado": "partial",
+   "ocr": "not-requested",
+   "idiomas": null,
+   "total": null,
+   "texto": "",
+   "avisos": [
+    "PDF_PAGE_WITHOUT_TEXT: La página 1 no tiene texto digital suficiente y el OCR está desactivado; su contenido puede no estar incluido."
+   ]
+  },
+  {
+   "archivo": "pdf01_factura_reportlab.pdf",
+   "estado": "complete",
+   "ocr": "not-requested",
+   "idiomas": null,
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "PDF_TABLES_GEOMETRIC_HEURISTIC: Se detectaron 1 tabla(s) mediante alineación geométrica de texto PDF.js."
+   ]
+  },
+  {
+   "archivo": "png04_libro_emitidas.png",
+   "estado": "partial",
+   "ocr": "not-requested",
+   "idiomas": null,
+   "total": null,
+   "texto": "",
+   "avisos": [
+    "IMAGE_OCR_DISABLED: El OCR está desactivado: no se ha leído el texto de la imagen y su contenido no está incluido."
+   ]
+  },
+  {
+   "archivo": "pdf09_mixto_sello_digital_mas_imagen.pdf",
+   "estado": "partial",
+   "ocr": "not-requested",
+   "idiomas": null,
+   "total": null,
+   "texto": "",
+   "avisos": [
+    "PDF_PAGE_IMAGE_WITHOUT_OCR: La página 1 tiene una imagen que ocupa el 38 % de la página y casi no tiene texto digital (p. ej., un escaneo con un sello o un CSV añadido). Con el OCR desactivado, el contenido de la imagen no está "
+   ]
+  }
+ ],
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-fuentes.paquete.js"
+ ],
+ "externas": [],
+ "consola": []
+}

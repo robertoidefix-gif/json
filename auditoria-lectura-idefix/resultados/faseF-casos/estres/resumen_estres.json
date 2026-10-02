@@ -1,0 +1,91 @@
+{
+ "nota": "Resumen de los documentos de estrés de la fase F (los JSON completos ocupan 38 MB y no se guardan).",
+ "casos": [
+  {
+   "id": "efx",
+   "ok": true,
+   "ms": 2561,
+   "estado": "partial",
+   "avisos": [
+    {
+     "code": "XLSX_ROWS_TRUNCATED",
+     "severity": "warning",
+     "message": "Se omitieron filas de la hoja \"Sheet\" por superar el límite configurado.",
+     "details": {
+      "omittedRows": 10001
+     }
+    },
+    {
+     "code": "XLSX_MERGED_CELLS_EXPANDED",
+     "severity": "info",
+     "message": "La hoja \"Sheet\" tiene 10000 rango(s) de celdas combinadas. El valor de un rango combinado en vertical se repite en cada fila con datos que abarca (26727 celda(s), que llevan source.combinada_desde con la fila de origen; al sumar, cuenta cada importe una sola vez); las demás columnas de un rango comb",
+     "details": {
+      "ranges": 10000,
+      "repeatedCells": 26727
+     }
+    },
+    {
+     "code": "XLSX_MERGED_CELLS_NOT_EXPANDED",
+     "severity": "info",
+     "message": "La hoja \"Sheet\" tiene rangos combinados que no se han expandido (referencia no válida, más de 10.000 rangos o rangos demasiado grandes): en ellos se conserva únicamente la celda que almacena el valor."
+    }
+   ],
+   "facturas_detectadas": 0,
+   "tablas": 1,
+   "bloques": 2
+  },
+  {
+   "id": "efp",
+   "ok": true,
+   "ms": 1081,
+   "estado": "complete",
+   "avisos": [],
+   "facturas_detectadas": 300,
+   "tablas": 0,
+   "bloques": 900
+  },
+  {
+   "id": "efc",
+   "ok": true,
+   "ms": 597,
+   "estado": "complete",
+   "avisos": [
+    {
+     "code": "PDF_TABLES_GEOMETRIC_HEURISTIC",
+     "severity": "info",
+     "message": "Se detectaron 40 tabla(s) mediante alineación geométrica de texto PDF.js."
+    },
+    {
+     "code": "PDF_TABLE_MULTILINE_CELLS",
+     "severity": "info",
+     "message": "1360 línea(s) sin importes se han unido a la celda de la fila anterior (textos que ocupan dos o más líneas dentro de una misma celda). Es una inferencia por posición: compruébala con el documento.",
+     "details": {
+      "lineas": 1360
+     }
+    }
+   ],
+   "facturas_detectadas": 0,
+   "tablas": 40,
+   "bloques": 2120
+  },
+  {
+   "id": "efd",
+   "ok": true,
+   "ms": 532,
+   "estado": "complete",
+   "avisos": [
+    {
+     "code": "DOCX_LIST_NUMBERING",
+     "severity": "info",
+     "message": "Se ha añadido a 20000 párrafo(s) la numeración automática de Word («1.», «a)», «I.»…), calculada con word/numbering.xml porque no está escrita en el texto.",
+     "details": {
+      "parrafos": 20000
+     }
+    }
+   ],
+   "facturas_detectadas": 0,
+   "tablas": 0,
+   "bloques": 20000
+  }
+ ]
+}

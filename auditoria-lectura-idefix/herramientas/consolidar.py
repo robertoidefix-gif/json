@@ -92,7 +92,10 @@ def veredicto(e, d):
             f"{o['parrafos_contiguos']}/{o['parrafos']} párrafos legibles seguidos; las líneas de las dos columnas se intercalan"
             f" · {checks[0]['detalle'] if checks else ''}")
     if d["id"] == "pdf07":
-        return "⚠️", "se lee todo el texto, pero solo la 1.ª factura se estructura: " + checks[0]["detalle"]
+        # Fase F (F8): la comprobación mira documento.facturas_detectadas (antes, veredicto fijo ⚠️).
+        if checks[0]["ok"]:
+            return "✅", "las 3 facturas se estructuran por separado: " + checks[0]["detalle"]
+        return "⚠️", "se lee todo el texto, pero no se separan las 3 facturas: " + checks[0]["detalle"]
     if d["id"] == "html13":
         # Fase D: detección calculada con el resultado (antes, fija). Cada variante es un párrafo «INYxx: …».
         r = json.load(open(os.path.join(OUT, "resultados", PRINCIPAL, "html13.json"), encoding="utf-8"))["resultado"]

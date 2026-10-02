@@ -1,0 +1,80 @@
+html01   complete      94ms | campos 7/7 recall 1.000 CER 0.000 | tabla 1.00
+html02   complete      76ms | reg 12/12 campos 1.000 tot 3/3 texto 1.000
+htm03    complete      48ms | campos 7/7 recall 1.000 CER 0.000 | sin_mojibake=True
+htm04    complete      52ms | campos 7/7 recall 1.000 CER 0.000 | sin_mojibake=True
+html05   complete      63ms | campos 7/7 recall 1.000 CER 1.362
+html06   complete      53ms | reg 12/12 campos 1.000 tot 3/3 texto 1.000
+html07   complete      65ms | reg 12/12 campos 1.000 tot 3/3 texto 1.000
+html08   complete      84ms | reg 12/12 campos 1.000 tot 3/3 texto 1.000
+html09   complete      57ms | reg 12/12 campos 1.000 tot 3/3 texto 1.000
+html11   complete      45ms | contiene=True
+docx01   complete     143ms | campos 7/7 recall 1.000 CER 0.000 | tabla 1.00
+docx02   complete     127ms | campos 7/7 recall 0.963 CER 0.005 | tabla 1.00
+docx03   complete     125ms | reg 12/12 campos 1.000 tot 3/3 texto 1.000
+docx04   complete     110ms | contiene=True | contiene=True | contiene=True | contiene=True | contiene=True | numeracion_lista=True (3/3 con su número) | titulos=True (2 títulos)
+docx05   partial      127ms | contiene=True | no_contiene=True | aviso_esperado=True
+docx06   complete     121ms | contiene=True | oculto_marcado=True
+docx07   complete     120ms | contiene=True | apariciones=True (1 apariciones)
+docx08   complete     121ms | celda_bajo_cabecera=True (bajo «Total» hay «1.633,50») | celda_bajo_cabecera=True (bajo «Cuota» hay «283,50») | celda_bajo_cabecera=True (bajo «Base» hay «100,00»)
+docx09   complete     113ms | contiene_en_algun_sitio=True | contiene_en_algun_sitio=True | contiene_en_algun_sitio=True | contiene_en_algun_sitio=True
+docx11   complete     131ms | campos 7/7 recall 1.000 CER 0.256 | contiene=True | contiene=True
+docx12   failed        39ms | rechazo_controlado=True (estado=failed; ZIP inválido: no se encontró el directorio central.)
+xlsx01   complete      86ms | reg 12/12 campos 1.000 tot 3/3 texto 0.655 | valores_formula={'registros_marcados_formula': 12}
+xlsx02   complete      61ms | reg 12/12 campos 1.000 tot 3/3 texto 0.655 | fila_total_excluida=True
+xlsx03   complete      62ms | reg 12/12 campos 1.000 tot 3/3 texto 1.000
+xlsx09   complete      80ms | reg 12/12 campos 1.000 tot 3/3 texto 0.655
+xlsx07   complete      67ms | reg 12/12 campos 1.000 tot 3/3 texto 0.655
+xlsx06   complete      72ms | reg 12/12 campos 1.000 tot 3/3 texto 0.655 | hoja_oculta_marcada=True | inyeccion_detectada=True
+xlsx04   partial       67ms | reg 12/12 campos 1.000 tot 3/3 texto 0.655 | valores_formula={'registros_marcados_formula': 12}
+xlsx05   complete      77ms | reg 12/12 campos 1.000 tot 3/3 texto 0.655
+xlsx08   complete      57ms | reg 12/12 campos 1.000 tot 3/3 texto 0.655
+xlsx10   partial     2587ms | truncado_avisado=True (XLSX_ROWS_TRUNCATED, OUTPUT_TRUNCATED)
+xlsx11   failed        36ms | rechazo_controlado=True (estado=failed; ZIP inválido: no se encontró el directorio central.)
+xls01    complete      61ms | reg 12/12 campos 1.000 tot 3/3 texto 0.655 | valores_formula={'registros_marcados_formula': 12}
+xls02    complete      57ms | reg 12/12 campos 1.000 tot 3/3 texto 0.655 | fila_total_excluida=True
+xls05    complete      58ms | reg 12/12 campos 1.000 tot 3/3 texto 1.000
+xls03    complete     195ms | cadenas_exactas=True (3000/3000 cadenas idénticas)
+xls04    complete      56ms | reg 12/12 campos 1.000 tot 3/3 texto 0.655
+xls06    failed        36ms | rechazo_controlado=True (estado=failed; El archivo de Office antiguo está dañado o su estructura interna es incoherente (cadena de sectores no válida). Ábrelo en Microsoft Excel y guárdalo como Libro de Excel (*.xlsx).)
+docx10   complete      91ms | campos 7/7 recall 1.000 CER 0.000 | tabla 1.00
+pdf03    complete     249ms | campos 7/7 recall 1.000 CER 0.109 | tabla 1.00
+htm10    complete      64ms | reg 12/12 campos 1.000 tot 3/3 texto 0.741
+html12   complete      53ms | campos 7/7 recall 1.000 CER 0.000 | tabla 1.00
+pdf01    complete     278ms | campos 7/7 recall 1.000 CER 0.000 | tabla 1.00
+pdf05    complete     238ms | contiguos 6/6 orden True | sin_tablas_falsas=True (0 tabla(s) detectada(s))
+pdf07    complete     247ms | varias_facturas=True (texto: 3/3 números presentes; facturas_detectadas=3 ['A-2025/0301', 'A-2025/0302', 'A-2025/0303'] totales [121, 302.5, 1210]; documento.numero_documento=None; importes.inferidos.total=None; operaciones=0)
+pdf08    partial      291ms | contiene_en_algun_sitio=True | contiene_en_algun_sitio=True | contiene_en_algun_sitio=True | contiene_en_algun_sitio=True
+pdf10    complete     260ms | campos 7/7 recall 1.000 CER 0.339 | inyeccion_detectada=True | inyeccion_detectada=True | oculto_marcado=True
+pdf11a   failed       198ms | rechazo_controlado=True (estado=failed; PDF PROTEGIDO CON CONTRASEÑA.
+
+El PDF está cifrado y no se puede leer sin su contraseña de apertura; esta aplicación no solicita ni usa contraseñas.
+
+Ábrelo en tu lector de PDF con la contraseña, guarda una copia sin pro)
+pdf11b   complete     250ms | campos 7/7 recall 1.000 CER 0.000
+pdf12    failed       166ms | rechazo_controlado=True (estado=failed; PDF DAÑADO O INCOMPLETO.
+
+El archivo empieza como un PDF, pero su estructura interna está rota o incompleta y no se puede leer. Suele deberse a una descarga interrumpida o a un adjunto cortado.
+
+Vuelve a descargarlo o pi)
+pdf13    complete     252ms | campos 3/7 recall 0.296 CER 0.737
+pdf14    complete     303ms | campos 7/7 recall 1.000 CER 0.000
+pdf02    complete     277ms | campos 7/7 recall 1.000 CER 0.000 | tabla 1.00
+pdf04    complete     262ms | reg 12/12 campos 1.000 tot 3/3 texto 1.000
+pdf06    complete     360ms | reg 60/60 campos 1.000 tot 3/3
+png01    complete    1438ms | campos 7/7 recall 0.988 CER 0.014 D7 1.00 | tabla 1.00
+jpg02    complete    1318ms | campos 7/7 recall 0.975 CER 0.016 D7 1.00 | tabla 0.94
+jpeg03   complete    4455ms | campos 7/7 recall 0.864 CER 0.204 D7 0.83 | tabla 0.25
+png04    complete    2841ms | reg 12/12 campos 0.972 tot 3/3 texto 0.978
+png05    complete    1396ms | campos 7/7 recall 0.963 CER 0.025 D7 1.00
+png06    failed        30ms | rechazo_controlado=True (estado=failed; La imagen tiene 13.020.000 píxeles y supera el límite de 12.000.000.)
+png07    complete    1227ms | campos 7/7 recall 0.988 CER 0.014 D7 1.00
+jpg08    complete    1474ms | campos 7/7 recall 0.988 CER 0.014 D7 1.00
+pdfE1    complete    1503ms | campos 7/7 recall 0.975 CER 0.018 D7 1.00 | tabla 1.00
+pdfE2    complete    2612ms | campos 7/7 recall 0.938 CER 0.134 D7 1.00 | tabla 0.44
+pdfE3    complete    4331ms | reg 12/12 campos 0.972 tot 3/3 texto 0.978
+pdf09    complete    1766ms | campos 7/7 recall 0.975 CER 0.188 D7 1.00
+html13   complete      59ms
+pdf15    complete     845ms
+pdfE4    complete    6241ms
+docx13   complete     116ms | inyeccion_detectada=True
+png09    complete    2919ms | reg 12/12 campos 0.963 tot 3/3 texto 0.971

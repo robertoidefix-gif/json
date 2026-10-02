@@ -1,0 +1,46 @@
+herramientas/fase-f/ — cómo se comprobó la fase F
+==================================================
+Idefix se ejecuta tal cual en el navegador. Python y Node.js (Playwright) solo GENERAN y MIDEN aquí; las pruebas
+que puede repetir cualquiera, sin Node.js, son Idefix1.0/pruebas-corpus.html (ver más abajo).
+
+  generar_casos_faseF.py      17 casos de borde con su verdad:
+                              - PDF: 100 bytes antes de %PDF- (se lee, PDF_HEADER_OFFSET con bytesPrevios 100), 1.030
+                                bytes (más de 1.024: rechazo), %PDF- seguido de basura (rechazo en español), una página
+                                HTML que contiene «%PDF-» (sigue siendo HTML), contraseña solo de propietario (se lee) y
+                                contraseña de apertura (rechazo en español, texto técnico en details.motivoTecnico).
+                              - Word: cuadro de texto solo con Fallback, con dos Choice y un Fallback, y en el
+                                encabezado; numeración de tres niveles, continuación entre numId, reinicio con
+                                startOverride, romanos, «Artículo %1.-», viñeta, decimalZero, numId 0 y lista en una
+                                celda; inserción, eliminación, movimiento y cambio de formato sin aceptar.
+                              - Excel: celdas combinadas en vertical (.xlsx y .xls), J2:J1048576, rango con la primera
+                                celda vacía y combinada en horizontal.
+                              - PDF: conceptos de tres y dos líneas en una tabla y una nota pegada debajo que no debe
+                                unirse; una factura de dos páginas más otra; dos facturas en la misma página (no se
+                                parte); una sola factura.
+  verificar_casos_faseF.py    comprueba esos casos con los resultados.
+  generar_estres_faseF.py     15.000 rangos combinados en 30.000 filas, 300 facturas en un PDF, 1.360 líneas de
+                              continuación y 20.000 párrafos numerados: deben terminar en pocos segundos.
+  comparar_salidas.py         compara campo a campo dos ejecuciones del mismo corpus (quita solo fechas, tiempos y
+                              UUID). Prueba que dividir construir y el resto de F9 no cambia ninguna salida.
+  prueba_prompt.js            genera con la API pública el prompt fiscal (IVA, IRPF, IS e IRNR; compacto y completo;
+                              con y sin «Contexto del análisis») y compara dos ejecuciones: prueba que dividir
+                              aaConstruirPromptFiscal no cambia ni un carácter.
+  generar_verdad_pruebas.py   escribe corpus/verdad-pruebas.json (verdad del corpus, datos de referencia y veredicto
+                              esperado de cada caso) para la página de pruebas.
+  verificar_pagina_pruebas.js abre Idefix1.0/pruebas-corpus.html en Chromium, elige la carpeta del corpus y pulsa el
+                              botón como una persona; comprueba que la página da los mismos veredictos que
+                              evaluar.py + consolidar.py y que no hace ninguna petición de red.
+  verificacion_final_faseF.sh todo lo anterior más el corpus, los casos de las fases B a E, los documentos hostiles,
+                              el OCR desactivado, ESLint sobre el archivo entregado, los escenarios por la interfaz
+                              (paquete y worker alterados, cola, sin SIMD, sin OCR), la demo, los tiempos y la memoria,
+                              sobre una copia exacta de idefix1.0-fase-f/Idefix1.0 (rutas de este entorno: ajústalas).
+  ../evaluar.py               la comprobación varias_facturas mira documento.facturas_detectadas (antes siempre fallaba).
+  ../consolidar.py            pdf07 se puntúa con esa comprobación (antes, ⚠️ fijo).
+  ../eslint.config.mjs        añade CSS (CSS.escape, global del navegador) a los globales: los 3 no-undef de CSS eran
+                              falsos positivos de la configuración, en la fase E y en la F.
+Resultados: resultados/faseF/ (corpus), resultados/faseF-casos/, resultados/faseF-escenarios/ y resultados/capturas/faseF_*.png.
+
+PÁGINA DE PRUEBAS SIN NODE (Idefix1.0/pruebas-corpus.html)
+  Doble clic, elegir la carpeta auditoria-lectura-idefix/corpus y pulsar «Ejecutar las pruebas». Usa la misma API
+  pública que index.html y evalúa cada documento con las reglas de evaluar.py y consolidar.py portadas a JavaScript.
+  Marca cada caso como igual, MEJOR o PEOR que el veredicto esperado de la entrega y da la nota de cada formato.

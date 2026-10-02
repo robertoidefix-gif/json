@@ -1,0 +1,13 @@
+Modelos de idioma del OCR (variante 4.0.0_best_int): spa, cat, eus, eng, fra, chi_sim y chi_tra
+
+Origen de cada archivo empaquetado: paquete npm @tesseract.js-data/<idioma>@1.0.0
+(https://registry.npmjs.org/@tesseract.js-data/<idioma>/-/<idioma>-1.0.0.tgz), ruta interna
+package/4.0.0_best_int/<idioma>.traineddata.gz. Son los mismos modelos que Tesseract.js 7.0.0 descarga
+por defecto desde jsDelivr cuando no se indica langPath (Idefix nunca los descarga: van en vendor-paquetes).
+
+Los modelos proceden de los datos «tessdata_best» del proyecto Tesseract OCR
+(https://github.com/tesseract-ocr/tessdata_best), publicados con licencia Apache 2.0 (texto completo
+en tesseract.js-core-LICENSE.txt de esta carpeta). Los paquetes npm declaran licencia MIT en su
+package.json.
+
+SHA-256 de cada archivo original: ver ../LEEME.txt (apartado «Lista completa»).

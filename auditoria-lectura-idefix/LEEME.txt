@@ -45,6 +45,12 @@ Fase E: ../idefix1.0-fase-e/ (apartado 17 del informe). Pruebas en resultados/fa
   grandes o engañosas en estres/), resultados/faseE-escenarios/ y resultados/capturas/faseE_*.png. Herramientas en
   herramientas/fase-e/.
 
+Fase F: ../idefix1.0-fase-f/ (apartado 18 del informe). Pruebas en resultados/faseF/ (corpus completo),
+  resultados/faseF-casos/ (PDF con bytes previos y contraseñas, Word con cuadros, numeración y revisiones, Excel
+  combinado, celdas de varias líneas y varias facturas; documentos de estrés en estres/), resultados/faseF-escenarios/
+  y resultados/capturas/faseF_*.png. Herramientas en herramientas/fase-f/.
+  corpus/verdad-pruebas.json: la verdad del corpus para las pruebas sin Node (Idefix1.0/pruebas-corpus.html).
+
 Cómo repetirlo: apartado 11 del informe.
   Nota: herramientas/prueba-auditoria.html lleva el SRI del sellado usado en la auditoría; si sella su
   propia copia, cambie el atributo integrity por el que imprime sellar-idefix.py.

@@ -1,0 +1,80 @@
+Idefix1.0 · versión SIN SERVIDOR con las FASES B, C, D, E y F
+=============================================================
+
+CÓMO SE ABRE
+  Doble clic en index.html. Se abre en Chrome o Edge y funciona tal cual: sin servidor, sin Node.js,
+  sin instalar nada y sin configurar ni sellar nada. Funciona sin conexión a Internet.
+
+  Si Windows lo abre con otro navegador: clic derecho en index.html → Abrir con → Google Chrome o
+  Microsoft Edge.
+
+QUÉ HAY EN LA CARPETA (cópiala completa; no separes los archivos)
+  index.html             la aplicación, con OCR (imágenes y PDF escaneados) en español, catalán,
+                         euskera, inglés y francés; el chino se activa en el panel «Idiomas del OCR».
+  index-sin-ocr.html     la aplicación sin OCR (arranca antes; no lee imágenes ni PDF escaneados).
+  demo-ocr.html          demostración: reconocer el texto de una imagen PNG o JPEG.
+  analizador-archivos.js la aplicación (archivo único: código, interfaz, estilos y marco fiscal).
+  demo-ocr.js / .css     lógica y estilos de la demostración.
+  pruebas-corpus.html    pruebas automáticas con el corpus de auditoría, sin Node.js (ver más abajo).
+  pruebas-corpus.js/.css lógica y estilos de las pruebas.
+  vendor-paquetes/       PDF.js 6.2.108, Tesseract.js 7.0.0, su núcleo y los modelos de idioma:
+                         archivos oficiales sin modificar, en base64 (ver vendor-paquetes/LEEME.txt).
+
+FASE F (calidad; detalle y pruebas en ../CAMBIOS-FASE-F.txt)
+  - PDF con contraseña de apertura o dañado: mensaje en español (antes, «No password given» o «Invalid PDF
+    structure»); el texto técnico queda en los detalles del aviso.
+  - PDF con bytes delante de «%PDF-» (algunas descargas): se leen, con un aviso informativo.
+  - Word: el texto de los cuadros de texto ya no sale dos veces; la numeración automática («1.», «a)»,
+    «Artículo 1.-») se añade al texto; las revisiones sin aceptar se avisan (DOCX_TRACKED_CHANGES).
+  - Excel (.xlsx y .xls): el valor de las celdas combinadas en vertical se repite en cada fila que abarcan.
+  - PDF: los conceptos de dos o más líneas de una tabla se unen en su celda, y un PDF con varias facturas
+    (una tras otra) se separa en documento.facturas_detectadas.
+  - Código más mantenible (funciones grandes divididas, sin variables muertas) y pruebas automáticas.
+
+PRUEBAS AUTOMÁTICAS (sin Node.js ni servidor)
+  Doble clic en pruebas-corpus.html, elige la carpeta auditoria-lectura-idefix/corpus (contiene
+  verdad-pruebas.json) y pulsa «Ejecutar las pruebas». Cada documento se analiza con este Idefix y se
+  compara con su verdad con las mismas reglas que el informe de auditoría; la página indica qué casos
+  quedan igual, mejor o peor que en la entrega y la nota de cada formato. Unos 45 s con OCR.
+
+FASE E (OCR de fotos y escaneos; detalle y pruebas en idefix1.0-fase-e/CAMBIOS-FASE-E.txt)
+  - Fotos y escaneos girados 90°, 180° o 270°: se leen en su orientación (antes salía texto sin sentido).
+  - Escaneos torcidos (hasta 5°): se enderezan antes del OCR.
+  - Capturas o escaneos con letra muy pequeña: se amplían para el OCR.
+  - Fotos de móvil con orientación EXIF: ya no se rechazan como «dañadas».
+  - Todo se mide en los píxeles, sin enviar nada fuera y sin modificar el archivo original.
+
+FASE D (seguridad del contenido; detalle y pruebas en idefix1.0-fase-d/CAMBIOS-FASE-D.txt)
+  - Texto oculto marcado también en Word (propiedad «Oculto», blanco sin fondo, letra de 1 punto) y en PDF
+    (texto invisible, transparente, blanco sin nada debajo, diminuto o en una capa desactivada), y en HTML
+    también el oculto con las reglas de <style> (clases, ids), en blanco, de 1 px o fuera de la pantalla.
+    El texto se conserva: solo se marca, porque un texto que no se ve puede contener órdenes para una IA.
+  - Instrucciones dirigidas a una IA también en catalán, francés y euskera, y las sutiles («Nota para el
+    asistente…», «A partir de ahora actúas como…», «No menciones el…»).
+  - Es una AYUDA, no una garantía: que no se detecte nada no asegura que el documento esté limpio.
+
+FASE C (estructura de tablas y texto; detalle y pruebas en idefix1.0-fase-c/CAMBIOS-FASE-C.txt)
+  - Word: tablas con celdas combinadas (gridSpan, vMerge): cada importe queda bajo su columna.
+  - Base, IVA y total también cuando van en una tabla de dos columnas («Base imponible | 1.354,60 €»).
+  - PDF a dos columnas (informes, resoluciones): se leen columna a columna, en orden.
+  - PDF con páginas giradas: se leen en la orientación de su texto.
+  - Páginas HTML guardadas por bancos y programas de gestión: fragmentos sin <html> y filas con onclick.
+
+FASE B (mejoras de lectura; detalle y pruebas en idefix1.0-fase-b/CAMBIOS-FASE-B.txt)
+  - PDF escaneados con algo de texto digital (sello, CSV de la sede electrónica): ahora se leen también con OCR.
+  - Tablas HTML con celdas combinadas en vertical (rowspan): cada dato queda en su columna.
+  - Excel (.xlsx) generado sin referencias de celda: se lee entero.
+  - Imágenes y PDF escaneados: se quita la cuadrícula de las tablas antes del OCR y las tablas se reconstruyen
+    (libros de facturas escaneados: de 0 a 12 de 12 registros en las pruebas).
+  - Nada se pierde en silencio: si el OCR está desactivado, una imagen o una página escaneada lo avisan.
+
+SEGURIDAD
+  - Nada sale de este ordenador: la página no puede hacer peticiones de red (CSP connect-src 'none').
+  - Antes de usar cada librería se comprueban su tamaño y su SHA-256 (fijados en analizador-archivos.js).
+    Si alguien cambia un paquete, la aplicación no lo usa y dice cuál es.
+  - Todo el análisis se hace en Web Workers aislados, sin acceso a la red.
+  - Con doble clic no se puede usar el atributo integrity (Chrome y Edge no cargarían el script): la raíz
+    de confianza es analizador-archivos.js. Guarda la carpeta donde solo tú puedas modificarla.
+
+NAVEGADORES
+  Comprobado en Chromium 141 (el motor de Chrome y Edge). Firefox y Safari no se han probado.

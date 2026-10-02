@@ -3,7 +3,15 @@ IDEFIX1.0 — INSTALACIÓN Y USO 100 % LOCAL EN GOOGLE CHROME Y MICROSOFT EDGE
 (AnalizadorArchivos 6.14.0 · OCR con Tesseract.js 7.0.0 · 2 de octubre de 2026)
 =====================================================================================================
 
->>> VERSIÓN SIN SERVIDOR + FASES B, C, D Y E (2 de octubre de 2026) — RECOMENDADA: carpeta idefix1.0-fase-e/
+>>> VERSIÓN SIN SERVIDOR + FASES B, C, D, E Y F (2 de octubre de 2026) — RECOMENDADA: carpeta idefix1.0-fase-f/
+    Doble clic en idefix1.0-fase-f/Idefix1.0/index.html (Chrome o Edge). Igual que la de la fase E y, además:
+    mensajes en español para los PDF con contraseña o dañados, PDF con bytes antes de «%PDF-», cuadros de texto,
+    numeración y revisiones sin aceptar de Word, celdas combinadas de Excel, conceptos de varias líneas en las
+    tablas PDF y varias facturas en un mismo PDF. Pruebas automáticas sin Node.js: doble clic en
+    idefix1.0-fase-f/Idefix1.0/pruebas-corpus.html y elegir la carpeta auditoria-lectura-idefix/corpus.
+    Cambios y pruebas en idefix1.0-fase-f/CAMBIOS-FASE-F.txt.
+
+>>> VERSIÓN SIN SERVIDOR + FASES B, C, D Y E (2 de octubre de 2026): carpeta idefix1.0-fase-e/
     Doble clic en idefix1.0-fase-e/Idefix1.0/index.html (Chrome o Edge). Igual que la de la fase D y, además,
     lee fotos y escaneos girados o torcidos, amplía la letra pequeña antes del OCR y acepta las fotos de móvil
     con orientación EXIF (antes se rechazaban). Cambios y pruebas en idefix1.0-fase-e/CAMBIOS-FASE-E.txt.

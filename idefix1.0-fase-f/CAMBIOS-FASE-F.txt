@@ -1,0 +1,219 @@
+=====================================================================================================
+IDEFIX1.0 · FASE F (sobre la versión sin servidor + fases B, C, D y E) — CAMBIOS Y PRUEBAS
+(AnalizadorArchivos 6.14.0 · 2 de octubre de 2026)
+=====================================================================================================
+
+Lo que pediste: «Realiza la siguiente fase». La siguiente fase del informe de auditoría (apartado 9) es la F:
+  «Fase F · Calidad (16–24): mensajes en español, pequeñas correcciones, división de funciones y pruebas
+   automáticas con este mismo corpus».
+  F1 (punto 16) PDF con contraseña y PDF dañado: mensaje en español.
+  F2 (17) PDF con bytes antes de «%PDF-».
+  F3 (18) Word: texto de los cuadros de texto duplicado.
+  F4 (19) Word: numeración de listas.
+  F5 (20) Word: aviso de revisiones sin aceptar.
+  F6 (21) Excel: valor de las celdas combinadas.
+  F7 (22) PDF: celdas de dos líneas partidas en filas.
+  F8 (23) PDF con varias facturas.
+  F9 (24) ESLint: variables muertas, invisibles como \uXXXX, dividir construir y aaConstruirPromptFiscal, y
+          pruebas automáticas.
+Todas están hechas. Se usa igual: doble clic en Idefix1.0/index.html (Chrome o Edge). Las pruebas automáticas,
+también con doble clic y sin Node.js: Idefix1.0/pruebas-corpus.html.
+El código completo está en Idefix1.0-fase-f-codigo-completo.txt (y en Idefix1.0-fase-f.zip).
+
+Leyenda: ✅ comprobado aquí · ⚠️ no demostrable aquí (se dice por qué).
+
+-----------------------------------------------------------------------------------------------------
+1. RESULTADO MEDIDO (corpus de 72 documentos, mismas reglas de veredicto que la auditoría)
+-----------------------------------------------------------------------------------------------------
+  Nota por formato             fase E  →  fase F
+  PDF digital                    7,3   →   9,3     (✅ 9 ⚠️ 4 ❌ 2 → ✅ 14 ⚠️ 0 ❌ 1)
+  PDF (global)                   7,5   →   9,0
+  DOCX                           8,8   →  10,0     (los 3 ⚠️ pasan a ✅)
+  XLSX                           9,5   →  10,0
+  Sin cambios: PDF escaneado 8,0 · XLS 10 · HTML 10 · HTM 10 · PNG 8,3 · JPG 7,5 · JPEG 5,0 · imágenes 7,8.
+
+  Casos que cambian (fase E → fase F):
+  pdf11a PDF con contraseña             «No password given» (⚠️)            → «PDF PROTEGIDO CON CONTRASEÑA…» (✅)
+  pdf12  PDF truncado                   «Invalid PDF structure.» (⚠️)       → «PDF DAÑADO O INCOMPLETO…» (✅)
+  pdf14  CRLF antes de %PDF-            rechazado, 0/7 datos (❌)            → 7/7 datos, texto 100 % (✅), aviso info
+  docx07 cuadro de texto                el importe salía 2 veces (⚠️)        → 1 vez (✅)
+  docx04 listas numeradas               0/3 elementos con su número (⚠️)     → 3/3 («1. Libro registro…») (✅)
+  docx05 control de cambios             sin aviso (⚠️)                      → DOCX_TRACKED_CHANGES (✅; estado «partial»)
+  xlsx07 Serie combinada B2:B13         campos 89,8 % (⚠️)                  → 100 % (✅)
+  pdf03  conceptos de dos líneas        tabla de líneas 81 % (⚠️)           → 100 % (✅)
+  pdf07  tres facturas en un PDF        solo la 1.ª estructurada (⚠️)       → las 3 en documento.facturas_detectadas (✅)
+  Además cambia docx09 (tabla anidada), a mejor: en la celda que contiene la tabla anidada, los párrafos salían
+  pegados («Base anidada7.777,77Cuota anidada1.633,33») y ahora van en líneas separadas (efecto de F3: un párrafo
+  dentro de otro empieza en línea nueva). Sigue ✅.
+  Los otros 61 documentos: contenido IDÉNTICO al de la fase E (comparado campo a campo con comparar_salidas.py;
+  xlsx10 no está en los resultados guardados de la fase E y no se compara). 0 peticiones externas.
+  Tiempo total del corpus: 44,0 s → 44,0 s (44.048 ms → 44.039 ms).
+  Queda ❌ pdf13: es el documento mal construido que ya corrige el informe (anexo de la fase C, «Corrección de este
+  informe»); no es de esta fase.
+
+-----------------------------------------------------------------------------------------------------
+2. CÓMO FUNCIONA CADA CAMBIO
+-----------------------------------------------------------------------------------------------------
+  F1 PDF con contraseña o dañado. PDF.js avisa en inglés («No password given», «Incorrect Password», «Invalid PDF
+     structure»). La llamada a PDF.js se envuelve: esas excepciones (por su nombre, PasswordException e
+     InvalidPDFException, o por su texto) se cambian por un rechazo FORMAT_REJECTED con un mensaje en español que
+     dice qué hacer; el texto original de PDF.js se guarda, recortado y sin caracteres de control, en
+     details.motivoTecnico del aviso. Cualquier otro error sigue igual. Un PDF con contraseña SOLO de propietario
+     (restricciones de impresión o copia) se abre sin contraseña y se lee (probado).
+  F2 Bytes antes de «%PDF-». Solo si el contenido no es ningún otro formato admitido (imagen, xls, HTML, ZIP),
+     el worker núcleo busca «%PDF-» en los primeros 1.024 bytes, el mismo margen que acepta PDF.js. Si está, se
+     trata como PDF con el aviso informativo PDF_HEADER_OFFSET (details.bytesPrevios); si no, se rechaza como
+     antes. Una página HTML que contiene el texto «%PDF-» sigue siendo HTML (probado).
+  F3 Cuadros de texto de Word. Word guarda cada cuadro dos veces: en mc:Choice (formato moderno) y en mc:Fallback
+     (VML, para versiones antiguas). Ahora de mc:AlternateContent solo se lee la primera mc:Choice, o mc:Fallback
+     si no hay Choice, en el cuerpo, en las tablas y en encabezados, pies y notas. Un párrafo dentro de otro (el
+     del cuadro) empieza en una línea nueva. Lo eliminado o movido con el control de cambios (w:del,
+     w:moveFrom) no se lee.
+  F4 Numeración de Word. El número («1.», «1.2.», «a)», «IV.», «Artículo 3.-») no está en el texto: Word lo
+     calcula. Ahora se lee word/numbering.xml (definiciones w:abstractNum con el formato y el texto de cada nivel,
+     y w:num, que apunta a una definición y puede reiniciar niveles con w:startOverride) y el w:numPr del párrafo o
+     de su estilo (con herencia basedOn), y el número se añade delante del texto del párrafo, también en celdas.
+     Los contadores van por definición: dos listas que comparten definición continúan la numeración salvo que su
+     w:num la reinicie. Formatos: decimal, decimalZero, romanos, letras, viñeta («•») y none; los demás se
+     escriben en decimal. Aviso informativo DOCX_LIST_NUMBERING con el número de párrafos.
+  F5 Revisiones sin aceptar. Se cuentan w:ins, w:del, w:moveFrom y los cambios de formato (w:rPrChange,
+     w:pPrChange…) en el cuerpo y en las partes secundarias. Si hay alguna, aviso DOCX_TRACKED_CHANGES (nivel
+     warning, por eso el estado pasa a «partial») con el recuento en details, y el texto se lee como si se
+     aceptaran todas: con lo insertado y sin lo eliminado ni lo movido de origen.
+  F6 Celdas combinadas de Excel. Se leen los rangos (mergeCell en .xlsx; registro MERGECELLS en .xls). El valor de
+     la primera celda se repite hacia abajo en la primera columna del rango, solo en las filas que ya tienen datos,
+     y la copia lleva source.combinada_desde (la fila de origen) y nunca la fórmula; las demás columnas quedan
+     vacías, como ya se hacía con Word y HTML. Límites: 10.000 rangos por hoja y 2.000.000 de pasos (un rango
+     A1:XFD1048576 no bloquea). Aviso XLSX_MERGED_CELLS_EXPANDED (antes, XLSX_MERGED_CELLS_NOT_EXPANDED, que ahora
+     solo sale si algún rango no se ha podido expandir).
+  F7 Celdas de varias líneas en tablas PDF. Una línea de una sola celda (antes se descartaba) se une a la celda de
+     la fila anterior que empieza en su misma x si: está pegada (hueco menor que el alto de la fila), no tiene
+     importes, no invade la columna siguiente, esa celda no es un número y, además, detrás viene otra fila de la
+     tabla o la línea empieza en minúscula o con «(». Una nota en mayúscula justo debajo de la tabla no se une
+     (probado). Aviso informativo PDF_TABLE_MULTILINE_CELLS con el número de líneas unidas.
+  F8 Varias facturas en un PDF. Si el rótulo «Número de factura» aparece con números distintos en páginas
+     distintas y en orden, el PDF se parte por esas páginas y cada parte se infiere por separado: va a
+     documento.facturas_detectadas (páginas, número, fecha, base, cuota, total, NIF y conciliación del total), y
+     documento.numero_documento e importes.inferidos quedan vacíos con una limitación que lo explica. No se parte
+     si dos números distintos comparten página o alguna parte no tiene base ni total (se queda como un documento).
+  F9 Calidad del código. construir (527 líneas, complejidad 232) se divide en una función por sección
+     (contextoSemantico, semMoneda, semPeriodo, semTitular, semOperaciones…, semCompletitud) y
+     aaConstruirPromptFiscal (577 líneas, complejidad 190) en una por sección del prompt (aaPromptContexto,
+     aaPromptParametros, aaPromptSeccion8, aaPromptSeccion5…). Se quitan las 8 variables muertas, se escriben como
+     \uXXXX los invisibles que estaban literales (5 líneas) y se sacan de la clase de caracteres los dos
+     combinantes que ESLint señalaba (U+034F y U+1160), sin cambiar qué se detecta (comprobado en los 1.114.112
+     puntos de código). Pruebas automáticas sin Node: Idefix1.0/pruebas-corpus.html.
+
+-----------------------------------------------------------------------------------------------------
+3. CAMBIOS POR ARCHIVO (líneas de Idefix1.0/analizador-archivos.js de esta carpeta, 19.942 líneas,
+   SHA-256 4dd5d502a130f8a4c97bf3c74468a7b252bf67c82ed4f8ef6e57eda8dc2673a3). Diff completo: fase-f.diff
+   Cambian analizador-archivos.js y el LEEME de la carpeta, y se añaden pruebas-corpus.html, .js y .css;
+   index.html, index-sin-ocr.html, la demo y vendor-paquetes/, iguales (comprobado con diff).
+-----------------------------------------------------------------------------------------------------
+  5–20        Cabecera: resumen de la fase F.
+  Worker núcleo (su SHA-256, SHA256_WORKER_NUCLEO en la línea 9345, se ha recalculado: 7130bde9…438a):
+  896, 4523, 4528, 4601, 5161  Invisibles escritos como \uFEFF, \u200B… (antes, literales).
+  965         Límite del árbol de word/numbering.xml (200.000 elementos).
+  1689–1738   F3/F5: docxHijosVisibles (1689), docxParrafos (1714) y docxContarRevisiones (1726).
+  1819–1872   docxEstilos guarda el w:numPr de los estilos con su herencia; docxContextoOcultos lee la numeración.
+  1881–1989   F4: docxNumeracion (1881), docxFormatoNumero (1925), docxNivelLista (1942) y docxNumero (1966).
+  2022–2080   docxTramosOcultos (2022, separada de docxTexto), docxTexto (2044: rama visible y salto de línea entre
+              párrafos anidados) y docxTextoCelda (2072: número de lista en celdas).
+  2137–2153   avisosRevisionesYListas (DOCX_TRACKED_CHANGES y DOCX_LIST_NUMBERING).
+  2450–2485   F6: anotarCombinada (2450) y expandirCombinadas (2463); cerrarHoja (2529–2596) los aplica y avisa.
+  2699        Rangos mergeCell del .xlsx; 3305: registro MERGECELLS del .xls.
+  3562–3595   F7: PDF_CON_IMPORTE y pdfUnirContinuaciones; 3725: aviso PDF_TABLE_MULTILINE_CELLS.
+  6324        RE_ESPECIAL sin combinantes dentro de la clase (mismo resultado).
+  6852–6904   F8: facturasPorPaginas (6852) y registrarVariasFacturas (6879).
+  6911–7588   F9: construir dividida (contextoSemantico 6911 … semCompletitud 7553; construir 7583–7588).
+  7598–7620   F2: posicionCabeceraPDF (7598) y pdfConCabeceraDesplazada (7611); se llama en la 7684.
+  Página (hilo principal):
+  375         Se quita FACTOR_MEMORIA_IMAGEN (no se usaba).
+  9424–9433   F1: mensajes pdfCifrado y pdfDanado.
+  9498–9511   F1: aaTraducirErrorPDF.
+  11026       AA_RE_ESPECIAL sin combinantes dentro de la clase (mismo resultado).
+  11392       Esquema: documento.facturas_detectadas.
+  13091       Copia sin content ni textos (antes, desestructuración con variables sin usar).
+  13274–13968 F9: aaConstruirPromptFiscal dividida (aaPromptContexto 13274 … aaConstruirPromptFiscal 13942).
+  18112       El rechazo guarda details (motivoTecnico) en el aviso.
+  19182       La llamada a PDF.js traduce sus errores (aaTraducirErrorPDF).
+  Archivos nuevos: pruebas-corpus.html (misma CSP que index.html), pruebas-corpus.js y pruebas-corpus.css.
+  ESLint (configuración de la auditoría), medido sobre ESTE archivo tal como se entrega:
+    fase E 36 errores y 70 avisos → fase F 12 errores y 63 avisos; 0 mensajes nuevos.
+    Los 12 errores que quedan: 9 no-control-regex (expresiones que buscan a propósito caracteres de control) y
+    3 no-undef de CSS (CSS.escape es un global del navegador que faltaba en la lista de la configuración; también
+    los tenía la fase E). Con CSS añadido a la configuración (herramientas/eslint.config.mjs): 33/70 → 9/63.
+    pruebas-corpus.js: 0 errores y 0 avisos. Sin eval, new Function, CDN ni scripts externos.
+
+-----------------------------------------------------------------------------------------------------
+4. PRUEBAS (Chromium 141.0.7390.37 · página abierta como file:// · sobre una copia exacta de Idefix1.0/)
+   Resultados: auditoria-lectura-idefix/resultados/faseF/, faseF-casos/, faseF-escenarios/
+-----------------------------------------------------------------------------------------------------
+  ✅ Corpus completo (72 documentos): ver apartado 1.
+  ✅ Dividir funciones no cambia nada (F9):
+     - Las salidas de los 72 documentos del corpus y de los 39 casos de las fases B a E, comparadas campo a campo
+       antes y después de F9: 111 de 111 idénticas (solo se quitan fechas, tiempos y UUID).
+     - El prompt fiscal, con la API pública, para IVA, IRPF, IS e IRNR, en modo compacto y completo y con y sin
+       «Contexto del análisis» (16 prompts, 14,9 millones de caracteres): idéntico carácter a carácter (solo se
+       quitan fecha, identificador aleatorio del bloque y marcas de tiempo). Dos ejecuciones del mismo código
+       dan también 16 de 16 idénticos, así que la prueba distingue de verdad.
+  ✅ Casos de la fase F (herramientas/fase-f/), 17 casos, 0 fallos:
+     - 100 bytes antes de %PDF-: se lee (bytesPrevios 100). 1.030 bytes: rechazo. %PDF- seguido de basura:
+       «PDF DAÑADO O INCOMPLETO» sin texto en inglés. HTML con «%PDF-»: sigue siendo HTML.
+     - Contraseña solo de propietario: se lee. Contraseña de apertura: «PDF PROTEGIDO CON CONTRASEÑA»,
+       details.motivoTecnico = «PasswordException: No password given».
+     - Cuadro de texto solo con Fallback, con dos Choice y un Fallback (solo el primer Choice) y en el encabezado:
+       el texto una vez.
+     - Numeración: 14 párrafos exactos («1. Primero», «1.1. Sub», «a) letra», «b) letra dos», «1.2. Sub dos»,
+       «2. Segundo», «3. Tercero con otro numId», «1. Reinicio», «I. Romano uno», «II. Romano dos»,
+       «Artículo 1.- Objeto del contrato», «• Viñeta», «01. Con cero», «Sin número») y «III. Romano en celda».
+     - Revisiones: inserción 1, eliminación 1, movimiento 1 y formato 1; lo movido aparece una vez y lo eliminado
+       ninguna.
+     - Excel combinado (.xlsx y .xls): Serie repetida en sus filas, J2:J1048576 en las filas con datos (1 s),
+       rango con la primera celda vacía sin repetir nada y combinada en horizontal sin repetir.
+     - PDF: concepto de 3 líneas y de 2 (una en mayúscula entre filas) unidos; la nota «Observaciones…» de debajo,
+       no. Factura de dos páginas + otra: 2 facturas (páginas 1–2 y 3, totales 605 y 60,50). Dos facturas en la
+       misma página: no se parte. Una factura: como siempre.
+  ✅ Documentos de estrés de la fase F: 15.000 rangos combinados en 30.000 filas (2,6 s, se expanden 10.000 y se
+     avisa del resto), 300 facturas en un PDF (1,1 s, las 300 separadas), 1.360 líneas de continuación (0,6 s) y
+     20.000 párrafos numerados (0,5 s).
+  ✅ Página de pruebas sin Node (pruebas-corpus.html), abierta como file:// y usada como una persona (elegir la
+     carpeta y pulsar el botón): 72 de 72 casos con el mismo veredicto que evaluar.py + consolidar.py, misma nota
+     por formato, 0 peticiones de red y 0 errores de consola (unos 45 s con OCR). Con el OCR desactivado marca
+     como «PEOR» exactamente los 13 documentos que necesitan OCR: detecta regresiones.
+  ✅ Casos de las fases B, C, D y E, OCR desactivado, documentos hostiles de la fase D e imágenes grandes o engañosas
+     de la fase E: 0 fallos, y los 39 casos de B a E dan exactamente lo mismo que antes de F9. La imagen de ruido
+     puro sigue parándose a los 120 s con PROCESSING_TIMEOUT, igual que en la fase E.
+  ✅ Escenarios de seguridad por la interfaz (index.html, file://): paquete de PDF.js alterado y worker núcleo
+     alterado → no arranca y dice por qué; ataque a la cola, navegador sin SIMD, sin OCR y demo: como en la fase E.
+     13 documentos por la interfaz (OCR, girados, enderezados, ampliados, mixto, JPX, CMap chino, pdf11a y pdf14):
+     0 peticiones externas y consola limpia.
+  ✅ Por la interfaz, la tarjeta de pdf11a dice «Rechazado» y «PDF PROTEGIDO CON CONTRASEÑA…» y la de pdf12
+     «PDF DAÑADO O INCOMPLETO…»; «No password given» e «Invalid PDF structure» no aparecen en ningún sitio de la
+     página (captura resultados/capturas/faseF_ui-pdf.png). El aviso informativo de pdf14 (PDF_HEADER_OFFSET) está
+     en el JSON (diagnostics.issues); la tarjeta no muestra los avisos informativos (tampoco los que ya existían,
+     como el de tablas por alineación geométrica).
+  ✅ Arranque hasta la interfaz con OCR: 1,45 s de mediana (fase E: 1,45 s); memoria JS tras la recolección: 60 MB
+     (igual). Detalle en resultados/faseF-escenarios/verificacion_final_faseF.log.
+
+-----------------------------------------------------------------------------------------------------
+5. LÍMITES (dicho claramente)
+-----------------------------------------------------------------------------------------------------
+  - F4: la numeración se calcula como Word en los casos habituales; no se aplican w:lvlOverride con un w:lvl
+    completo dentro, ni w:lvlRestart, ni los formatos de numeración poco comunes (ordinales en texto, japoneses…),
+    que se escriben en decimal. Las listas de encabezados, pies y notas no se numeran.
+  - F5: el texto se lee como si se aceptaran todas las revisiones. Si quien revisa iba a rechazarlas, el texto
+    definitivo sería otro: por eso el aviso es de nivel warning y el documento queda «partial».
+  - F6: el valor se repite hacia abajo en la primera columna del rango; un rango que abarca varias columnas no
+    copia el valor a las demás (como en Word y HTML). Más de 10.000 rangos por hoja: el resto no se expande y se
+    avisa.
+  - F7: es una inferencia por posición. Una línea de continuación al final de la tabla que empiece en mayúscula no
+    se une (para no unir una nota que va justo debajo). El aviso lo dice para que se compruebe.
+  - F8: se parte solo por el rótulo «Número de factura» (y sus variantes) en páginas distintas. Dos facturas en la
+    misma página o facturas sin ese rótulo siguen llegando como un documento (como antes).
+  - pruebas-corpus.html compara con el veredicto de esta entrega: si otro equipo da resultados de OCR algo
+    distintos (otro procesador, otro núcleo de Tesseract), algún caso de imagen podría salir distinto sin que haya
+    un error en el código; la página lo marca y el detalle permite revisarlo.
+  ⚠️ Solo probado en Chromium 141 en Linux (mismo motor que Chrome y Edge); no en Windows. Los documentos de las
+     pruebas son generados (reportlab, python-docx, openpyxl, xlwt): no se ha probado con documentos reales de
+     Word o Excel con estas características.

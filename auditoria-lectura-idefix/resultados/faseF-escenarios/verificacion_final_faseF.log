@@ -1,0 +1,658 @@
+### sello del worker núcleo
+anclado: 7130bde92879e115b8bec0306a88d472280724629997475c8cdb4545f033438a 
+calculado: 7130bde92879e115b8bec0306a88d472280724629997475c8cdb4545f033438a
+### ESLint sobre el archivo entregado (misma configuración para E y F)
+faseE_entregada.js errores 33 avisos 70 {'no-unused-vars': 8, 'no-control-regex': 9, 'no-irregular-whitespace': 8, 'no-misleading-character-class': 8}
+faseF_entregada.js errores 9 avisos 63 {'no-control-regex': 9}
+pruebas_entregada.js errores 0 avisos 0 {}
+mensajes nuevos en F respecto de E: 0 · desaparecidos: 31
+### corpus
+inicio(ms) 1293 peticiones 154 externas 0 consola 1
+pdf-digital    casos 15  ✅14 ⚠️ 0 ❌ 1  nota 9.3  típicos 10.0  límite 8.8  ms mediana 262 máx 845
+pdf-escaneado  casos  5  ✅ 3 ⚠️ 2 ❌ 0  nota 8.0  típicos 7.5  límite 10.0  ms mediana 2612 máx 6241
+pdf (global)   casos 20  ✅17 ⚠️ 2 ❌ 1  nota 9.0  típicos 9.1  límite 8.9  ms mediana 284.5 máx 6241
+docx           casos 13  ✅13 ⚠️ 0 ❌ 0  nota 10.0  típicos 10.0  límite 10.0  ms mediana 121.0 máx 143
+xlsx           casos 11  ✅11 ⚠️ 0 ❌ 0  nota 10.0  típicos 10.0  límite 10.0  ms mediana 69.5 máx 2587
+xls            casos  6  ✅ 6 ⚠️ 0 ❌ 0  nota 10.0  típicos 10.0  límite 10.0  ms mediana 58 máx 195
+html           casos 10  ✅10 ⚠️ 0 ❌ 0  nota 10.0  típicos 10.0  límite 10.0  ms mediana 61.0 máx 94
+htm            casos  3  ✅ 3 ⚠️ 0 ❌ 0  nota 10.0  típicos 10.0  límite None  ms mediana 52 máx 64
+html+htm (mismo lector) casos 13  ✅13 ⚠️ 0 ❌ 0  nota 10.0  típicos 10.0  límite 10.0  ms mediana 59 máx 94
+png            casos  6  ✅ 4 ⚠️ 2 ❌ 0  nota 8.3  típicos 6.7  límite 10.0  ms mediana 1438 máx 2919
+jpg            casos  2  ✅ 1 ⚠️ 1 ❌ 0  nota 7.5  típicos 5.0  límite 10.0  ms mediana 1396.0 máx 1474
+jpeg           casos  1  ✅ 0 ⚠️ 1 ❌ 0  nota 5.0  típicos 5.0  límite None  ms mediana 4455 máx 4455
+imagenes png+jpg+jpeg (mismo OCR) casos  9  ✅ 5 ⚠️ 4 ❌ 0  nota 7.8  típicos 6.0  límite 10.0  ms mediana 1456.0 máx 4455
+### equivalencia de las salidas del corpus con la referencia previa a F9 (dividir funciones no cambia nada)
+comparados 72: 72 idénticos, 0 distintos
+### casos de la fase F
+inicio(ms) 1241 peticiones 49 externas 0 consola 1
+FALLOS: 0
+### documentos de estrés de la fase F
+efx      OK    2561 ms partial
+efp      OK    1081 ms complete
+efc      OK     597 ms complete
+efd      OK     532 ms complete
+inicio(ms) 1258 peticiones 26 externas 0 consola 0
+### casosE (y equivalencia con la referencia previa a F9)
+inicio(ms) 1254 peticiones 77 externas 0 consola 0
+comparados 18: 18 idénticos, 0 distintos
+### casosD (y equivalencia con la referencia previa a F9)
+inicio(ms) 1313 peticiones 32 externas 0 consola 0
+comparados 7: 7 idénticos, 0 distintos
+### casosC (y equivalencia con la referencia previa a F9)
+inicio(ms) 1310 peticiones 39 externas 0 consola 0
+comparados 10: 10 idénticos, 0 distintos
+### casosB (y equivalencia con la referencia previa a F9)
+inicio(ms) 1334 peticiones 26 externas 0 consola 0
+comparados 4: 4 idénticos, 0 distintos
+FALLOS: 0
+FALLOS: 0
+FALLOS: 0
+### imágenes grandes o engañosas (fase E)
+s1       OK    4859 ms complete
+s2       OK  120004 ms failed
+s3       OK    1814 ms complete
+s4       OK     110 ms complete
+inicio(ms) 1246 peticiones 29 externas 0 consola 0
+### documentos hostiles de la fase D (no deben bloquear)
+e1       OK      96 ms complete
+e2       OK     968 ms complete
+e3       OK      92 ms complete
+e4       OK     512 ms partial
+inicio(ms) 1273 peticiones 24 externas 0 consola 0
+### sin OCR
+inicio(ms) 180 peticiones 24 externas 0 consola 0
+FALLOS: 0
+### prompt fiscal: equivalencia con la referencia previa a F9
+generados 16 prompts (0 con error), 14895832 caracteres; errores de página: 0
+comparados 16 prompts: 16 idénticos, 0 distintos
+### página de pruebas sin Node (pruebas-corpus.html) con el veredicto esperado de este consolidado
+72 casos (72 con veredicto esperado) → /tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/corpus-pruebas/verdad-pruebas.json
+   imágenes png+jpg+jpeg | 9 | 5 | 4 | 0 | 7.8 | 7.8
+casos 72, iguales 72, distintos 0; peticiones externas 0; errores de consola 0; 45 s
+### base
+{
+ "nombre": "faseF-base",
+ "msArranque": 1516,
+ "errorArranque": null,
+ "panelInicial": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "panelFinal": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "documentos": [
+  {
+   "archivo": "png01_factura.png",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "OCR_GRID_REMOVED: Antes del OCR se borraron las líneas de la cuadrícula (10 tramo(s) horizontal(es) y 10 vertical(es)) para que no se confundan con letras; las líneas verticales se usan para separar las columnas. El ar",
+    "OCR_TABLES_RECONSTRUCTED: Se reconstruyeron 1 tabla(s) a partir de la posición de las palabras del OCR. Son una inferencia: compruébalas con el documento (la confianza de cada tabla tiene en cuenta la del OCR)."
+   ]
+  },
+  {
+   "archivo": "pdfE1_factura_escaneada.pdf",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "OCR_TABLES_RECONSTRUCTED: Se reconstruyeron 1 tabla(s) a partir de la posición de las palabras del OCR. Son una inferencia: compruébalas con el documento (la confianza de cada tabla tiene en cuenta la del OCR).",
+    "OCR_GRID_REMOVED: Antes del OCR se borraron las líneas de la cuadrícula de las tablas para que no se confundan con letras (página(s) 1). El archivo original no se modifica."
+   ]
+  },
+  {
+   "archivo": "pdf01_factura_reportlab.pdf",
+   "estado": "complete",
+   "ocr": "not-needed",
+   "idiomas": null,
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "PDF_TABLES_GEOMETRIC_HEURISTIC: Se detectaron 1 tabla(s) mediante alineación geométrica de texto PDF.js."
+   ]
+  },
+  {
+   "archivo": "png04_libro_emitidas.png",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": null,
+   "texto": "",
+   "avisos": [
+    "OCR_GRID_REMOVED: Antes del OCR se borraron las líneas de la cuadrícula (28 tramo(s) horizontal(es) y 20 vertical(es)) para que no se confundan con letras; las líneas verticales se usan para separar las columnas. El ar",
+    "OCR_TABLES_RECONSTRUCTED: Se reconstruyeron 1 tabla(s) a partir de la posición de las palabras del OCR. Son una inferencia: compruébalas con el documento (la confianza de cada tabla tiene en cuenta la del OCR)."
+   ]
+  },
+  {
+   "archivo": "jpx_escaneada.pdf",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "OCR_TABLES_RECONSTRUCTED: Se reconstruyeron 1 tabla(s) a partir de la posición de las palabras del OCR. Son una inferencia: compruébalas con el documento (la confianza de cada tabla tiene en cuenta la del OCR).",
+    "OCR_GRID_REMOVED: Antes del OCR se borraron las líneas de la cuadrícula de las tablas para que no se confundan con letras (página(s) 1). El archivo original no se modifica."
+   ]
+  },
+  {
+   "archivo": "cmap_chino.pdf",
+   "estado": "complete",
+   "ocr": "not-needed",
+   "idiomas": null,
+   "total": null,
+   "texto": "",
+   "avisos": []
+  },
+  {
+   "archivo": "pdf09_mixto_sello_digital_mas_imagen.pdf",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "OCR_TABLES_RECONSTRUCTED: Se reconstruyeron 1 tabla(s) a partir de la posición de las palabras del OCR. Son una inferencia: compruébalas con el documento (la confianza de cada tabla tiene en cuenta la del OCR).",
+    "PDF_MIXED_PAGE_OCR: La página 1 combina una imagen (38 % de la página) con poco texto digital: además del texto digital, se ha leído la imagen con OCR (bloques ocr-text).",
+    "OCR_GRID_REMOVED: Antes del OCR se borraron las líneas de la cuadrícula de las tablas para que no se confundan con letras (página(s) 1). El archivo original no se modifica."
+   ]
+  },
+  {
+   "archivo": "jpg08_rotada_90.jpg",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "OCR_GRID_REMOVED: Antes del OCR se borraron las líneas de la cuadrícula (10 tramo(s) horizontal(es) y 10 vertical(es)) para que no se confundan con letras; las líneas verticales se usan para separar las columnas. El ar",
+    "OCR_ROTATED: El texto de la imagen estaba girado: se ha leído girándola 90° en el sentido de las agujas del reloj. Las coordenadas (boundingBox) se refieren a la imagen girada; el archivo original no se modifica.",
+    "OCR_TABLES_RECONSTRUCTED: Se reconstruyeron 1 tabla(s) a partir de la posición de las palabras del OCR. Son una inferencia: compruébalas con el documento (la confianza de cada tabla tiene en cuenta la del OCR)."
+   ]
+  },
+  {
+   "archivo": "png05_baja_resolucion.png",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "OCR_GRID_REMOVED: Antes del OCR se borraron las líneas de la cuadrícula (22 tramo(s) horizontal(es) y 17 vertical(es)) para que no se confundan con letras; las líneas verticales se usan para separar las columnas. El ar",
+    "OCR_UPSCALED: El texto de la imagen es pequeño (unos 8 px por línea): para el OCR se ha ampliado ×3. Las coordenadas siguen en píxeles de la imagen original.",
+    "OCR_TABLES_RECONSTRUCTED: Se reconstruyeron 1 tabla(s) a partir de la posición de las palabras del OCR. Son una inferencia: compruébalas con el documento (la confianza de cada tabla tiene en cuenta la del OCR)."
+   ]
+  },
+  {
+   "archivo": "jpeg03_factura_escaneo_degradado.jpeg",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "OCR_GRID_REMOVED: Antes del OCR se borraron las líneas de la cuadrícula (18 tramo(s) horizontal(es) y 16 vertical(es)) para que no se confundan con letras; las líneas verticales se usan para separar las columnas. El ar",
+    "OCR_DESKEWED: La imagen estaba torcida -1,5°: se ha enderezado para el OCR (las coordenadas se refieren a la imagen enderezada).",
+    "OCR_UPSCALED: El texto de la imagen es pequeño (unos 14 px por línea): para el OCR se ha ampliado ×2. Las coordenadas siguen en píxeles de la imagen original.",
+    "OCR_TABLES_RECONSTRUCTED: Se reconstruyeron 1 tabla(s) a partir de la posición de las palabras del OCR. Son una inferencia: compruébalas con el documento (la confianza de cada tabla tiene en cuenta la del OCR)."
+   ]
+  },
+  {
+   "archivo": "pdfE2_factura_escaneo_degradado.pdf",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "OCR_TABLES_RECONSTRUCTED: Se reconstruyeron 1 tabla(s) a partir de la posición de las palabras del OCR. Son una inferencia: compruébalas con el documento (la confianza de cada tabla tiene en cuenta la del OCR).",
+    "OCR_DESKEWED: La(s) página(s) escaneada(s) 1 estaban torcidas (1: -1,5°): se han enderezado para el OCR.",
+    "OCR_GRID_REMOVED: Antes del OCR se borraron las líneas de la cuadrícula de las tablas para que no se confundan con letras (página(s) 1). El archivo original no se modifica."
+   ]
+  },
+  {
+   "archivo": "pdf11a_cifrado_con_clave.pdf",
+   "estado": "failed",
+   "ocr": "not-needed",
+   "idiomas": null,
+   "total": null,
+   "texto": "",
+   "avisos": []
+  },
+  {
+   "archivo": "pdf14_bytes_previos.pdf",
+   "estado": "complete",
+   "ocr": "not-needed",
+   "idiomas": null,
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "PDF_HEADER_OFFSET: El PDF tiene 2 byte(s) antes de su cabecera «%PDF-» (suele deberse a cómo se descargó o se guardó). Se ha leído igualmente, como hacen los lectores de PDF con hasta 1.024 bytes previos.",
+    "PDF_TABLES_GEOMETRIC_HEURISTIC: Se detectaron 1 tabla(s) mediante alineación geométrica de texto PDF.js."
+   ]
+  }
+ ],
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "tesseract-7.0.0.min.js.paquete.js",
+  "tesseract-7.0.0-worker.min.js.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tessdata-spa.traineddata.gz.paquete.js",
+  "tessdata-cat.traineddata.gz.paquete.js",
+  "tessdata-eus.traineddata.gz.paquete.js",
+  "tessdata-eng.traineddata.gz.paquete.js",
+  "tessdata-fra.traineddata.gz.paquete.js",
+  "pdfjs-6.2.108-legacy-fuentes.paquete.js",
+  "pdfjs-6.2.108-legacy-wasm.paquete.js",
+  "pdfjs-6.2.108-legacy-cmaps.paquete.js"
+ ],
+ "externas": [],
+ "consola": []
+}
+### alt-pdf
+{
+ "nombre": "faseF-alt-pdf",
+ "msArranque": 275,
+ "errorArranque": "El analizador no se ha iniciado\nNo se pudo cargar PDF.js LOCAL 6.2.108: Integridad fallida en vendor/pdfjs-legacy/build/pdf.mjs: el contenido de vendor-paquetes/pdfjs-6.2.108-legacy-pdf.mjs.paquete.js no coincide con el SHA-256 del archivo oficial.\nNo se ha procesado ningún archivo. Corrige la causa indicada y recarga la página.",
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "tesseract-7.0.0.min.js.paquete.js",
+  "tesseract-7.0.0-worker.min.js.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tessdata-spa.traineddata.gz.paquete.js",
+  "tessdata-cat.traineddata.gz.paquete.js",
+  "tessdata-eus.traineddata.gz.paquete.js",
+  "tessdata-eng.traineddata.gz.paquete.js",
+  "tessdata-fra.traineddata.gz.paquete.js"
+ ],
+ "externas": [],
+ "consola": []
+}
+### alt-analizador
+{
+ "nombre": "faseF-alt-analizador",
+ "msArranque": 257,
+ "errorArranque": "El analizador no se ha iniciado\nEl worker núcleo incrustado no coincide con su SHA-256 (SHA256_WORKER_NUCLEO): el archivo se ha modificado.\nNo se ha procesado ningún archivo. Corrige la causa indicada y recarga la página.",
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "tesseract-7.0.0.min.js.paquete.js",
+  "tesseract-7.0.0-worker.min.js.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tessdata-spa.traineddata.gz.paquete.js",
+  "tessdata-cat.traineddata.gz.paquete.js",
+  "tessdata-eus.traineddata.gz.paquete.js",
+  "tessdata-eng.traineddata.gz.paquete.js",
+  "tessdata-fra.traineddata.gz.paquete.js"
+ ],
+ "externas": [],
+ "consola": []
+}
+### cola
+{
+ "nombre": "faseF-cola",
+ "msArranque": 1465,
+ "errorArranque": null,
+ "panelInicial": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "panelFinal": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "documentos": [
+  {
+   "archivo": "png01_factura.png",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "OCR_GRID_REMOVED: Antes del OCR se borraron las líneas de la cuadrícula (10 tramo(s) horizontal(es) y 10 vertical(es)) para que no se confundan con letras; las líneas verticales se usan para separar las columnas. El ar",
+    "OCR_TABLES_RECONSTRUCTED: Se reconstruyeron 1 tabla(s) a partir de la posición de las palabras del OCR. Son una inferencia: compruébalas con el documento (la confianza de cada tabla tiene en cuenta la del OCR)."
+   ]
+  },
+  {
+   "archivo": "pdfE1_factura_escaneada.pdf",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "OCR_TABLES_RECONSTRUCTED: Se reconstruyeron 1 tabla(s) a partir de la posición de las palabras del OCR. Son una inferencia: compruébalas con el documento (la confianza de cada tabla tiene en cuenta la del OCR).",
+    "OCR_GRID_REMOVED: Antes del OCR se borraron las líneas de la cuadrícula de las tablas para que no se confundan con letras (página(s) 1). El archivo original no se modifica."
+   ]
+  },
+  {
+   "archivo": "pdf01_factura_reportlab.pdf",
+   "estado": "complete",
+   "ocr": "not-needed",
+   "idiomas": null,
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "PDF_TABLES_GEOMETRIC_HEURISTIC: Se detectaron 1 tabla(s) mediante alineación geométrica de texto PDF.js."
+   ]
+  },
+  {
+   "archivo": "png04_libro_emitidas.png",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": null,
+   "texto": "",
+   "avisos": [
+    "OCR_GRID_REMOVED: Antes del OCR se borraron las líneas de la cuadrícula (28 tramo(s) horizontal(es) y 20 vertical(es)) para que no se confundan con letras; las líneas verticales se usan para separar las columnas. El ar",
+    "OCR_TABLES_RECONSTRUCTED: Se reconstruyeron 1 tabla(s) a partir de la posición de las palabras del OCR. Son una inferencia: compruébalas con el documento (la confianza de cada tabla tiene en cuenta la del OCR)."
+   ]
+  }
+ ],
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "tesseract-7.0.0.min.js.paquete.js",
+  "tesseract-7.0.0-worker.min.js.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tessdata-spa.traineddata.gz.paquete.js",
+  "tessdata-cat.traineddata.gz.paquete.js",
+  "tessdata-eus.traineddata.gz.paquete.js",
+  "tessdata-eng.traineddata.gz.paquete.js",
+  "tessdata-fra.traineddata.gz.paquete.js",
+  "pdfjs-6.2.108-legacy-fuentes.paquete.js"
+ ],
+ "externas": [],
+ "consola": []
+}
+### nav-sin-simd
+{
+ "nombre": "faseF-nav-sin-simd",
+ "msArranque": 1501,
+ "errorArranque": null,
+ "panelInicial": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "panelFinal": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "documentos": [
+  {
+   "archivo": "png04_libro_emitidas.png",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": null,
+   "texto": "",
+   "avisos": [
+    "OCR_GRID_REMOVED: Antes del OCR se borraron las líneas de la cuadrícula (28 tramo(s) horizontal(es) y 20 vertical(es)) para que no se confundan con letras; las líneas verticales se usan para separar las columnas. El ar",
+    "OCR_TABLES_RECONSTRUCTED: Se reconstruyeron 1 tabla(s) a partir de la posición de las palabras del OCR. Son una inferencia: compruébalas con el documento (la confianza de cada tabla tiene en cuenta la del OCR)."
+   ]
+  }
+ ],
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "tesseract-7.0.0.min.js.paquete.js",
+  "tesseract-7.0.0-worker.min.js.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tessdata-spa.traineddata.gz.paquete.js",
+  "tessdata-cat.traineddata.gz.paquete.js",
+  "tessdata-eus.traineddata.gz.paquete.js",
+  "tessdata-eng.traineddata.gz.paquete.js",
+  "tessdata-fra.traineddata.gz.paquete.js",
+  "tesseract-core-7.0.0-lstm.wasm.js.paquete.js"
+ ],
+ "externas": [],
+ "consola": []
+}
+### sin-ocr
+{
+ "nombre": "faseF-sin-ocr",
+ "msArranque": 268,
+ "errorArranque": null,
+ "panelInicial": {
+  "resumen": "OCR (imágenes y PDF escaneados): desactivado",
+  "aviso": null,
+  "marcados": []
+ },
+ "panelFinal": {
+  "resumen": "OCR (imágenes y PDF escaneados): desactivado",
+  "aviso": null,
+  "marcados": []
+ },
+ "documentos": [
+  {
+   "archivo": "png01_factura.png",
+   "estado": "partial",
+   "ocr": "not-requested",
+   "idiomas": null,
+   "total": null,
+   "texto": "",
+   "avisos": [
+    "IMAGE_OCR_DISABLED: El OCR está desactivado: no se ha leído el texto de la imagen y su contenido no está incluido."
+   ]
+  },
+  {
+   "archivo": "pdfE1_factura_escaneada.pdf",
+   "estado": "partial",
+   "ocr": "not-requested",
+   "idiomas": null,
+   "total": null,
+   "texto": "",
+   "avisos": [
+    "PDF_PAGE_WITHOUT_TEXT: La página 1 no tiene texto digital suficiente y el OCR está desactivado; su contenido puede no estar incluido."
+   ]
+  },
+  {
+   "archivo": "pdf01_factura_reportlab.pdf",
+   "estado": "complete",
+   "ocr": "not-requested",
+   "idiomas": null,
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "PDF_TABLES_GEOMETRIC_HEURISTIC: Se detectaron 1 tabla(s) mediante alineación geométrica de texto PDF.js."
+   ]
+  },
+  {
+   "archivo": "png04_libro_emitidas.png",
+   "estado": "partial",
+   "ocr": "not-requested",
+   "idiomas": null,
+   "total": null,
+   "texto": "",
+   "avisos": [
+    "IMAGE_OCR_DISABLED: El OCR está desactivado: no se ha leído el texto de la imagen y su contenido no está incluido."
+   ]
+  },
+  {
+   "archivo": "pdf09_mixto_sello_digital_mas_imagen.pdf",
+   "estado": "partial",
+   "ocr": "not-requested",
+   "idiomas": null,
+   "total": null,
+   "texto": "",
+   "avisos": [
+    "PDF_PAGE_IMAGE_WITHOUT_OCR: La página 1 tiene una imagen que ocupa el 38 % de la página y casi no tiene texto digital (p. ej., un escaneo con un sello o un CSV añadido). Con el OCR desactivado, el contenido de la imagen no está "
+   ]
+  }
+ ],
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-fuentes.paquete.js"
+ ],
+ "externas": [],
+ "consola": []
+}
+### demo
+{
+ "sinArrancarVisible": false,
+ "origen": "Abierto como archivo local (sin servidor)",
+ "segundos": 1.3,
+ "mensaje": "Listo: 16 línea(s) en 1 s · confianza media 91 %.",
+ "motor": "Motor OCR: Tesseract.js local · español (spa) · verificado",
+ "texto": "Número de factura: A-2025/0157\nFecha de expedición: 14/03/2025\nEmisor: Construcciones Muñoz Ibáñez, S.L.\nNIF emisor: B12345674\nDomicilio: C/ Mayor 12, 28013 Madrid\nCliente: Talleres Peña Gutiérrez, S.A.\nNIF cliente: A58818501\nDomicilio cliente: Avda. de la Constitución 45, 41001 Sevilla\n[cometo | Cantidad] — precio] importe]\nReparación de cubierta 850,00 850,00\nSustitución de canalón (m) 32,05 384",
+ "redResumen": "0 recurso(s) pedidos por la página · peticiones externas: 0 · intentos bloqueados por la CSP: 0 · abierta como archivo: los archivos locales no figuran en esta lista; la CSP (connect-src 'none') impide cualquier petición de red",
+ "csp": "",
+ "peticiones": [
+  "file://…/base/demo-ocr.html",
+  "file://…/base/demo-ocr.css",
+  "file://…/vendor-paquetes/tesseract-7.0.0.min.js.paquete.js",
+  "file://…/vendor-paquetes/tesseract-7.0.0-worker.min.js.paquete.js",
+  "file://…/vendor-paquetes/tesseract-core-7.0.0-simd-lstm.wasm.js.p",
+  "file://…/vendor-paquetes/tessdata-spa.traineddata.gz.paquete.js",
+  "file://…/base/analizador-archivos.js",
+  "file://…/base/demo-ocr.js",
+  "blob:null/5a9d5822-4a24-44af-87d8-88cda0d4b58b",
+  "blob:null/6e2c5483-7d9b-41db-9ffb-900b47dc8d1f"
+ ],
+ "consola": []
+}
+### tiempos
+fase E (file://)             [1519,"87 MB",1438,"87 MB",1451,"87 MB",1445,"87 MB",1476,"87 MB"]
+fase F (file://)             [1521,"87 MB",1449,"87 MB",1445,"87 MB",1442,"87 MB",1465,"87 MB"]
+### memoria
+fase E (file://)             antes de GC 87 MB · tras GC 60 MB · cola pendiente: []
+fase F (file://)             antes de GC 87 MB · tras GC 60 MB · cola pendiente: []
+### FIN
+FIN_SCRIPT

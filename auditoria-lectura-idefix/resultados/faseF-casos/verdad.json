@@ -1,0 +1,427 @@
+[
+ {
+  "id": "f2a",
+  "archivo": "f2_pdf_100_bytes_previos.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseF",
+  "checks": [],
+  "mime": "",
+  "nota": "100 bytes (cabecera de correo) antes de %PDF-: se lee con aviso informativo",
+  "esperado": {
+   "estado": [
+    "complete"
+   ],
+   "aviso": "PDF_HEADER_OFFSET",
+   "detalles": {
+    "PDF_HEADER_OFFSET": {
+     "bytesPrevios": 100
+    }
+   },
+   "texto_contiene": [
+    "Número de factura: A-2025/0901"
+   ]
+  }
+ },
+ {
+  "id": "f2b",
+  "archivo": "f2_pdf_1030_bytes_previos.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseF",
+  "checks": [],
+  "mime": "",
+  "nota": "1.030 bytes antes de %PDF- (más de 1.024): no es un PDF admisible",
+  "esperado": {
+   "estado": [
+    "failed"
+   ],
+   "aviso": "FORMAT_REJECTED",
+   "mensaje_contiene": "FORMATO NO ADMITIDO",
+   "sin_aviso": [
+    "PDF_HEADER_OFFSET"
+   ]
+  }
+ },
+ {
+  "id": "f2c",
+  "archivo": "f2_pdf_basura.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseF",
+  "checks": [],
+  "mime": "",
+  "nota": "bytes previos y después %PDF- seguido de basura: rechazo controlado, sin texto técnico en inglés",
+  "esperado": {
+   "estado": [
+    "failed"
+   ],
+   "mensaje_no_contiene": [
+    "Invalid PDF structure",
+    "No password given"
+   ]
+  }
+ },
+ {
+  "id": "f2d",
+  "archivo": "f2_html_con_pdf.html",
+  "cajetilla": "otros",
+  "verdad": "faseF",
+  "checks": [],
+  "mime": "",
+  "nota": "página HTML que contiene «%PDF-» en sus primeros bytes: sigue siendo HTML",
+  "esperado": {
+   "estado": [
+    "complete"
+   ],
+   "sin_aviso": [
+    "PDF_HEADER_OFFSET"
+   ],
+   "formato": "html",
+   "texto_contiene": [
+    "La firma %PDF-1.4 aparece"
+   ]
+  }
+ },
+ {
+  "id": "f1a",
+  "archivo": "f1_pdf_solo_propietario.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseF",
+  "checks": [],
+  "mime": "",
+  "nota": "PDF con contraseña SOLO de propietario (restricciones de impresión y copia): se abre sin contraseña",
+  "esperado": {
+   "estado": [
+    "complete"
+   ],
+   "sin_aviso": [
+    "FORMAT_REJECTED"
+   ],
+   "texto_contiene": [
+    "Número de factura: A-2025/0902"
+   ]
+  }
+ },
+ {
+  "id": "f1b",
+  "archivo": "f1_pdf_contrasena.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseF",
+  "checks": [],
+  "mime": "",
+  "nota": "PDF con contraseña de apertura: rechazo en español, el texto técnico va en los detalles",
+  "esperado": {
+   "estado": [
+    "failed"
+   ],
+   "aviso": "FORMAT_REJECTED",
+   "mensaje_contiene": "PDF PROTEGIDO CON CONTRASEÑA",
+   "mensaje_no_contiene": [
+    "No password given"
+   ],
+   "detalles": {
+    "FORMAT_REJECTED": {
+     "motivoTecnico": "PasswordException: No password given"
+    }
+   }
+  }
+ },
+ {
+  "id": "f3a",
+  "archivo": "f3_docx_solo_fallback.docx",
+  "cajetilla": "otros",
+  "verdad": "faseF",
+  "checks": [],
+  "mime": "",
+  "nota": "cuadro de texto solo con mc:Fallback (VML): se lee una vez",
+  "esperado": {
+   "estado": [
+    "complete"
+   ],
+   "texto_veces": [
+    [
+     "Importe del cuadro VML: 300,00 €",
+     1
+    ]
+   ]
+  }
+ },
+ {
+  "id": "f3b",
+  "archivo": "f3_docx_dos_choice.docx",
+  "cajetilla": "otros",
+  "verdad": "faseF",
+  "checks": [],
+  "mime": "",
+  "nota": "dos mc:Choice y un mc:Fallback: solo cuenta el primer Choice",
+  "esperado": {
+   "estado": [
+    "complete"
+   ],
+   "texto_veces": [
+    [
+     "Opción A del cuadro",
+     1
+    ],
+    [
+     "Opción B del cuadro",
+     0
+    ],
+    [
+     "Opción C del cuadro",
+     0
+    ]
+   ]
+  }
+ },
+ {
+  "id": "f3c",
+  "archivo": "f3_docx_cuadro_en_cabecera.docx",
+  "cajetilla": "otros",
+  "verdad": "faseF",
+  "checks": [],
+  "mime": "",
+  "nota": "cuadro de texto (Choice y Fallback) en el encabezado: se lee una vez",
+  "esperado": {
+   "estado": [
+    "complete"
+   ],
+   "texto_veces": [
+    [
+     "Referencia de cabecera: EXP-77",
+     1
+    ]
+   ]
+  }
+ },
+ {
+  "id": "f4",
+  "archivo": "f4_docx_numeracion.docx",
+  "cajetilla": "otros",
+  "verdad": "faseF",
+  "checks": [],
+  "mime": "",
+  "nota": "numeración de varios niveles, continuación entre numId, reinicio, romanos, «Artículo %1.-», viñeta, decimalZero, numId 0 y lista en una celda",
+  "esperado": {
+   "estado": [
+    "complete"
+   ],
+   "aviso": "DOCX_LIST_NUMBERING",
+   "bloques_exactos": [
+    "1. Primero",
+    "1.1. Sub",
+    "a) letra",
+    "b) letra dos",
+    "1.2. Sub dos",
+    "2. Segundo",
+    "3. Tercero con otro numId",
+    "1. Reinicio",
+    "I. Romano uno",
+    "II. Romano dos",
+    "Artículo 1.- Objeto del contrato",
+    "• Viñeta",
+    "01. Con cero",
+    "Sin número"
+   ],
+   "texto_contiene": [
+    "III. Romano en celda"
+   ]
+  }
+ },
+ {
+  "id": "f5",
+  "archivo": "f5_docx_revisiones.docx",
+  "cajetilla": "otros",
+  "verdad": "faseF",
+  "checks": [],
+  "mime": "",
+  "nota": "inserción, eliminación, movimiento (moveFrom/moveTo) y cambio de formato sin aceptar",
+  "esperado": {
+   "estado": [
+    "partial"
+   ],
+   "aviso": "DOCX_TRACKED_CHANGES",
+   "detalles": {
+    "DOCX_TRACKED_CHANGES": {
+     "inserciones": 1,
+     "eliminaciones": 1,
+     "movimientos": 1,
+     "cambiosFormato": 1
+    }
+   },
+   "texto_veces": [
+    [
+     "Cláusula movida de sitio.",
+     1
+    ],
+    [
+     "ANTIGUO",
+     0
+    ]
+   ],
+   "texto_contiene": [
+    "Importe: 950,00 €"
+   ]
+  }
+ },
+ {
+  "id": "f6a",
+  "archivo": "f6_xlsx_combinadas.xlsx",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "faseF",
+  "checks": [],
+  "mime": "",
+  "nota": "Serie combinada en vertical (B2:B4, B5:B7), J2:J1048576, rango con origen vacío y combinada horizontal",
+  "esperado": {
+   "estado": [
+    "complete"
+   ],
+   "aviso": "XLSX_MERGED_CELLS_EXPANDED",
+   "combinadas": 10,
+   "tiempo_max_ms": 15000,
+   "celdas": [
+    [
+     "2025/0003",
+     "Serie",
+     "A"
+    ],
+    [
+     "2025/0006",
+     "Serie",
+     "B"
+    ],
+    [
+     "2025/0004",
+     "Nota",
+     "revisada"
+    ]
+   ],
+   "detalles": {
+    "XLSX_MERGED_CELLS_EXPANDED": {
+     "ranges": 5,
+     "repeatedCells": 10
+    }
+   }
+  }
+ },
+ {
+  "id": "f6b",
+  "archivo": "f6_xls_combinadas.xls",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "faseF",
+  "checks": [],
+  "mime": "",
+  "nota": "el mismo libro en .xls (registro MERGECELLS de BIFF8)",
+  "esperado": {
+   "estado": [
+    "complete"
+   ],
+   "aviso": "XLSX_MERGED_CELLS_EXPANDED",
+   "combinadas": 4,
+   "celdas": [
+    [
+     "2025/0003",
+     "Serie",
+     "A"
+    ],
+    [
+     "2025/0006",
+     "Serie",
+     "B"
+    ]
+   ]
+  }
+ },
+ {
+  "id": "f7",
+  "archivo": "f7_pdf_celdas_varias_lineas.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseF",
+  "checks": [],
+  "mime": "",
+  "nota": "conceptos de 3 y 2 líneas (una continuación en mayúscula, entre filas) y una nota en mayúscula pegada debajo de la tabla, que no debe unirse",
+  "esperado": {
+   "estado": [
+    "complete"
+   ],
+   "aviso": "PDF_TABLE_MULTILINE_CELLS",
+   "celdas": [
+    [
+     "400,00",
+     "Concepto",
+     "Mantenimiento anual de la instalación eléctrica del local comercial"
+    ],
+    [
+     "100,00",
+     "Concepto",
+     "Servicio de Limpieza Integral"
+    ],
+    [
+     "120,00",
+     "Concepto",
+     "Retirada de escombros"
+    ]
+   ],
+   "ninguna_celda_contiene": [
+    "Observaciones"
+   ]
+  }
+ },
+ {
+  "id": "f8a",
+  "archivo": "f8_pdf_factura_de_dos_paginas.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseF",
+  "checks": [],
+  "mime": "",
+  "nota": "una factura de dos páginas (número repetido en la 2.ª) y otra en la 3.ª: dos facturas",
+  "esperado": {
+   "estado": [
+    "complete"
+   ],
+   "facturas": [
+    [
+     "A-2025/0950",
+     1,
+     2,
+     605.0
+    ],
+    [
+     "A-2025/0951",
+     3,
+     3,
+     60.5
+    ]
+   ]
+  }
+ },
+ {
+  "id": "f8b",
+  "archivo": "f8_pdf_dos_en_una_pagina.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseF",
+  "checks": [],
+  "mime": "",
+  "nota": "dos facturas en la misma página: no se parte (no se puede hacer con seguridad)",
+  "esperado": {
+   "estado": [
+    "complete"
+   ],
+   "facturas": []
+  }
+ },
+ {
+  "id": "f8c",
+  "archivo": "f8_pdf_una_factura.pdf",
+  "cajetilla": "otros",
+  "verdad": "faseF",
+  "checks": [],
+  "mime": "",
+  "nota": "una sola factura: documento.numero_documento como siempre, sin facturas_detectadas",
+  "esperado": {
+   "estado": [
+    "complete"
+   ],
+   "facturas": [],
+   "numero_documento": "A-2025/0901"
+  }
+ }
+]

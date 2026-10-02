@@ -1,0 +1,161 @@
+e1r90 · Factura girada 90° a la izquierda: hay que girarla 90° a la derecha
+  ✅ estado complete
+  ✅ aviso OCR_ROTATED: El texto de la imagen estaba girado: se ha leído girándola 90° en el sentido de las agujas del reloj. Las coor
+  ✅ giro 90° (leído: 90)
+  ✅ contiene 'Número de factura: A-2025/0157'
+  ✅ contiene 'NIF emisor: B12345674'
+  ✅ contiene 'Total factura: 1.639,07 €'
+  ✅ importes.inferidos.base_imponible = 1354.6 (leído: 1354.6)
+  ✅ importes.inferidos.cuota_iva = 284.47 (leído: 284.47)
+  ✅ importes.inferidos.total = 1639.07 (leído: 1639.07)
+e1r180 · Factura girada 180° a la izquierda: hay que girarla 180° a la derecha
+  ✅ estado complete
+  ✅ aviso OCR_ROTATED: El texto de la imagen estaba girado: se ha leído girándola 180° en el sentido de las agujas del reloj. Las coo
+  ✅ giro 180° (leído: 180)
+  ✅ contiene 'Número de factura: A-2025/0157'
+  ✅ contiene 'NIF emisor: B12345674'
+  ✅ contiene 'Total factura: 1.639,07 €'
+  ✅ importes.inferidos.base_imponible = 1354.6 (leído: 1354.6)
+  ✅ importes.inferidos.cuota_iva = 284.47 (leído: 284.47)
+  ✅ importes.inferidos.total = 1639.07 (leído: 1639.07)
+e1r270 · Factura girada 270° a la izquierda: hay que girarla 270° a la derecha
+  ✅ estado complete
+  ✅ aviso OCR_ROTATED: El texto de la imagen estaba girado: se ha leído girándola 270° en el sentido de las agujas del reloj. Las coo
+  ✅ giro 270° (leído: 270)
+  ✅ contiene 'Número de factura: A-2025/0157'
+  ✅ contiene 'NIF emisor: B12345674'
+  ✅ contiene 'Total factura: 1.639,07 €'
+  ✅ importes.inferidos.base_imponible = 1354.6 (leído: 1354.6)
+  ✅ importes.inferidos.cuota_iva = 284.47 (leído: 284.47)
+  ✅ importes.inferidos.total = 1639.07 (leído: 1639.07)
+e1r0 · La misma factura derecha: no se gira ni se avisa
+  ✅ estado complete
+  ✅ sin el aviso OCR_ROTATED
+  ✅ sin el aviso OCR_DESKEWED
+  ✅ sin el aviso OCR_UPSCALED
+  ✅ contiene 'Número de factura: A-2025/0157'
+  ✅ contiene 'NIF emisor: B12345674'
+  ✅ contiene 'Total factura: 1.639,07 €'
+  ✅ importes.inferidos.base_imponible = 1354.6 (leído: 1354.6)
+  ✅ importes.inferidos.cuota_iva = 284.47 (leído: 284.47)
+  ✅ importes.inferidos.total = 1639.07 (leído: 1639.07)
+e1lib · Libro de facturas (tabla sin líneas) girado 90°
+  ✅ estado complete
+  ✅ aviso OCR_ROTATED: El texto de la imagen estaba girado: se ha leído girándola 90° en el sentido de las agujas del reloj. Las coor
+  ✅ giro 90° (leído: 90)
+  ✅ contiene '2025/0101'
+  ✅ contiene 'B87654323'
+  ✅ contiene 'Ferretería Núñez, S.L.'
+  ✅ tabla con ≥ 12 filas ([13])
+e1i3 · Factura torcida 3° (escaneo)
+  ✅ estado complete
+  ✅ aviso OCR_DESKEWED: La imagen estaba torcida -3°: se ha enderezado para el OCR (las coordenadas se refieren a la imagen enderezada
+  ✅ enderezado -3° ± 0,3 (leído: -3)
+  ✅ contiene 'Número de factura: A-2025/0157'
+  ✅ contiene 'NIF emisor: B12345674'
+  ✅ contiene 'Total factura: 1.639,07 €'
+  ✅ importes.inferidos.base_imponible = 1354.6 (leído: 1354.6)
+  ✅ importes.inferidos.cuota_iva = 284.47 (leído: 284.47)
+  ✅ importes.inferidos.total = 1639.07 (leído: 1639.07)
+e1i-2 · Factura torcida -2° (escaneo)
+  ✅ estado complete
+  ✅ aviso OCR_DESKEWED: La imagen estaba torcida 2°: se ha enderezado para el OCR (las coordenadas se refieren a la imagen enderezada)
+  ✅ enderezado 2° ± 0,3 (leído: 2)
+  ✅ contiene 'Número de factura: A-2025/0157'
+  ✅ contiene 'NIF emisor: B12345674'
+  ✅ contiene 'Total factura: 1.639,07 €'
+  ✅ importes.inferidos.base_imponible = 1354.6 (leído: 1354.6)
+  ✅ importes.inferidos.cuota_iva = 284.47 (leído: 284.47)
+  ✅ importes.inferidos.total = 1639.07 (leído: 1639.07)
+e1exif · Foto con EXIF Orientation 6 (el visor la gira): ya se ve derecha, no hay que girarla (antes de la fase E se rechazaba como «dañada»: ancho y alto cambiados respecto a la cabecera)
+  ✅ estado complete
+  ✅ sin el aviso OCR_ROTATED
+  ✅ contiene 'Número de factura: A-2025/0157'
+  ✅ contiene 'NIF emisor: B12345674'
+  ✅ contiene 'Total factura: 1.639,07 €'
+  ✅ importes.inferidos.base_imponible = 1354.6 (leído: 1354.6)
+  ✅ importes.inferidos.cuota_iva = 284.47 (leído: 284.47)
+  ✅ importes.inferidos.total = 1639.07 (leído: 1639.07)
+e1sin · Imagen sin texto (degradado y un círculo): ni se gira ni se amplía, y no falla
+  ✅ estado complete
+  ✅ sin el aviso OCR_ROTATED
+  ✅ sin el aviso OCR_DESKEWED
+  ✅ sin el aviso OCR_UPSCALED
+e1poco · Una sola línea de texto en una imagen grande: no hay datos para girar
+  ✅ estado complete
+  ✅ sin el aviso OCR_ROTATED
+  ✅ contiene 'Total factura: 1.639,07 €'
+e1sello · Factura derecha con un sello en vertical en el margen: no se gira
+  ✅ estado complete
+  ✅ sin el aviso OCR_ROTATED
+  ✅ contiene 'Número de factura: A-2025/0157'
+  ✅ contiene 'NIF emisor: B12345674'
+  ✅ contiene 'Total factura: 1.639,07 €'
+  ✅ importes.inferidos.base_imponible = 1354.6 (leído: 1354.6)
+  ✅ importes.inferidos.cuota_iva = 284.47 (leído: 284.47)
+  ✅ importes.inferidos.total = 1639.07 (leído: 1639.07)
+e1barras · Factura derecha con un código de barras grande debajo: no se gira
+  ✅ estado complete
+  ✅ sin el aviso OCR_ROTATED
+  ✅ contiene 'Número de factura: A-2025/0157'
+  ✅ contiene 'NIF emisor: B12345674'
+  ✅ contiene 'Total factura: 1.639,07 €'
+  ✅ importes.inferidos.base_imponible = 1354.6 (leído: 1354.6)
+  ✅ importes.inferidos.cuota_iva = 284.47 (leído: 284.47)
+  ✅ importes.inferidos.total = 1639.07 (leído: 1639.07)
+e2peq · Captura reducida al 32 % (483×296 px, líneas de unos 7 px)
+  ✅ estado complete
+  ✅ aviso OCR_UPSCALED: El texto de la imagen es pequeño (unos 7 px por línea): para el OCR se ha ampliado ×3. Las coordenadas siguen 
+  ✅ contiene 'Número de factura: A-2025/0157'
+  ✅ contiene 'NIF emisor: B12345674'
+  ✅ contiene 'Total factura: 1.639,07 €'
+  ✅ importes.inferidos.base_imponible = 1354.6 (leído: 1354.6)
+  ✅ importes.inferidos.cuota_iva = 284.47 (leído: 284.47)
+  ✅ importes.inferidos.total = 1639.07 (leído: 1639.07)
+e2peqr · La captura reducida y girada 90° a la derecha: se gira (270°) y se amplía
+  ✅ estado complete
+  ✅ aviso OCR_UPSCALED: El texto de la imagen es pequeño (unos 7 px por línea): para el OCR se ha ampliado ×3. Las coordenadas siguen 
+  ✅ aviso OCR_ROTATED: El texto de la imagen estaba girado: se ha leído girándola 270° en el sentido de las agujas del reloj. Las coo
+  ✅ giro 270° (leído: 270)
+  ✅ contiene 'Número de factura: A-2025/0157'
+  ✅ contiene 'NIF emisor: B12345674'
+  ✅ contiene 'Total factura: 1.639,07 €'
+  ✅ importes.inferidos.base_imponible = 1354.6 (leído: 1354.6)
+  ✅ importes.inferidos.cuota_iva = 284.47 (leído: 284.47)
+  ✅ importes.inferidos.total = 1639.07 (leído: 1639.07)
+e2tope · 3600×2200 px con letra pequeña: la ampliación se limita a 12 Mpx (×1,23 como mucho: √(12 / 7,92))
+  ✅ estado complete
+  ✅ aviso OCR_UPSCALED: El texto de la imagen es pequeño (unos 9 px por línea): para el OCR se ha ampliado ×1,23. Las coordenadas sigu
+  ✅ ampliación ≤ ×1.24 (leída: 1.23)
+  ✅ contiene 'NIF emisor: B12345674'
+e1pdf · PDF escaneado con la factura girada 90° en una página vertical
+  ✅ estado complete
+  ✅ aviso OCR_ROTATED: El texto escaneado de la(s) página(s) 1 estaba girado: se ha leído en su orientación (1: 90°, en el sentido de
+  ✅ giro 90° (leído: [90])
+  ✅ contiene 'Número de factura: A-2025/0157'
+  ✅ contiene 'NIF emisor: B12345674'
+  ✅ contiene 'Total factura: 1.639,07 €'
+  ✅ importes.inferidos.base_imponible = 1354.6 (leído: 1354.6)
+  ✅ importes.inferidos.cuota_iva = 284.47 (leído: 284.47)
+  ✅ importes.inferidos.total = 1639.07 (leído: 1639.07)
+e1pdfi · PDF escaneado torcido 2,5°
+  ✅ estado complete
+  ✅ aviso OCR_DESKEWED: La(s) página(s) escaneada(s) 1 estaban torcidas (1: -2,5°): se han enderezado para el OCR.
+  ✅ enderezado -2.5° ± 0,3 (leído: -2.5)
+  ✅ contiene 'Número de factura: A-2025/0157'
+  ✅ contiene 'NIF emisor: B12345674'
+  ✅ contiene 'Total factura: 1.639,07 €'
+  ✅ importes.inferidos.base_imponible = 1354.6 (leído: 1354.6)
+  ✅ importes.inferidos.cuota_iva = 284.47 (leído: 284.47)
+  ✅ importes.inferidos.total = 1639.07 (leído: 1639.07)
+e1pdf180 · PDF escaneado del revés
+  ✅ estado complete
+  ✅ aviso OCR_ROTATED: El texto escaneado de la(s) página(s) 1 estaba girado: se ha leído en su orientación (1: 180°, en el sentido d
+  ✅ giro 180° (leído: [180])
+  ✅ contiene 'Número de factura: A-2025/0157'
+  ✅ contiene 'NIF emisor: B12345674'
+  ✅ contiene 'Total factura: 1.639,07 €'
+  ✅ importes.inferidos.base_imponible = 1354.6 (leído: 1354.6)
+  ✅ importes.inferidos.cuota_iva = 284.47 (leído: 284.47)
+  ✅ importes.inferidos.total = 1639.07 (leído: 1639.07)
+FALLOS: 0

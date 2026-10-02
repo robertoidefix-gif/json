@@ -8,7 +8,7 @@ const G = ["window","document","self","globalThis","console","crypto","TextDecod
 "localStorage","sessionStorage","indexedDB","caches","history","screen","innerWidth","innerHeight","devicePixelRatio","isSecureContext","origin","close","name",
 "addEventListener","removeEventListener","dispatchEvent","onmessage","reportError","trustedTypes","HTMLAnchorElement","HTMLButtonElement","SVGElement","Text",
 "Range","Selection","getSelection","ClipboardItem","alert","confirm","prompt","open","print","scrollTo","FormData","URLSearchParams","WeakRef","FinalizationRegistry",
-"Atomics","BigInt64Array","BigUint64Array","Float16Array","Iterator","AggregateError"];
+"Atomics","BigInt64Array","BigUint64Array","Float16Array","Iterator","AggregateError","CSS"];
 export default [{
   files: ["**/*.js"],
   languageOptions: { ecmaVersion: "latest", sourceType: "script", globals: Object.fromEntries(G.map(g => [g, "readonly"])) },

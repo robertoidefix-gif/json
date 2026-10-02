@@ -1,0 +1,379 @@
+{
+ "config": {
+  "ocr": true
+ },
+ "msInicio": 1241,
+ "resumen": [
+  {
+   "id": "f2a",
+   "ok": true,
+   "ms": 287,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "f2b",
+   "ok": true,
+   "ms": 29,
+   "error": null,
+   "estado": "failed"
+  },
+  {
+   "id": "f2c",
+   "ok": true,
+   "ms": 149,
+   "error": null,
+   "estado": "failed"
+  },
+  {
+   "id": "f2d",
+   "ok": true,
+   "ms": 35,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "f1a",
+   "ok": true,
+   "ms": 261,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "f1b",
+   "ok": true,
+   "ms": 152,
+   "error": null,
+   "estado": "failed"
+  },
+  {
+   "id": "f3a",
+   "ok": true,
+   "ms": 112,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "f3b",
+   "ok": true,
+   "ms": 118,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "f3c",
+   "ok": true,
+   "ms": 105,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "f4",
+   "ok": true,
+   "ms": 123,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "f5",
+   "ok": true,
+   "ms": 131,
+   "error": null,
+   "estado": "partial"
+  },
+  {
+   "id": "f6a",
+   "ok": true,
+   "ms": 1000,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "f6b",
+   "ok": true,
+   "ms": 48,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "f7",
+   "ok": true,
+   "ms": 269,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "f8a",
+   "ok": true,
+   "ms": 245,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "f8b",
+   "ok": true,
+   "ms": 234,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "f8c",
+   "ok": true,
+   "ms": 262,
+   "error": null,
+   "estado": "complete"
+  }
+ ],
+ "peticiones": [
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalF/base/prueba-auditoria.html",
+   "tipo": "document",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalF/base/vendor-paquetes/pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalF/base/vendor-paquetes/pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalF/base/vendor-paquetes/tesseract-7.0.0.min.js.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalF/base/vendor-paquetes/tesseract-7.0.0-worker.min.js.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalF/base/vendor-paquetes/tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalF/base/vendor-paquetes/tessdata-spa.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalF/base/vendor-paquetes/tessdata-cat.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalF/base/vendor-paquetes/tessdata-eus.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalF/base/vendor-paquetes/tessdata-eng.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalF/base/vendor-paquetes/tessdata-fra.traineddata.gz.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalF/base/analizador-archivos.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalF/base/prueba-auditoria.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/09859e54-e52c-42d6-85fe-5135ab532e10",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f3d3fbf3-b69b-4527-a11a-20f94c351874",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/58627ebf-afe8-41df-9bb9-cb91d9d88754",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/ee27fbff-1b65-4601-8028-3a5f90612a25",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "file:///tmp/claude-0/-home-user-json/55822861-099e-52f0-b166-3d8450cf56d4/scratchpad/idefix/finalF/base/vendor-paquetes/pdfjs-6.2.108-legacy-fuentes.paquete.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/ee27fbff-1b65-4601-8028-3a5f90612a25",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/ee27fbff-1b65-4601-8028-3a5f90612a25",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/ee27fbff-1b65-4601-8028-3a5f90612a25",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/ee27fbff-1b65-4601-8028-3a5f90612a25",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/ee27fbff-1b65-4601-8028-3a5f90612a25",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/ee27fbff-1b65-4601-8028-3a5f90612a25",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/ee27fbff-1b65-4601-8028-3a5f90612a25",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:null/f89e5edd-3fde-4b18-8a41-5cd8b35560a6",
+   "tipo": "script",
+   "metodo": "GET"
+  }
+ ],
+ "externas": [],
+ "consola": [
+  "warning: Warning: Indexing all PDF objects"
+ ],
+ "navegador": "141.0.7390.37"
+}

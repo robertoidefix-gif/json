@@ -1,0 +1,110 @@
+{
+ "nombre": "faseF-cola",
+ "msArranque": 1465,
+ "errorArranque": null,
+ "panelInicial": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "panelFinal": {
+  "resumen": "Idiomas del OCR: Español, Catalán, Euskera, Inglés, Francés",
+  "aviso": null,
+  "marcados": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "documentos": [
+  {
+   "archivo": "png01_factura.png",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "OCR_GRID_REMOVED: Antes del OCR se borraron las líneas de la cuadrícula (10 tramo(s) horizontal(es) y 10 vertical(es)) para que no se confundan con letras; las líneas verticales se usan para separar las columnas. El ar",
+    "OCR_TABLES_RECONSTRUCTED: Se reconstruyeron 1 tabla(s) a partir de la posición de las palabras del OCR. Son una inferencia: compruébalas con el documento (la confianza de cada tabla tiene en cuenta la del OCR)."
+   ]
+  },
+  {
+   "archivo": "pdfE1_factura_escaneada.pdf",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "OCR_TABLES_RECONSTRUCTED: Se reconstruyeron 1 tabla(s) a partir de la posición de las palabras del OCR. Son una inferencia: compruébalas con el documento (la confianza de cada tabla tiene en cuenta la del OCR).",
+    "OCR_GRID_REMOVED: Antes del OCR se borraron las líneas de la cuadrícula de las tablas para que no se confundan con letras (página(s) 1). El archivo original no se modifica."
+   ]
+  },
+  {
+   "archivo": "pdf01_factura_reportlab.pdf",
+   "estado": "complete",
+   "ocr": "not-needed",
+   "idiomas": null,
+   "total": 1639.07,
+   "texto": "",
+   "avisos": [
+    "PDF_TABLES_GEOMETRIC_HEURISTIC: Se detectaron 1 tabla(s) mediante alineación geométrica de texto PDF.js."
+   ]
+  },
+  {
+   "archivo": "png04_libro_emitidas.png",
+   "estado": "complete",
+   "ocr": "complete",
+   "idiomas": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ],
+   "total": null,
+   "texto": "",
+   "avisos": [
+    "OCR_GRID_REMOVED: Antes del OCR se borraron las líneas de la cuadrícula (28 tramo(s) horizontal(es) y 20 vertical(es)) para que no se confundan con letras; las líneas verticales se usan para separar las columnas. El ar",
+    "OCR_TABLES_RECONSTRUCTED: Se reconstruyeron 1 tabla(s) a partir de la posición de las palabras del OCR. Son una inferencia: compruébalas con el documento (la confianza de cada tabla tiene en cuenta la del OCR)."
+   ]
+  }
+ ],
+ "pwned": null,
+ "paquetes": [
+  "pdfjs-6.2.108-legacy-pdf.mjs.paquete.js",
+  "pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js",
+  "tesseract-7.0.0.min.js.paquete.js",
+  "tesseract-7.0.0-worker.min.js.paquete.js",
+  "tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js",
+  "tessdata-spa.traineddata.gz.paquete.js",
+  "tessdata-cat.traineddata.gz.paquete.js",
+  "tessdata-eus.traineddata.gz.paquete.js",
+  "tessdata-eng.traineddata.gz.paquete.js",
+  "tessdata-fra.traineddata.gz.paquete.js",
+  "pdfjs-6.2.108-legacy-fuentes.paquete.js"
+ ],
+ "externas": [],
+ "consola": []
+}

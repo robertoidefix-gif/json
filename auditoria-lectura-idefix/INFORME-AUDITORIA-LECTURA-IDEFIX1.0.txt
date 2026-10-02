@@ -570,3 +570,37 @@ Punto | Estado | Archivo | Línea | Evidencia | Impacto | Corrección | Priorida
   Corrección de la fase D: su CAMBIOS decía «ESLint: 0 avisos nuevos», pero esa medida se hizo antes de los últimos
   cambios; la fase D entregada tenía 1 aviso nuevo (complejidad de leerCSS). Se corrige en la fase E (leerCSS
   dividida en funciones, mismo comportamiento) y se anota en CAMBIOS-FASE-D.txt.
+
+18. ANEXO · FASE F APLICADA (2026-10-02)
+-----------------------------------------------------------------------------------------------------
+  Entrega: idefix1.0-fase-f/ (sobre la fase E; código completo .txt, fase-f.diff y CAMBIOS-FASE-F.txt con cada
+  cambio, su línea y sus pruebas). Pruebas: resultados/faseF/, resultados/faseF-casos/, resultados/faseF-escenarios/
+  y resultados/capturas/faseF_*.png. Herramientas: herramientas/fase-f/.
+  Puntos de la lista priorizada resueltos: 16 a 24.
+    16 PDF con contraseña o dañado: rechazo en español; el texto de PDF.js va en details.motivoTecnico.
+    17 Bytes antes de %PDF- (hasta 1.024): se lee con aviso informativo, solo si no es otro formato.
+    18 Word: de mc:AlternateContent solo mc:Choice (o Fallback).   19 Numeración desde word/numbering.xml.
+    20 Revisiones sin aceptar: aviso DOCX_TRACKED_CHANGES con el recuento.
+    21 Excel: el valor combinado se repite en sus filas (combinada_desde), también en .xls.
+    22 PDF: líneas de una misma celda unidas.   23 PDF con varias facturas: documento.facturas_detectadas.
+    24 ESLint: sin variables muertas, invisibles como \uXXXX, construir y aaConstruirPromptFiscal divididas y
+       pruebas automáticas sin Node (Idefix1.0/pruebas-corpus.html, con corpus/verdad-pruebas.json).
+  Medido con el mismo corpus y las mismas reglas:
+    Nota por formato      fase E → fase F       Nota por formato      fase E → fase F
+    PDF digital            7,3  →  9,3          DOCX                   8,8  → 10,0
+    PDF (global)           7,5  →  9,0          XLSX                   9,5  → 10,0
+    Sin cambios: PDF escaneado 8,0 · XLS 10 · HTML 10 · HTM 10 · PNG 8,3 · JPG 7,5 · JPEG 5,0 · imágenes 7,8.
+    - Pasan a ✅: pdf11a, pdf12, pdf14 (era ❌), docx04, docx05, docx07, xlsx07, pdf03 y pdf07. docx09 sigue ✅ y
+      ya no pega los párrafos de la celda con tabla anidada. Los otros 61 documentos, idénticos. Tiempo: 44,0 s.
+    - Dividir las funciones no cambia nada: 111 de 111 salidas (corpus y casos B–E) y 16 de 16 prompts fiscales
+      idénticos antes y después.
+    - ESLint sobre el archivo entregado: 36 errores y 70 avisos → 12 y 63 (0 nuevos). Quedan 9 no-control-regex
+      (buscan caracteres de control a propósito) y 3 no-undef de CSS, falso positivo de la configuración (CSS.escape
+      es un global del navegador): con CSS en la configuración, 33/70 → 9/63.
+    - Casos de la fase F (17: bytes previos, contraseñas, cuadros de texto, numeración, revisiones, Excel combinado,
+      celdas de varias líneas y varias facturas) y documentos de estrés (15.000 rangos combinados, 300 facturas,
+      1.360 líneas de continuación, 20.000 párrafos numerados; todos en menos de 3 s): 0 fallos. Casos de las fases
+      B a E, escenarios de seguridad, arranque (1,45 s) y memoria (60 MB): como en la fase E.
+    - Pruebas sin Node: Idefix1.0/pruebas-corpus.html da los 72 mismos veredictos que evaluar.py + consolidar.py,
+      sin red; con el OCR desactivado marca como «peor» los 13 documentos que lo necesitan.
+  Sigue ❌ pdf13: el documento mal construido que ya se corrigió en el anexo 15; no depende de esta fase.

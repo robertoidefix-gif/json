@@ -25,7 +25,8 @@ Si su navegador tiene `file://` bloqueado por política de empresa, use el servi
 | [`idefix1.0-fase-b/`](idefix1.0-fase-b/) | **Idefix1.0 sin servidor + fase B**: lo mismo, con mejor lectura (PDF escaneados con sello o CSV, rowspan en HTML, XLSX sin referencias, cuadrícula y tablas en el OCR). Código completo .txt, diff y [`CAMBIOS-FASE-B.txt`](idefix1.0-fase-b/CAMBIOS-FASE-B.txt) |
 | [`idefix1.0-fase-c/`](idefix1.0-fase-c/) | **Idefix1.0 sin servidor + fases B y C**: además, tablas de Word combinadas, totales en tabla, PDF a dos columnas y girados, fragmentos HTML y filas con onclick. Código completo .txt, diff y [`CAMBIOS-FASE-C.txt`](idefix1.0-fase-c/CAMBIOS-FASE-C.txt) |
 | [`idefix1.0-fase-d/`](idefix1.0-fase-d/) | **Idefix1.0 sin servidor + fases B, C y D**: además, marca el texto oculto en Word, PDF y HTML/CSS y detecta instrucciones a una IA en catalán, francés, euskera y las sutiles (es una ayuda, no una garantía). Código completo .txt, diff y [`CAMBIOS-FASE-D.txt`](idefix1.0-fase-d/CAMBIOS-FASE-D.txt) |
-| [`idefix1.0-fase-e/`](idefix1.0-fase-e/) | **Idefix1.0 sin servidor + fases B, C, D y E (recomendada)**: además, lee fotos y escaneos girados (90°, 180°, 270°) o torcidos, amplía la letra pequeña antes del OCR y acepta las fotos de móvil con orientación EXIF. Código completo .txt, diff y [`CAMBIOS-FASE-E.txt`](idefix1.0-fase-e/CAMBIOS-FASE-E.txt) |
+| [`idefix1.0-fase-e/`](idefix1.0-fase-e/) | **Idefix1.0 sin servidor + fases B, C, D y E**: además, lee fotos y escaneos girados (90°, 180°, 270°) o torcidos, amplía la letra pequeña antes del OCR y acepta las fotos de móvil con orientación EXIF. Código completo .txt, diff y [`CAMBIOS-FASE-E.txt`](idefix1.0-fase-e/CAMBIOS-FASE-E.txt) |
+| [`idefix1.0-fase-f/`](idefix1.0-fase-f/) | **Idefix1.0 sin servidor + fases B, C, D, E y F (recomendada)**: además, mensajes en español para PDF con contraseña o dañados, PDF con bytes antes de `%PDF-`, cuadros de texto, numeración y revisiones de Word, celdas combinadas de Excel, conceptos de varias líneas y varias facturas en un PDF, código más mantenible y pruebas automáticas sin Node (`Idefix1.0/pruebas-corpus.html`). Código completo .txt, diff y [`CAMBIOS-FASE-F.txt`](idefix1.0-fase-f/CAMBIOS-FASE-F.txt) |
 
 ## Estructura
 
@@ -39,7 +40,8 @@ idefix1.0-sin-servidor/    Idefix1.0 sin servidor: Idefix1.0/ se abre con doble 
 idefix1.0-fase-b/          Idefix1.0 sin servidor + fase B (código completo .txt, diff y cambios)
 idefix1.0-fase-c/          Idefix1.0 sin servidor + fases B y C (código completo .txt, diff y cambios)
 idefix1.0-fase-d/          Idefix1.0 sin servidor + fases B, C y D (código completo .txt, diff y cambios)
-idefix1.0-fase-e/          Idefix1.0 sin servidor + fases B, C, D y E (recomendada; código completo .txt, diff y cambios)
+idefix1.0-fase-e/          Idefix1.0 sin servidor + fases B, C, D y E (código completo .txt, diff y cambios)
+idefix1.0-fase-f/          Idefix1.0 sin servidor + fases B, C, D, E y F (recomendada; código completo .txt, diff y cambios)
 ```
 
 Bibliotecas de terceros (incluidas como paquetes verificados por SHA-256): Tesseract.js 7.0.0 y

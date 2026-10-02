@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<!-- Misma política que index.html: solo scripts de esta carpeta, sin red (connect-src 'none'). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' blob:; worker-src blob:; connect-src 'none'; style-src 'self'; img-src 'none'; font-src 'none'; media-src 'none'; manifest-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Pruebas del corpus · Idefix1.0</title>
+<link rel="stylesheet" href="pruebas-corpus.css">
+</head>
+<body>
+<main>
+  <h1>Pruebas automáticas del corpus</h1>
+  <p>Analiza con este Idefix1.0 los documentos del corpus de auditoría y compara cada resultado con su verdad
+    (<code>verdad-pruebas.json</code>), con las mismas reglas que <code>evaluar.py</code> y <code>consolidar.py</code>.
+    Todo ocurre en este navegador: no hace falta Node.js ni servidor, y no sale nada a la red.</p>
+  <ol>
+    <li>Elige la carpeta <code>auditoria-lectura-idefix/corpus</code> (contiene <code>verdad-pruebas.json</code> y los documentos).</li>
+    <li>Pulsa <strong>Ejecutar las pruebas</strong>. Con OCR tarda unos minutos.</li>
+  </ol>
+  <form id="formulario">
+    <label>Carpeta del corpus: <input type="file" id="carpeta" webkitdirectory multiple></label>
+    <label><input type="checkbox" id="ocr" checked> OCR activado (como en index.html)</label>
+    <button type="submit" id="ejecutar" disabled>Ejecutar las pruebas</button>
+    <button type="button" id="descargar" disabled>Descargar resultados (JSON)</button>
+  </form>
+  <p id="estado" role="status">Elige la carpeta del corpus.</p>
+  <section id="resumen" hidden>
+    <h2>Resumen por formato</h2>
+    <p id="resumenGlobal"></p>
+    <table>
+      <thead><tr><th>Formato</th><th>Casos</th><th>✅</th><th>⚠️</th><th>❌</th><th>Nota</th><th>Nota esperada</th></tr></thead>
+      <tbody id="tablaFormatos"></tbody>
+    </table>
+  </section>
+  <section id="detalle" hidden>
+    <h2>Detalle por caso</h2>
+    <table>
+      <thead><tr><th>Caso</th><th>Formato</th><th>Veredicto</th><th>Esperado</th><th>Comparación</th><th>ms</th><th>Resultado</th></tr></thead>
+      <tbody id="tablaCasos"></tbody>
+    </table>
+  </section>
+  <details>
+    <summary>Interfaz del analizador usada por las pruebas</summary>
+    <div id="contenedorPruebas"></div>
+  </details>
+</main>
+<script src="vendor-paquetes/pdfjs-6.2.108-legacy-pdf.mjs.paquete.js"></script>
+<script src="vendor-paquetes/pdfjs-6.2.108-legacy-pdf.worker.mjs.paquete.js"></script>
+<script src="vendor-paquetes/tesseract-7.0.0.min.js.paquete.js"></script>
+<script src="vendor-paquetes/tesseract-7.0.0-worker.min.js.paquete.js"></script>
+<script src="vendor-paquetes/tesseract-core-7.0.0-simd-lstm.wasm.js.paquete.js"></script>
+<script src="vendor-paquetes/tessdata-spa.traineddata.gz.paquete.js"></script>
+<script src="vendor-paquetes/tessdata-cat.traineddata.gz.paquete.js"></script>
+<script src="vendor-paquetes/tessdata-eus.traineddata.gz.paquete.js"></script>
+<script src="vendor-paquetes/tessdata-eng.traineddata.gz.paquete.js"></script>
+<script src="vendor-paquetes/tessdata-fra.traineddata.gz.paquete.js"></script>
+<script src="analizador-archivos.js" data-autoarranque="false"></script>
+<script src="pruebas-corpus.js"></script>
+</body>
+</html>
