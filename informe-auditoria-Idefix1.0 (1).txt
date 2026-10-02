@@ -1,0 +1,403 @@
+=====================================================================================================
+INFORME DE AUDITORÍA — Idefix1.0 (AnalizadorArchivos 6.14.0, archivo único)
+Fecha: 2 de octubre de 2026 (auditoría de la v6.13.0 del 1 de octubre, actualizada a Idefix1.0)
+Objeto auditado: analizador-archivos.js Idefix1.0 (16.504 líneas), index.html, demo-ocr.(html|js|css),
+                 servidor-local.ps1, servidor-local.py, iniciar-idefix.bat,
+                 herramientas/generar-manifiesto.(html|js|css), herramientas/cabeceras-http-recomendadas.txt
+Código de referencia comparado: AnalizadorArchivos_v6_30_D10_regresion.txt («D10»; su cabecera dice v6.25,
+                 su constante VERSION dice 6.28.0)
+=====================================================================================================
+
+Todas las referencias «Línea» son del archivo entregado analizador-archivos.js (archivo único) salvo que
+se indique otro archivo. El worker núcleo va incrustado en ese mismo archivo (líneas 461–5765), de modo
+que las líneas del worker también son líneas de analizador-archivos.js.
+
+Nada se da por bueno sin evidencia. Lo que no se ha podido comprobar se marca «⚠️ No demostrable con el
+código proporcionado» o «⚠️ NO VERIFICADO».
+
+-----------------------------------------------------------------------------------------------------
+0. MÉTODO Y PRUEBAS EJECUTADAS
+-----------------------------------------------------------------------------------------------------
+Cómo se ha comprobado:
+  a) Lectura del código (archivo único).
+  b) Ejecución real en Chromium (Playwright) de 17 páginas de prueba sobre la distribución de archivo
+     único sellada (SRI + manifiesto + anclas SHA-256), con CSP estricta.
+  c) Ejecución del worker núcleo en Node (vm) para normalización, D7 y fuzzing de rendimiento.
+  d) Auditoría independiente por un segundo agente que NO escribió el código: 15 hallazgos; todos
+     corregidos y re-verificados por ese mismo agente (14 corregidos con ejecución, 1 por lectura).
+  e) Comparación funcional independiente con D10 por un tercer agente.
+  f) Comparación salida-a-salida: la distribución de archivo único produce EXACTAMENTE la misma salida que
+     la versión de desarrollo de varios archivos en las 14 páginas de regresión (solo difieren UUID y
+     marcas de tiempo).
+
+Pruebas (todas en verde en la versión entregada):
+  t-auto        autoarranque, 20 cajetillas, arrastre accesible, drop fuera bloqueado, botón Descargar JSON
+  t-api         API pública, formatos y rechazos (≈5.200 líneas de salida)
+  t-rend        rendimiento: 60.000 y 300.000 celdas sin bloquear la página más de 1,6 s
+  t-fiscal      formulario fiscal real (UI), NIF y nombre del cliente, cambio de impuesto
+  t-prompt      generación, copia, descarga, desactualización y validación de la respuesta de la IA
+  t-auditoria   batería de seguridad (contenido activo, inyección, ZIP, XML, PDF con JavaScript…)
+  t-bloqueado   CSP sin worker-src blob: → ABORTA (no hay modo en el hilo principal)
+  t-red         sonda dentro del worker incrustado: fetch, XHR, WebSocket, EventSource, importScripts,
+                caches, FontFace, Worker anidado e import() externo → todos bloqueados
+  t-vista12     PDF con formulario AcroForm y campos ocultos
+  t-imp         aislamiento de impuesto en el prompt (IRPF/IVA/IRNR/IS)
+  t-form13      formulario v2.1 y hallazgos H1–H11 de la verificación independiente anterior
+  t-vista       vista completa del prompt y del JSON
+  t-csp-blob    CSP en workers clásicos y de módulo
+  t-prompt14    las 10 pruebas del módulo de prompts (cliente, IRNR, regímenes, cambio de impuesto,
+                bloqueo sin NIF/nombre, marcadores, JSON intacto, trazabilidad, calidad), cruces X12/X13
+  t-matriz      las 20 cajetillas × 8 comprobaciones (worker, magic bytes, estructura rota, tamaño,
+                tiempo máximo, cancelación, sanitización, tipo fijado por la cajetilla) = 160/160 OK
+  t-ocr13       OCR con SUSTITUTO de Tesseract (ver punto 7): 7 idiomas, SHA-256 de cada idioma,
+                red bloqueada en el worker OCR, D7, cambio de idiomas; idioma manipulado y idioma
+                ausente → no arranca
+  run-clip      copia real al portapapeles (clic de usuario) = prompt íntegro
+  tamper_unico  6 manipulaciones del archivo único → todas impiden el arranque o la carga del script
+  herr13        herramienta generar-manifiesto con el archivo único → 4/4 «Coincide»; worker editado →
+                «Hay que actualizarlo»
+  d7-regresion  32 casos de importes, monedas, ambigüedad, confianza y N.valor → TODO OK
+  fuzz13        búsqueda de comportamiento cuadrático (ReDoS) en ocr/pdf/docx/xlsx/html con 74 patrones
+                y las 20 cajetillas (5.304 casos): sin crecimiento superlineal reproducible; los
+                «sospechosos» aislados no se repiten al medir en secuencia (128.000 repeticiones → la
+                entrada se rechaza por el límite del protocolo, en < 5 ms)
+
+-----------------------------------------------------------------------------------------------------
+1. TABLA DE AUDITORÍA
+   Punto | Estado | Archivo | Línea | Evidencia | Impacto | Corrección | Prioridad
+   (A = analizador-archivos.js; Estado: ✅ cumple · ⚠️ cumple con reservas / no demostrable · ❌ no cumple)
+-----------------------------------------------------------------------------------------------------
+
+1.1 REQUISITOS EXPRESOS DEL MENSAJE DEL 1 DE OCTUBRE
+
+R01 | Cajetillas DUAS, Otros informes, Cuentas bancarias, Otros modelos y Otros | ✅ | A | 8319–8339 (CATALOGO_CAJETILLAS: 8334 otros_modelos, 8335 cuentas_bancarias, 8336 duas, 8337 otros_informes, 8338 otros) | t-auto lista las 20; t-matriz 20/20 | Sin impacto negativo | — | —
+R02 | No hay cajetillas obligatorias | ✅ | A | catálogo 8319–8339 (ningún campo «obligatoria»); t-auto | Se puede descargar con una sola cajetilla usada | — | —
+R03 | «Descargar JSON» solo con ≥1 archivo | ✅ | A | 13868 y 14271 (estaListoParaDescargar = items.size > 0 && !consolidando && !esperandoDescarga) | t-prompt14: deshabilitado con 0, habilitado durante el proceso, deshabilitado al quitar todo; agente QA: también tras soltar fuera y tras cancelar+eliminar | — | — | —
+R04 | Arrastrar y soltar VARIOS archivos en CADA cajetilla | ✅ | A | 14070–14125 (dragenter/dragover/dragleave/drop por cajetilla; drop global bloqueado fuera); 12984 (input.multiple = true) | Agente QA: 2 archivos soltados en el título de cada una de las 20 → 40 completados, cada uno en su cajetilla; 3 por selección múltiple | — | — | —
+R05 | Hasta 100 archivos por cajetilla (como D10) | ✅ (corregido en esta fase) | A | 296–297 (maxArchivosLote 200, maxArchivosPorCajetilla 100), 14138 (_motivoRechazoLote) | Antes: 50 archivos en total. Ahora: 102 en una cajetilla → 100 entran y 2 se rechazan con aviso; al llegar a 200 en total se rechazan con aviso | Lotes más grandes | — | —
+R06 | Tesseract: cat, chi_sim, chi_tra, eng, eus, fra, spa | ✅ código / ⚠️ motor real | A | 8109 (AA_IDIOMAS_TESSERACT), 340 (idiomasTesseract por defecto = los 7, spa primero), 7782 (crearWorkerTesseractLocal), 7741 (shim que verifica el SHA-256 de cada idioma) | t-ocr13 con sustituto: los 7 cargados y verificados; fra manipulado → no arranca; chi_tra ausente → no arranca | ⚠️ El reconocimiento real con Tesseract.js 7.0.0 NO DEMOSTRABLE aquí (descargas bloqueadas) | Probar con los archivos oficiales (ver 8) | Alta
+R07 | Fase D7: normalización de importes, fechas, monedas y NIF tras el OCR | ✅ (tras corregir 7 fallos) | A | 4214–4440 (módulo D7: 4260 leerNumero, 4289 RE_IMPORTE) | d7-regresion 32/32; t-ocr13 | Ver hallazgos F01–F07 (corregidos) | — | —
+R08 | Código autocontenido: JS + HTML de la interfaz + CSS + worker en un solo archivo, sin frameworks | ✅ | A | 459–7163 (AA_INCRUSTADO: worker 461, css 5768, marco 6033); 8041 (aaFuenteWorkerIncrustado), 8055 (aaAplicarHojaIncrustada) | index.html solo contiene el contenedor y un <script>; ni Vue, ni React, ni Tailwind; JavaScript nativo | — | — | —
+R09 | Bootstrap 5 | ⚠️ | A | 5768 (hoja propia con las clases btn, btn-primary, btn-outline-* … usadas por la interfaz) | No se incrusta el CSS oficial de Bootstrap: no ha podido descargarse para verificar sus bytes, y la copia que trae D10 (línea 105–110) NO es la oficial (le faltan las secuencias de escape: «content:"— "» en vez de «"\2014\00A0"»), así que no se puede certificar. Bootstrap tampoco es necesario: la interfaz no usa su JavaScript y su CSS global cambiaría la página anfitriona | Si se exige, desplegar bootstrap.min.css 5.3.x oficial en vendor/ y aplicarlo sellado en el manifiesto | Baja
+R10 | Exportación solo JSON | ✅ | A | 14525 (descargarJSON) | — | — | — | —
+R11 | Comparación con D10 | ✅ | — | apartado 6 | — | — | — | —
+
+1.2 DIMENSIÓN 1 — BUGS Y ERRORES FUNCIONALES
+
+B01 | Cancelar justo antes de terminar: el resultado completo sustituía al cancelado | ✅ corregido | A | 14909 (_procesarArchivo: el resultado se valida en una variable local y solo se asigna tras _comprobarCancelacion) | Agente QA antes: tarjeta «cancelado», promesa «cancelled», resultado «complete». Después: los tres «cancelled» | Un archivo cancelado entraba en el JSON | Hecho | (era Media)
+B02 | La purga tras descargar borraba archivos añadidos durante la consolidación y dejaba tarjetas huérfanas | ✅ corregido | A | 14697 (purgarDatosSensibles(soloIds)), 14525 (conjunto «incluidos»), 16006 (_renderItem no repinta un archivo eliminado) | Después: itemsTrasPurga 1, contador 1, tarjeta coherente | Pérdida silenciosa de archivos | Hecho | (era Media)
+B03 | Cancelar en cola y reintentar enseguida devolvía «cancelled» | ✅ corregido | A | 14614 (cancelar: control de generación) | Después: el reintento devuelve «complete» | Estado incoherente | Hecho | (era Baja)
+B04 | Nombre de archivo > 4096 caracteres: se analizaba entero y fallaba al final | ✅ corregido | A | 14138; constante AA_MAX_LONGITUD_NOMBRE_ARCHIVO (1024) | 1024 → complete; 1025 → rechazado al añadirlo con mensaje; el aviso recorta el nombre a 80 caracteres | Trabajo inútil | Hecho | (era Baja)
+B05 | Volver a subir el mismo archivo se ignoraba sin avisar | ✅ corregido | A | 14800 (_esDuplicado) y 14161 (agregarArchivos) | «Ya está en la cajetilla «Contabilidad» (no se añade de nuevo): dup.xlsx.» | Confusión | Hecho | (era Baja)
+B06 | «{{…}}» en el nombre del cliente bloqueaba el prompt con un mensaje confuso | ✅ corregido | A | 9563 (aaTextoUsuario rechaza «{{» y «}}» con error en el campo) | Se marca en el formulario | — | Hecho | (era Baja)
+B07 | La URL blob: del worker de Tesseract no se revocaba al cambiar de idiomas | ✅ corregido (verificado por lectura) | A | 7782 (finally con URL.revokeObjectURL) | — | Fuga pequeña de memoria | Hecho | (era Baja)
+B08 | Condiciones de carrera con el worker núcleo, doble resolución | ✅ | A | 7976 (un Worker por archivo, id de mensaje y protocolo); 14855–14895 (Promise.race con abortado; listeners retirados en finally) | Agente QA: sin rechazos sin gestionar en ninguna ejecución; worker que falla, se cae o no responde → «failed» (120 s) | — | — | —
+B09 | Archivo de 0 bytes | ✅ | A | detección de formato | → failed, FORMAT_REJECTED | — | — | —
+B10 | Sin modo en el hilo principal si falla el Worker | ✅ | A | 8072 (aaComprobarWorkerNucleo), 7976 | t-bloqueado: «No se procesa nada en el hilo principal» | — | — | —
+B11 | Promesas silenciadas con .catch(() => {}) | ⚠️ | A | 12183, 12199, 12204, 12312, 13636, 13708, 14748, 14864, 14868 | Son promesas cuyo error ya se trata por otra vía (p. ej. 13708: generarPromptFiscal muestra su propio mensaje; 14864: «abortado» se consume en Promise.race). No se pierde ningún error con efecto visible, pero el patrón dificulta la lectura | Bajo | Sustituir por un comentario explícito o por un registrador común (aaIgnorarYaGestionado) | Baja
+
+1.3 DIMENSIÓN 2 — FIDELIDAD DE LOS DATOS
+
+F01 | D7 truncaba importes sin punto de miles: «1234,56 €» → 4,56 | ✅ corregido (era BLOQUEANTE) | A | 4289 (RE_IMPORTE anclado por la izquierda; parte entera con o sin grupos de miles) | Antes: 4,56 · 0 · 50 en «Base 15000,00 € / Cuota 3150,00 € / Total 18150,00 €». Ahora: 1234.56; 15000, 3150, 18150 | El JSON se contradecía | Hecho | —
+F02 | «0,125 €» → 125 y «1,459 €/l» → 1459 | ✅ corregido | A | 4260 (leerNumero) | Ahora 0.125; 1.459 con ambiguo:true y lectura_alternativa 1459; los importes ya no se redondean a 2 decimales (hasta 6) | Precios unitarios erróneos | Hecho | —
+F03 | «31.12.2023» generaba además un importe de 31,12 | ✅ corregido | A | 4289–4320 (filtro de números que pueden ser parte de una fecha) | Ahora solo la fecha | Importes falsos | Hecho | —
+F04 | Espacio como separador de miles unía dos números («IVA 21 100,00 €» → 21100) sin avisar | ✅ corregido | A | 4260 | Ahora ambiguo:true y confianza 0,55 | — | Hecho | —
+F05 | Guion de un rango leído como signo negativo | ✅ corregido | A | 4289 | «100,00-200,00 €» → 100 y 200 | Signos erróneos | Hecho | —
+F06 | Sin confianza de OCR, D7 la trataba como perfecta | ✅ corregido | A | D7: CONFIANZA_OCR_DESCONOCIDA = 0,6 | Ahora 0,51 (antes 0,85, más que un bloque al 95 %) | Confianza inflada | Hecho | —
+F07 | Moneda mal deducida («单元» → CNY; USD+GBP → EUR afirmado) | ✅ corregido | A | D7 MONEDAS; normalizar | 元/円 solo junto a una cifra; con varias monedas, «implicita_conflicto», ambiguo y moneda_documento null | — | Hecho | —
+F08 | Celdas de Word/Excel/HTML: «1 234,56», «1.234,56-», USD, $, £, CHF, CNY, JPY no se reconocían | ✅ corregido | A | 1364 (MONEDAS_CELDA), 1369 (N.valor), 4952 (moneda semántica por recuento de monedas expresas) | Ahora valores y unit correctos; «1,234.56» (inglés inequívoco) también | Importes perdidos en tablas | Hecho | —
+F09 | «1.234,56 €» → 1234.56 (nunca 1.23456, NaN ni 123456) | ✅ | A | 1369 (N.valor), 4260 (D7) | d7-regresion y N.valor | — | — | —
+F10 | Columnas de libros asignadas al campo correcto | ✅ | A | datosEspecificos (worker, 3604–4210) | t-api, t-prompt14 (X12 encuentra DUAs, X13 empareja cobros) y conciliaciones base+cuota=total en el JSON | — | — | —
+F11 | Páginas 2 y siguientes de un PDF | ✅ | A | 2896 (estructurarPDF recorre todas las páginas) | t-api: PDF de 2 páginas con pageCount 2 y bloques de ambas | — | — | —
+F12 | PDF con varias facturas dentro → entradas separadas | ❌ | A | 2896 | Un archivo = un documento del JSON. Las líneas tabulares se extraen como registros, pero varias facturas sueltas en un PDF no se separan en documentos independientes | La IA fiscal recibe varias facturas como un solo documento | Fase de mejora PDF-3 (apartado 8): detección de cabeceras de factura repetidas y partición por página | Media
+F13 | Validación NIF/NIE/CIF | ✅ | A | 9489 (aaValidarNIF) y validarNIF del worker | t-ocr13: B87654323 válido, X1234567L válido, propuesta de corrección OCR B876S4323 → B87654323 (valor null + propuesto) | — | — | —
+F14 | Moneda siempre poblada si hay importe | ✅ | A | 4952; D7 | EUR implícito con origen y confianza 0,5; con varias monedas, la más frecuente marcada como INFERENCIA | — | — | —
+F15 | null vs 0 | ✅ | A | N.valor (vacío → null); D7 (corrección OCR → valor null + valor_propuesto) | Un dato desconocido nunca se convierte en 0 en los casos probados | — | — | —
+F16 | campos_baja_confianza no es un valor fijo | ✅ | A | worker ~5447–5465 | Varía con la calidad real: 0,18 / 0,36 / 0,48 / 0,92 según documento (t-prompt14 p10) | — | — | —
+F17 | «NO» en una celda se convierte en booleano false | ⚠️ (decisión) | A | 1381 | En España «SÍ/NO» es habitual; «NO» también es el código ISO de Noruega | Raro en documentos fiscales españoles | Aplicar el booleano solo en columnas inferidas como booleanas (fase XLSX-4) | Baja
+
+1.4 DIMENSIÓN 2-BIS — VALORACIÓN PROPIA
+Sí hay margen real de mejora en la calidad de la información extraída; está detallado por formato en el
+apartado 8. Lo más rentable, por este orden: OCR con segunda pasada y preprocesado (D10 lo tiene),
+orden de lectura de PDF a dos columnas, partición de PDF con varias facturas, fórmulas compartidas de
+XLSX y etiquetas de listas en DOCX.
+
+1.5 DIMENSIÓN 3 — CALIDAD DEL CÓDIGO JAVASCRIPT
+
+C01 | Archivo único de 16.504 líneas | ⚠️ (requisito del usuario) | A | todo | Lo ha pedido el usuario. El aislamiento entre cajetillas en ejecución se mantiene: un Worker nuevo por archivo, y el tipo documental lo fija la cajetilla | Mantenimiento más difícil | Conservar la fuente de desarrollo separada (worker, CSS, marco) y generar el archivo único; la herramienta generar-manifiesto ya admite las dos formas | Baja
+C02 | Funciones muy largas | ⚠️ | A | 10584 aaConstruirPromptFiscal (≈620 líneas); datosEspecificos del worker; _renderFiscal (13102, ≈370) | Difíciles de revisar | Dividir por secciones del prompt (1–11) y por perfil documental | Baja
+C03 | JSDoc | ⚠️ | A | 174 bloques JSDoc; API pública y funciones nuevas documentadas | Parte del código antiguo sin JSDoc | Completar en las funciones públicas restantes | Baja
+C04 | Números mágicos centralizados | ✅ | A | 272–345 (configuración), 7136 (SHA-256), AA_MAX_LONGITUD_NOMBRE_ARCHIVO, AA_DIAS_EMPAREJAMIENTO_BANCO, AA_DIFERENCIA_MAXIMA_EMPAREJAMIENTO, CONFIANZA_OCR_DESCONOCIDA | — | — | — | —
+C05 | async/await coherente | ✅ | A | — | Se mezclan .then/.finally solo en la cola de procesamiento, donde hace falta Promise.race | — | — | —
+C06 | Gestión de errores | ✅ | A | — | Los errores llegan a la tarjeta, al aviso y a informe_completitud con su código (FORMAT_REJECTED, PROCESSING_TIMEOUT…) | — | Ver B11 | —
+C07 | Código muerto | ✅ | A | — | La comprobación de la hoja de estilos (_comprobarHojaEstilos) se adaptó al archivo único; no se han hallado funciones sin uso en las partes modificadas | — | — | —
+C08 | Ninguna pérdida de funcionalidad | ⚠️ | — | apartado 6 | Frente a D10 hay capacidades que esta versión no tiene (OCR con segunda pasada, StructTree de PDF, fórmulas compartidas, etiquetas de listas DOCX, WebP, banco de pruebas de calidad). Frente a la v6.12 propia, no se ha perdido nada: la salida es idéntica salvo las mejoras de esta fase | Ver apartado 6 | Fases del apartado 8 | Media
+
+1.6 DIMENSIÓN 4-BIS — EXPERIENCIA DE USUARIO
+
+U01 | Primera impresión y coherencia visual | ✅ | A | 5749 (CSS incrustado) | Captura en 1280 px y en 390 px: cabecera, chips de formatos, formulario fiscal, panel de idiomas OCR, 20 cajetillas iguales con zona de arrastre punteada | — | — | —
+U02 | Estados de cajetilla y de archivo | ✅ | A | tarjetas (≈16006) | Contador por cajetilla, «n completo(s) · m con incidencias», barra con aria-valuenow, estados Completado / Incompleto / Rechazado / Cancelado | — | — | —
+U03 | Zona de arrastre | ✅ | A | 14070–14125 | Toda la cajetilla acepta el arrastre, se resalta al pasar y avisa si se suelta fuera | — | — | —
+U04 | Accesibilidad | ✅ | A | zona role="button", tabIndex 0, aria-label; aria-live; aria-invalid en NIF/nombre | t-auto, agente QA | — | — | —
+U05 | Avisos claros en límites, duplicados y nombres largos | ✅ | A | 14161 | Mensajes en español con la causa concreta | — | — | —
+U06 | Sin OCR por defecto al crear por código | ⚠️ | A | 337 (ocr:false); index.html usa data-ocr="true" | Al crear por código sin { ocr:true } un PDF escaneado queda sin texto (se avisa en la tarjeta) | Confusión posible | Se entrega index.html con OCR activado e index-sin-ocr.html | Baja
+
+1.7 DIMENSIÓN 5 — CUMPLIMIENTO DEL PROMPT MAESTRO (§1–§131)
+Hay un informe §132 completo anterior: «informe-auditoria-v6.11.0» (fase 11), más la verificación
+independiente de la v6.12. Según el método pedido, no se repite entero: se verifica lo que ha cambiado
+desde entonces.
+
+S01 | §1 Sin pérdida de funcionalidad | ✅ frente a v6.12 / ⚠️ frente a D10 | — | — | Ver C08 | — | — | Media
+S02 | §2–§5, §70 Sin servidor, sin Node, sin envío de documentos, IA fiscal sin Internet | ✅ | index.html (CSP); A 504 (RED_NEUTRALIZADA en el worker) | t-red, t-csp-blob; PETICIONES_EXTERNAS vacías en todas las pruebas | — | — | —
+S03 | §19–§27 Cajetillas independientes; el tipo lo fija la cajetilla | ✅ | A | 8319–8339 | t-matriz tipoFijo 20/20 | — | — | —
+S04 | §30, §91 Worker aislado y sin red | ✅ | A | 461–5765, 504 | t-red con el worker incrustado | — | — | —
+S05 | §37 Límites | ✅ | A | 272–345 | t-matriz tamaño, tiempo máximo y cancelación 20/20 | — | — | —
+S06 | §41, §107 Progreso real | ✅ | A | tarjetas | Barra por archivo con valor real | — | — | —
+S07 | §44, §46 Moneda y null | ✅ | — | F14, F15 | — | — | — | —
+S08 | §51 Fórmulas e inyección | ✅ | A | worker SEG | t-matriz sanitización 20/20 | — | — | —
+S09 | §68 MARCO_FISCAL_LOCAL versionado y validado | ✅ | A | 6033 (marco incrustado, versión 2026.3), 9437 (aaCargarMarcoFiscal valida el esquema también incrustado) | Marco con propiedad intrusa → no arranca | — | — | —
+S10 | §73 Descargar JSON | ✅ | A | 14525 | Espera a los archivos en proceso y valida el esquema antes de descargar | — | — | —
+S11 | §76, §126–§130 Prompt: rol, normativa según el caso, JSON sin normativa, autorrevisión | ✅ | A | 10584, 11214 | t-prompt14 p1–p10; autorrevisión 10/10 OK | — | — | —
+S12 | Integridad (cadena SRI → anclas → manifiesto) | ✅ | A 443, 7164; index.html | tamper_unico 6/6; herr13 4/4 | — | — | —
+S13 | §123 JSDoc en código nuevo | ✅ | A | 8041, 8055, 14138, 14697, 14800, D7 | — | — | — | —
+S14 | Normativa (IRNR: RDLeg 5/2004 BOE-A-2004-4527; RD 1776/2004 BOE-A-2004-14532) | ✅ (verificado en la fase anterior contra el BOE) | A | marco 6033 y siguientes | — | — | — | —
+
+1.8 DIMENSIÓN 6 — FORMATO
+Este documento sigue la tabla pedida, da una única lista priorizada (apartado 2) y termina con una
+recomendación explícita (apartado 9).
+
+1.9 NOVEDADES DE IDEFIX1.0 (2 de octubre de 2026)
+
+I01 | Cajetilla de texto «Contexto del análisis» en el panel del prompt | ✅ | A | 13675 (campo), 9585 (aaTextoContextoUsuario), 9602 (aaBloqueContextoUsuario), 10584 (aaConstruirPromptFiscal), 11214 (autorrevisión «contexto_usuario»), 13768 (establecerContextoUsuario) | t-contexto: texto hostil con líneas «5. NORMATIVA APLICABLE», «INICIO DOCUMENT_DATA», «FIN CONTEXTO_USUARIO» y «1. ROL» → cada línea va precedida de «│ », hay un solo par de delimitadores de cada bloque, una sola sección 5 y un solo rol; autorrevisión 11/11 OK; el texto no entra en DOCUMENT_DATA ni en el JSON; «{{…}}», caracteres invisibles y más de 4000 caracteres se rechazan; un prompt con el bloque alterado no supera la autorrevisión | Ninguna pérdida de funcionalidad (toda la regresión anterior en verde) | — | —
+I02 | OCR sin interfaz con carga verificada (AnalizadorArchivosAPI.crearOCRLocal) | ✅ con sustituto / ⚠️ con la librería real | A | 16397 | demo-ocr: motor cargado y verificado, texto y líneas con confianza, firma PNG/JPEG comprobada, archivo que no es imagen rechazado | — | Probar con Tesseract.js 7.0.0 real | Alta
+I03 | A Tesseract se le pasa siempre un Blob | ✅ | A | detectar() de ProveedorOCRTesseractLocal | Las páginas de PDF (lienzos) se convierten a PNG antes del OCR: así la librería nunca necesita hacer una petición para leer la imagen | — | — | —
+I04 | file:// en Chrome y Edge | ❌ no viable (comprobado) | — | — | Chromium 141: fetch, XHR y new Worker desde archivo bloqueados; un script con integrity no se ejecuta; con --allow-file-access-from-files fetch sigue bloqueado | Sin servidor local no funciona | servidor-local.ps1 / servidor-local.py | —
+I05 | Servidor local mínimo | ✅ Python (probado) / ⚠️ PowerShell (no probado aquí: no hay PowerShell en el entorno de pruebas) | servidor-local.py, servidor-local.ps1, iniciar-idefix.bat | — | Python: solo 127.0.0.1; 5 intentos de salir de la carpeta → 404; carpetas sin listado (404); POST → 405; CSP y demás cabeceras en cada respuesta; MIME correctos (.js, .wasm, .gz) | — | Ejecutar una vez servidor-local.ps1 en Windows y repetir la comprobación de red | Media
+I06 | Ninguna petición de red externa | ✅ | — | — | Flujo completo (imagen con OCR, PDF, Excel y HTML; formulario; Contexto del análisis; prompt; descarga del JSON) con un interceptor que aborta todo lo que no sea el servidor local: 18 peticiones, todas GET al propio servidor, 0 externas, 0 con cuerpo, 0 bloqueos de la CSP. Demo OCR: 13 peticiones (incluidas las de los workers), 0 externas | — | — | —
+
+-----------------------------------------------------------------------------------------------------
+2. LISTA ÚNICA PRIORIZADA (todas las categorías juntas; lo pendiente primero)
+-----------------------------------------------------------------------------------------------------
+PENDIENTE
+  0. [Alta]  ⚠️ Ejecutar una vez servidor-local.ps1 (o iniciar-idefix.bat) en Windows con Chrome y Edge de marca: aquí
+             solo se ha probado el servidor en Python y el motor Chromium 141 (I05).
+  1. [Alta]  ⚠️ Probar el OCR con Tesseract.js 7.0.0 REAL y los 7 idiomas oficiales (R06). Aquí solo se
+             probó con un sustituto que imita su protocolo. Hasta entonces el OCR real es NO DEMOSTRABLE.
+  2. [Media] ❌ PDF con varias facturas: no se separan en documentos (F12).
+  3. [Media] ⚠️ OCR de una sola pasada, sin preprocesado ni segunda pasada (D10 sí la tiene; fase OCR-1).
+  4. [Media] ⚠️ PDF a dos columnas: el orden de lectura intercala líneas (fase PDF-1).
+  5. [Media] ⚠️ XLSX: las fórmulas compartidas dependientes quedan sin expresión; las celdas combinadas
+             solo se avisan (fases XLSX-1 y XLSX-2).
+  6. [Media] ⚠️ DOCX: se pierden las etiquetas de listas numeradas («1.», «a)») y la geometría de las celdas
+             combinadas (fases DOCX-1 y DOCX-2).
+  7. [Baja]  ⚠️ Bootstrap oficial no incrustado (R09).
+  8. [Baja]  ⚠️ «NO» → booleano en cualquier columna (F17).
+  9. [Baja]  ⚠️ Funciones muy largas y JSDoc incompleto en código antiguo (C02, C03).
+ 10. [Baja]  ⚠️ Patrón .catch(() => {}) poco explícito (B11).
+ 11. [Baja]  ⚠️ WebP no admitido (D10 sí).
+
+CORREGIDO EN ESTA FASE (verificado de nuevo por el auditor independiente)
+  F01 (era bloqueante), F02, F03, F04, F05, F06, F07, F08, B01, B02, B03, B04, B05, B06, B07 y R05
+  (límite de 50 archivos en total → 100 por cajetilla y 200 en total).
+
+-----------------------------------------------------------------------------------------------------
+3. CALIDAD DE LA CONVERSIÓN A JSON POR FORMATO (valoración 0–10)
+-----------------------------------------------------------------------------------------------------
+Excel (.xlsx; .xls con restricciones) ........ 8,5
+  Fuerte: lectura propia en el worker sin librería externa; fechas seriales y base 1904; origen del
+  valor (valor guardado o fórmula); columnas fiscales reconocidas por rótulo con confianza; truncado
+  controlado (60.000 / 300.000 celdas en 1,4–4,9 s sin bloquear la página); fórmulas peligrosas
+  neutralizadas; .xls BIFF/OLE2 con límites. Corregido en esta fase: miles con espacio, signo final y
+  monedas distintas del euro.
+  Débil: fórmulas compartidas dependientes, celdas combinadas solo avisadas, «NO» booleano.
+
+Word (.docx) .................................. 7,5
+  Fuerte: texto por párrafo, tablas, encabezados, pies, notas y comentarios; contenido activo o
+  externo (macros, DDE, plantillas remotas, OLE) rechazado con explicación; texto oculto señalado.
+  Débil: etiquetas de listas numeradas, geometría de celdas combinadas, revisiones (insertado/borrado)
+  no distinguidas.
+
+PDF digital ................................... 7,5
+  Fuerte: PDF.js 6.2.108 verificado por SHA-256 y ejecutado desde blob:; sin JavaScript, sin XFA, sin
+  red (disableAutoFetch, useWorkerFetch:false); valores de formularios AcroForm en su posición; campos
+  ocultos excluidos; tablas por geometría; todas las páginas.
+  Débil: orden de lectura en PDF a dos columnas (y luego x), no usa el árbol de estructura; varias
+  facturas en un PDF no se separan.
+
+PDF escaneado e imágenes (OCR) ................ 6 (⚠️ con motor real no demostrable aquí)
+  Fuerte: OCR local con 7 idiomas, bytes verificados y red bloqueada en el worker OCR; D7 corrige y
+  propone (sin inventar) importes, fechas en 5 idiomas y chino, y NIF; todo con bloque, línea y
+  confianza.
+  Débil: una sola pasada, sin preprocesado (gris/contraste/umbral) ni DPI; D10 tiene segunda pasada.
+
+HTML (.html/.htm) ............................. 8
+  Fuerte: analizador pasivo en el worker (nunca se inserta en la página), tablas, codificación
+  (UTF-8, UTF-16, Latin-1), contenido hostil registrado. D10 no admite HTML.
+  Débil: no interpreta CSS (un texto oculto por CSS se extrae igual, aunque se señala).
+
+-----------------------------------------------------------------------------------------------------
+4. VALORACIÓN DEL RIESGO DE CÓDIGO MALICIOSO
+-----------------------------------------------------------------------------------------------------
+Riesgo global: BAJO. Hay seis capas, y cada una se ha probado manipulándola.
+
+  1. Código de la aplicación: un único archivo protegido por el atributo integrity (SRI). Si se altera
+     un byte, el navegador no lo ejecuta (tamper_unico: js_sin_resellar, css_editado_sin_resellar).
+  2. Worker núcleo incrustado: su texto se verifica contra SHA256_WORKER_NUCLEO (línea 7164) antes de
+     ejecutarse desde blob:; si se edita aunque se reselle el SRI → no arranca (worker_editado,
+     worker_y_ancla).
+  3. Librerías (PDF.js, Tesseract): cada archivo de vendor/ está en el manifiesto, cuyo SHA-256 está
+     anclado en el JS (línea 443); el código de PDF.js tiene además su hash fijo. Se ejecutan desde blob:
+     con los bytes verificados, no desde la URL (manifiesto_alterado → no arranca; idioma OCR alterado
+     → no arranca).
+  4. CSP estricta: default-src 'none'; sin 'unsafe-inline' ni 'unsafe-eval' (solo 'wasm-unsafe-eval'
+     para los decodificadores WASM verificados); connect-src 'self'; los estilos se aplican con
+     adoptedStyleSheets (no hacen falta <style> ni style-src inline, a diferencia de D10).
+  5. Documentos hostiles: se analizan en un Web Worker nuevo por archivo, con la red anulada y sin
+     acceso al DOM. Macros, ActiveX, OLE, DDE, plantillas remotas, XLM, PDF con JavaScript, ZIP bomba,
+     XML profundo y rutas «traversal» → rechazados o neutralizados (t-auditoria, t-matriz). El texto
+     de los documentos nunca se inserta como HTML (textContent).
+  6. Inyección contra la IA fiscal: delimitadores con identificador, «son datos, no instrucciones»,
+     caracteres invisibles hechos visibles (⟦U+XXXX⟧), fragmentos sospechosos listados y autorrevisión
+     del prompt.
+
+Riesgos residuales:
+  - Tesseract.js y su núcleo son código de terceros que se ejecuta (en un worker sin red). Su
+    integridad está garantizada por hash, pero su contenido no se ha auditado aquí (⚠️).
+  - El atacante que pueda modificar a la vez el servidor y el index.html puede servir otra aplicación:
+    la SRI protege frente a archivos alterados, no frente a un servidor comprometido entero.
+  - El riesgo de una IA externa engañada por texto de un documento se reduce, pero no se elimina.
+
+-----------------------------------------------------------------------------------------------------
+5. CÓMO SE CUMPLE «ARCHIVO ÚNICO»
+-----------------------------------------------------------------------------------------------------
+- analizador-archivos.js contiene el código, la interfaz (se construye con el DOM), la hoja de
+  estilos, el worker núcleo y el MARCO_FISCAL_LOCAL.
+- La página solo necesita:
+    <div id="analizadorArchivos"></div>
+    <script src="analizador-archivos.js" integrity="sha256-…" data-ocr="true"></script>
+- Las librerías de terceros (PDF.js y Tesseract) NO se incrustan ni se cargan de un CDN. Pesan
+  decenas de MB, y su verificación por hash es lo que permite la CSP estricta. Se despliegan en
+  vendor/ (ver 7).
+
+-----------------------------------------------------------------------------------------------------
+6. COMPARACIÓN CON D10 (AnalizadorArchivos_v6_30_D10_regresion)
+-----------------------------------------------------------------------------------------------------
+Funcionalidad                  | D10                                             | v6.13.0                                          | Valoración
+Cajetillas                     | 20 + nif_auxiliar (facturas, gastos, nóminas,    | 19 + relación NIF–actividades (libros, modelos    | Distinto: las comunes (contabilidad, cuentas
+                               | SS, inmuebles, contratos, intra…)                | 303/100/190/347/349/115/180/200, SII, Veri*Factu)  | bancarias, DUAS, otros informes, otros modelos,
+                               |                                                 |                                                  | otros) están en ambas
+Tipo de documento              | Solo se anota la categoría                      | La cajetilla fija el tipo y su formato específico | v6.13 mejor
+Archivos por cajetilla         | 100                                             | 100 (y 200 en total; antes 50 en total)           | Equivalente
+Descargar JSON                 | ≥1 archivo; NO espera a los que están en proceso | ≥1 archivo; espera y valida el esquema            | v6.13 mejor
+Acciones por archivo           | No hay                                          | Ver, eliminar, cancelar, reintentar               | v6.13 mejor
+.xls antiguo                   | Se acepta pero se rechaza al detectar el tipo   | Se extrae con límites                             | v6.13 mejor
+HTML                           | No                                              | Sí                                                | v6.13 mejor
+WebP                           | Sí                                              | No                                                | D10 mejor (pequeño)
+DOCX                           | Estilos, listas, celdas combinadas, revisiones  | Texto, tablas, notas; listas y celdas simplif.    | D10 mejor
+XLSX                           | Fórmulas compartidas, estilos, validaciones     | Fechas, origen del valor, columnas fiscales       | D10 más rico; v6.13 mejor para el uso fiscal
+PDF orden y tablas             | StructTree + multicolumna                       | Geometría                                         | D10 mejor
+OCR                            | 2 pasadas, preprocesado, DPI                    | 1 pasada; D7 tras el OCR                           | D10 mejor en reconocimiento; v6.13 mejor en
+                               |                                                 |                                                  | normalización
+Tesseract: carga               | URL del mismo origen; idiomas y núcleo SIN      | SHA-256 de núcleo e idiomas; red bloqueada        | v6.13 mucho mejor
+                               | verificar                                       |                                                  |
+Análisis                       | En el hilo principal                            | Worker aislado por archivo, sin red               | v6.13 mucho mejor
+CSS / CSP                      | <style> con Bootstrap 231 KB; exige             | Hoja construible; style-src 'self'                 | v6.13 mejor
+                               | 'unsafe-inline'                                 |                                                  |
+Sanitización                   | DOMPurify (para su API de HTML)                 | textContent en todo; invisibles visibles          | Equivalente
+Integridad                     | SRI; SHA-384 del manifiesto sin comprobar        | Cadena SRI → anclas → manifiesto, comprobada      | v6.13 mejor
+Benchmarks / Release Gate      | Sí (AuditorReleaseLocal, BenchmarkCorpusLocal…)  | Esquemas, autorrevisión, validarRespuestaIA       | D10 mejor (como herramienta)
+Formulario y prompt fiscal     | Básico + enlaces al BOE                         | Contexto 2.1, IRNR, cruces X01–X13, normativa por  | v6.13 mucho mejor
+                               |                                                 | ejercicio, autorrevisión                          |
+Bootstrap                      | 5.3.6 incrustado (copia no idéntica a la         | CSS propio compatible                             | Ver R09
+                               | oficial)                                        |                                                  |
+Exportación XLSX               | Solo en la API interna                          | No (requisito: solo JSON)                         | No es pérdida
+
+Lo que NO debe importarse de D10: el <style> que exige 'unsafe-inline', el análisis en el hilo
+principal, la carga de traineddata sin hash y la descarga que no espera a los archivos en proceso.
+
+-----------------------------------------------------------------------------------------------------
+7. LIBRERÍAS NECESARIAS (todas locales en vendor/; ninguna se carga de un CDN en ejecución)
+-----------------------------------------------------------------------------------------------------
+Librería                    | Versión            | Carpeta                              | ¿Obligatoria?         | Fuente oficial                          | Verificación
+PDF.js (moderna)            | 6.2.108            | vendor/pdfjs/ (build/, web/cmaps,    | Sí                    | github.com/mozilla/pdf.js/releases       | SHA-256 fijo en el JS + manifiesto ✅
+                            |                    | web/standard_fonts, web/wasm)        |                       | (pdfjs-6.2.108-dist.zip)                 | (incluida en el zip)
+PDF.js (legacy)             | 6.2.108            | vendor/pdfjs-legacy/                 | Opcional (navegadores | pdfjs-6.2.108-legacy-dist.zip            | Igual ✅ (incluida en el zip)
+                            |                    |                                      | antiguos)             |                                          |
+Tesseract.js                | 7.0.0              | vendor/tesseract/tesseract.min.js,   | Solo con OCR          | github.com/naptha/tesseract.js           | Manifiesto ⚠️ (NO incluida: no se ha
+                            |                    | worker.min.js                        |                       | (release v7.0.0; paquete npm tesseract.js)| podido descargar aquí)
+tesseract.js-core           | la que acompaña a  | vendor/tesseract-core/*.wasm.js      | Solo con OCR          | github.com/naptha/tesseract.js-core      | Manifiesto ⚠️ (NO incluida)
+                            | 7.0.0 (⚠️ versión  | (variantes lstm / simd-lstm)         |                       |                                          |
+                            | exacta NO          |                                      |                       |                                          |
+                            | VERIFICADA)        |                                      |                       |                                          |
+Datos de idioma             | LSTM .traineddata.gz| vendor/tessdata/spa, cat, eus, eng,  | Solo con OCR (los 7   | tessdata de Tesseract (tesseract-ocr)    | SHA-256 de cada idioma ⚠️ (NO incluidos)
+                            |                    | fra, chi_sim, chi_tra                | si se dejan los 7)    | comprimidos con gzip                     |
+Bootstrap                   | —                  | —                                    | No                    | —                                        | No se usa (ver R09)
+Vue / React / Tailwind / jQuery / SheetJS / DOMPurify | — | —                        | No                    | —                                        | No se usan
+
+Tras copiar las librerías hay que abrir herramientas/generar-manifiesto.html, elegir la carpeta,
+guardar el manifiesto que propone y copiar en el JS y en index.html los valores que marque en rojo.
+
+-----------------------------------------------------------------------------------------------------
+8. POSIBILIDAD DE MEJORAR LA LECTURA DE CADA FORMATO (fases propuestas)
+-----------------------------------------------------------------------------------------------------
+Cada fase es independiente, se mide con las pruebas existentes y no toca la seguridad.
+
+PDF
+  PDF-1  Orden de lectura multicolumna: agrupar bloques por columnas detectadas (huecos verticales)
+         antes de ordenar por y/x; usar el StructTree de PDF.js cuando exista. Ganancia: alta en modelos
+         y facturas maquetados. Riesgo: bajo.
+  PDF-2  Tablas: combinar StructTree (etiquetas Table/TR/TD) con la geometría actual. Ganancia: media.
+  PDF-3  PDF con varias facturas: detectar cabeceras repetidas (número de factura, NIF del emisor,
+         «FACTURA») y partir por páginas en documentos hijos del JSON. Ganancia: alta para la IA fiscal.
+Word (DOCX)
+  DOCX-1 Etiquetas de listas numeradas (numbering.xml → «1.», «a)»). Ganancia: media.
+  DOCX-2 Celdas combinadas (gridSpan / vMerge) reconstruidas como en Excel. Ganancia: media en tablas.
+  DOCX-3 Revisiones: marcar texto insertado o borrado (w:ins / w:del) en vez de mezclarlo. Ganancia:
+         media; evita importes «borrados» tomados como vigentes.
+Excel (XLSX)
+  XLSX-1 Fórmulas compartidas: reconstruir la expresión de las celdas dependientes. Ganancia: baja-media
+         (el valor ya se lee).
+  XLSX-2 Celdas combinadas: propagar el valor del rango. Ganancia: media en cabeceras.
+  XLSX-3 Formatos de número del libro (styles.xml numFmt) para distinguir fechas, % y moneda por
+         formato. Ganancia: media.
+  XLSX-4 Booleanos solo en columnas booleanas (F17). Ganancia: baja.
+HTML
+  HTML-1 Respetar display:none / hidden de atributos y estilos en línea, marcando el texto oculto
+         como tal en vez de mezclarlo. Ganancia: baja-media.
+OCR (imágenes y PDF escaneados)
+  OCR-1  Segunda pasada con otro modo de segmentación (PSM 6) cuando la confianza media baje de un
+         umbral, y preprocesado en un canvas fuera de pantalla (gris, contraste, binarización,
+         300 DPI). Ganancia: alta (la mayor de todas). Riesgo: bajo; más tiempo de proceso.
+  OCR-2  Detección de orientación y giro antes del OCR. Ganancia: media.
+  OCR-3  D7 también en las celdas de tablas extraídas por OCR (hoy se aplica a las líneas). Ganancia: media.
+Transversal
+  T-1    Banco de regresión de calidad con documentos de referencia y resultados esperados campo a
+         campo (lo que D10 llama BenchmarkCorpusLocal), como herramienta aparte. Permite medir cada
+         fase anterior con números y no con impresiones.
+
+-----------------------------------------------------------------------------------------------------
+9. RECOMENDACIÓN FINAL (prompt maestro §73 y siguientes)
+-----------------------------------------------------------------------------------------------------
+¿Está lista para generar JSON de confianza y pasarlo a la IA fiscal?
+
+SÍ para documentos DIGITALES (Excel, Word, HTML y PDF con texto), con una salvedad: un PDF que
+contenga varias facturas llega como un solo documento (F12).
+  Justificación:
+  - No quedan fallos bloqueantes ni altos abiertos en la conversión. El único bloqueante encontrado
+    (F01, importes truncados en D7) se ha corregido y re-verificado.
+  - Los importes españoles, las monedas, los null y las confianzas se comportan como exige el prompt
+    maestro en 32 casos de regresión, más la batería existente.
+  - El JSON consolidado valida su esquema y la descarga espera a todos los archivos.
+  - Cada dato dudoso va marcado (ambiguo, lectura_alternativa, valor_propuesto, baja confianza) en
+    lugar de inventarse.
+  - El prompt generado pasa sus 10 comprobaciones de autorrevisión.
+
+TODAVÍA NO para documentos ESCANEADOS (OCR), hasta resolver:
+  1. Desplegar Tesseract.js 7.0.0, su núcleo y los 7 idiomas oficiales; sellar el manifiesto.
+  2. Procesar al menos una muestra real por idioma (spa, cat, eus, eng, fra, chi_sim, chi_tra) y
+     comparar campo a campo el JSON con el documento. Esto no ha podido hacerse aquí: el motor real
+     es NO DEMOSTRABLE con el código proporcionado.
+  3. Recomendado antes de un uso intensivo con escaneados: fase OCR-1 (segunda pasada y preprocesado).
+
+Para cualquier documento, el resultado sigue necesitando revisión humana en los puntos que el propio
+JSON marca: ambiguo, baja confianza, corrección OCR propuesta o incongruencia.
