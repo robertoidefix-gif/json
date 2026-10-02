@@ -1,0 +1,367 @@
+{
+ "config": {
+  "ocr": true,
+  "idiomasTesseract": [
+   "spa"
+  ]
+ },
+ "msInicio": 719,
+ "resumen": [
+  {
+   "id": "png01",
+   "ok": true,
+   "ms": 1099,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "jpg02",
+   "ok": true,
+   "ms": 911,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "jpeg03",
+   "ok": true,
+   "ms": 765,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "png04",
+   "ok": true,
+   "ms": 805,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "png05",
+   "ok": true,
+   "ms": 378,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "png07",
+   "ok": true,
+   "ms": 833,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "jpg08",
+   "ok": true,
+   "ms": 2205,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "pdfE1",
+   "ok": true,
+   "ms": 1021,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "pdfE2",
+   "ok": true,
+   "ms": 1062,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "pdfE3",
+   "ok": true,
+   "ms": 1921,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "pdf09",
+   "ok": true,
+   "ms": 260,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "pdfE4",
+   "ok": true,
+   "ms": 3717,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "png09",
+   "ok": true,
+   "ms": 1785,
+   "error": null,
+   "estado": "complete"
+  }
+ ],
+ "peticiones": [
+  {
+   "url": "http://127.0.0.1:8090/prueba-auditoria.html",
+   "tipo": "document",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/analizador-archivos.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/prueba-auditoria.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/manifiesto-integridad.json",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/pdfjs-legacy/build/pdf.mjs",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/pdfjs-legacy/build/pdf.worker.mjs",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/71fec3ac-d23f-466a-a15c-36c8af0ba9d4",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tesseract/tesseract.min.js",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/35ff568e-96b9-44d7-844e-b39ad06cf7fe",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tesseract-core/tesseract-core-lstm.wasm.js",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tesseract-core/tesseract-core-relaxedsimd-lstm.wasm.js",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tesseract-core/tesseract-core-relaxedsimd.wasm.js",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tesseract-core/tesseract-core-simd-lstm.wasm.js",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tesseract-core/tesseract-core-simd.wasm.js",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tesseract-core/tesseract-core.wasm.js",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tesseract/worker.min.js",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/eb8e02cc-5817-4423-b3dc-4f61f8e9d37b",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/b3966db1-3bfd-42f7-a00a-fb4be3078c3c",
+   "tipo": "other",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tessdata/spa.traineddata.gz",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/873d4197-2174-40f2-88cd-b43259ce1473",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/pdfjs-legacy/web/standard_fonts/LiberationSans-Regular.ttf",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/873d4197-2174-40f2-88cd-b43259ce1473",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/873d4197-2174-40f2-88cd-b43259ce1473",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/873d4197-2174-40f2-88cd-b43259ce1473",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/873d4197-2174-40f2-88cd-b43259ce1473",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/5cd48860-8df7-4bec-aad7-9ecf7d8864f9",
+   "tipo": "script",
+   "metodo": "GET"
+  }
+ ],
+ "externas": [],
+ "consola": [],
+ "navegador": "141.0.7390.37"
+}

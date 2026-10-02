@@ -1,0 +1,21 @@
+const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const path = require('path');
+const OUT = path.resolve(process.argv[2]);
+const F = path.join(OUT, 'fuentes'), C = path.join(OUT, 'corpus');
+(async () => {
+  const b = await chromium.launch();
+  const ctx = await b.newContext({ deviceScaleFactor: 2, viewport: { width: 800, height: 1000 } });
+  const p = await ctx.newPage();
+  await p.goto('file://' + path.join(F, 'factura.html'));
+  await p.pdf({ path: path.join(C, 'pdf02_factura_chromium.pdf'), format: 'A4', printBackground: true });
+  await p.screenshot({ path: path.join(OUT, 'tmp', 'factura_2x.png'), fullPage: true });
+  await p.goto('file://' + path.join(F, 'libro.html'));
+  await p.setViewportSize({ width: 1150, height: 800 });
+  await p.pdf({ path: path.join(C, 'pdf04_libro_emitidas_chromium.pdf'), format: 'A4', landscape: true, printBackground: true });
+  await p.screenshot({ path: path.join(OUT, 'tmp', 'libro_2x.png'), fullPage: true });
+  await p.goto('file://' + path.join(F, 'libro_sin_bordes.html'));
+  await p.screenshot({ path: path.join(OUT, 'tmp', 'libro_sin_bordes_2x.png'), fullPage: true });
+  await p.goto('file://' + path.join(F, 'libro60.html'));
+  await p.pdf({ path: path.join(C, 'pdf06_libro_60_filas_multipagina.pdf'), format: 'A4', landscape: true, printBackground: true });
+  await b.close();
+})();

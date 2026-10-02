@@ -1,0 +1,391 @@
+{
+ "config": {
+  "ocr": true,
+  "idiomasTesseract": [
+   "spa",
+   "cat",
+   "eus",
+   "eng",
+   "fra"
+  ]
+ },
+ "msInicio": 1016,
+ "resumen": [
+  {
+   "id": "png01",
+   "ok": true,
+   "ms": 1284,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "jpg02",
+   "ok": true,
+   "ms": 1208,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "jpeg03",
+   "ok": true,
+   "ms": 1284,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "png04",
+   "ok": true,
+   "ms": 2237,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "png05",
+   "ok": true,
+   "ms": 1175,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "png07",
+   "ok": true,
+   "ms": 1112,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "jpg08",
+   "ok": true,
+   "ms": 8927,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "pdfE1",
+   "ok": true,
+   "ms": 1095,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "pdfE2",
+   "ok": true,
+   "ms": 1764,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "pdfE3",
+   "ok": true,
+   "ms": 5777,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "pdf09",
+   "ok": true,
+   "ms": 247,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "pdfE4",
+   "ok": true,
+   "ms": 4154,
+   "error": null,
+   "estado": "complete"
+  },
+  {
+   "id": "png09",
+   "ok": true,
+   "ms": 2454,
+   "error": null,
+   "estado": "complete"
+  }
+ ],
+ "peticiones": [
+  {
+   "url": "http://127.0.0.1:8090/prueba-auditoria.html",
+   "tipo": "document",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/analizador-archivos.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/prueba-auditoria.js",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/manifiesto-integridad.json",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/pdfjs-legacy/build/pdf.mjs",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/pdfjs-legacy/build/pdf.worker.mjs",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/63a4008c-a437-4b9e-8362-ff0acf2a1978",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tesseract/tesseract.min.js",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/f8994d75-2be4-4ea9-bb54-8f9fcb538019",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tesseract-core/tesseract-core-lstm.wasm.js",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tesseract-core/tesseract-core-relaxedsimd-lstm.wasm.js",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tesseract-core/tesseract-core-relaxedsimd.wasm.js",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tesseract-core/tesseract-core-simd-lstm.wasm.js",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tesseract-core/tesseract-core-simd.wasm.js",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tesseract-core/tesseract-core.wasm.js",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tesseract/worker.min.js",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/a0aca27d-a3d2-455b-aa62-59690b4c6ca6",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/77a2ebca-735b-4543-a3a6-decdaaddd2dc",
+   "tipo": "other",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tessdata/spa.traineddata.gz",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tessdata/cat.traineddata.gz",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tessdata/eus.traineddata.gz",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tessdata/eng.traineddata.gz",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/tessdata/fra.traineddata.gz",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/f1edcbef-aa9f-4922-aaaf-2f7c2eb09046",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "http://127.0.0.1:8090/vendor/pdfjs-legacy/web/standard_fonts/LiberationSans-Regular.ttf",
+   "tipo": "fetch",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/f1edcbef-aa9f-4922-aaaf-2f7c2eb09046",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/f1edcbef-aa9f-4922-aaaf-2f7c2eb09046",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/f1edcbef-aa9f-4922-aaaf-2f7c2eb09046",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/f1edcbef-aa9f-4922-aaaf-2f7c2eb09046",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  },
+  {
+   "url": "blob:http://127.0.0.1:8090/e6af8e9b-4351-4752-98df-945cb2de797a",
+   "tipo": "script",
+   "metodo": "GET"
+  }
+ ],
+ "externas": [],
+ "consola": [],
+ "navegador": "141.0.7390.37"
+}

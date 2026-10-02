@@ -1,0 +1,13 @@
+png01    complete    1284ms | campos 7/7 recall 0.926 CER 0.045 D7 1.00 | tabla 0.00
+jpg02    complete    1208ms | campos 7/7 recall 0.901 CER 0.068 D7 1.00 | tabla 0.00
+jpeg03   complete    1284ms | campos 7/7 recall 0.827 CER 0.147 D7 0.83 | tabla 0.00
+png04    complete    2237ms | reg 0/12 campos 0.000 tot 0/3 texto 0.022
+png05    complete    1175ms | campos 0/7 recall 0.025 CER 0.858 D7 0.00
+png07    complete    1112ms | campos 7/7 recall 0.914 CER 0.039 D7 1.00
+jpg08    complete    8927ms | campos 0/7 recall 0.012 CER 1.081 D7 0.00
+pdfE1    complete    1095ms | campos 7/7 recall 0.889 CER 0.090 D7 1.00 | tabla 0.00
+pdfE2    complete    1764ms | campos 7/7 recall 0.778 CER 0.167 D7 0.50 | tabla 0.00
+pdfE3    complete    5777ms | reg 0/12 campos 0.000 tot 0/3 texto 0.029
+pdf09    complete     247ms | campos 0/7 recall 0.025 CER 0.885
+pdfE4    complete    4154ms
+png09    complete    2454ms | reg 0/12 campos 0.000 tot 0/3 texto 0.971

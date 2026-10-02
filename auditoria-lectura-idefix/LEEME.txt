@@ -1,0 +1,23 @@
+auditoria-lectura-idefix/ — Auditoría real de Idefix1.0 (AnalizadorArchivos 6.14.0)
+==================================================================================
+
+Léalo primero: INFORME-AUDITORIA-LECTURA-IDEFIX1.0.txt
+  - Nota de lectura por formato (pdf, docx, xlsx, xls, html, htm, png, jpg, jpeg) con cada caso medido.
+  - Valoración total del código (6,9/10), lista única priorizada (archivo y línea) y fase de mejora.
+
+Contenido
+  corpus/          72 documentos de prueba con verdad-terreno conocida (datos ficticios, NIF/CIF válidos).
+                   El prefijo indica el formato: pdf01…pdf15 (PDF digital), pdfE1…pdfE4 y pdf09 (escaneado),
+                   docx01…, xlsx01…, xls01…, html01…, htm03…, png01…, jpg02…, jpeg03.
+  herramientas/    Generadores del corpus, ejecutor en el navegador, evaluador y configuración de ESLint.
+                   Idefix se ejecuta tal cual en el navegador; Python y Node solo generan y miden.
+  resultados/      prod/ (7 idiomas, como index.html), latinos/ (spa, cat, eus, eng, fra) y spa/:
+                   el JSON que devolvió Idefix para cada documento (xlsx10 no se incluye: 61 MB) y
+                   _ejecucion.json con TODAS las peticiones de red de cada ejecución (0 externas).
+                   evaluacion_*.json y resumen_*.txt: comparación campo a campo con la verdad.
+                   consolidado.json: veredicto y nota por formato. eslint.json: análisis estático.
+                   capturas/: interfaz tras analizar 9 archivos y caída con el despliegue mínimo de Tesseract.
+
+Cómo repetirlo: apartado 11 del informe.
+  Nota: herramientas/prueba-auditoria.html lleva el SRI del sellado usado en la auditoría; si sella su
+  propia copia, cambie el atributo integrity por el que imprime sellar-idefix.py.

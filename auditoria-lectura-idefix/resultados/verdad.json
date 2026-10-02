@@ -1,0 +1,983 @@
+[
+ {
+  "id": "html01",
+  "archivo": "html01_factura.html",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura",
+   "tabla_lineas"
+  ],
+  "mime": "text/html",
+  "nota": "UTF-8, rótulos «Nombre: valor» y tabla de líneas"
+ },
+ {
+  "id": "html02",
+  "archivo": "html02_libro_emitidas.html",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros"
+  ],
+  "mime": "text/html",
+  "nota": "Tabla con thead/tbody"
+ },
+ {
+  "id": "htm03",
+  "archivo": "htm03_latin1.htm",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura",
+   "sin_mojibake"
+  ],
+  "mime": "text/html",
+  "nota": "Declara iso-8859-1 y contiene € (0x80, windows-1252), como muchas páginas antiguas"
+ },
+ {
+  "id": "htm04",
+  "archivo": "htm04_cp1252_sin_meta.htm",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura",
+   "sin_mojibake"
+  ],
+  "mime": "text/html",
+  "nota": "Sin declaración de codificación, bytes windows-1252"
+ },
+ {
+  "id": "html05",
+  "archivo": "html05_texto_oculto.html",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura",
+   "ocultos_html"
+  ],
+  "mime": "text/html",
+  "nota": "8 variantes de texto oculto con una instrucción inyectada"
+ },
+ {
+  "id": "html06",
+  "archivo": "html06_rowspan.html",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros"
+  ],
+  "mime": "text/html",
+  "nota": "Columna Serie combinada verticalmente (rowspan=12), habitual en informes exportados"
+ },
+ {
+  "id": "html07",
+  "archivo": "html07_filas_onclick.html",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros"
+  ],
+  "mime": "text/html",
+  "nota": "Cada fila <tr> lleva onclick (habitual en páginas guardadas de portales bancarios o ERP web)"
+ },
+ {
+  "id": "html08",
+  "archivo": "html08_fragmento_tabla.html",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros"
+  ],
+  "mime": "text/html",
+  "nota": "Fragmento HTML que empieza por <table> (sin <html> ni DOCTYPE), típico de exportaciones «Excel» de bancos"
+ },
+ {
+  "id": "html09",
+  "archivo": "html09_meta_primero.html",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros"
+  ],
+  "mime": "text/html",
+  "nota": "Empieza por <meta charset> sin <html>"
+ },
+ {
+  "id": "html11",
+  "archivo": "html11_entidades.html",
+  "cajetilla": "otros",
+  "verdad": "texto",
+  "checks": [
+   {
+    "tipo": "contiene",
+    "texto": "Importe: 1.234,56 € — Cañada & Hijos € € … «cita» ½ acción º € ©"
+   }
+  ],
+  "mime": "text/html",
+  "nota": "Entidades HTML con nombre, numéricas, 0x80 y sin punto y coma"
+ },
+ {
+  "id": "docx01",
+  "archivo": "docx01_factura.docx",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura",
+   "tabla_lineas"
+  ],
+  "mime": "",
+  "nota": "python-docx: párrafos + tabla de líneas"
+ },
+ {
+  "id": "docx02",
+  "archivo": "docx02_totales_en_tabla.docx",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura",
+   "tabla_lineas"
+  ],
+  "mime": "",
+  "nota": "Base, IVA y total en una tabla de 2 columnas (maquetación muy habitual en facturas Word)"
+ },
+ {
+  "id": "docx03",
+  "archivo": "docx03_libro_emitidas.docx",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros"
+  ],
+  "mime": "",
+  "nota": "Tabla Word de 13×9"
+ },
+ {
+  "id": "docx04",
+  "archivo": "docx04_listas_titulos.docx",
+  "cajetilla": "otros",
+  "verdad": "texto",
+  "checks": [
+   {
+    "tipo": "contiene",
+    "texto": "Libro registro de facturas emitidas"
+   },
+   {
+    "tipo": "contiene",
+    "texto": "Libro registro de facturas recibidas"
+   },
+   {
+    "tipo": "contiene",
+    "texto": "Modelo 303 del primer trimestre"
+   },
+   {
+    "tipo": "contiene",
+    "texto": "Falta el modelo 347"
+   },
+   {
+    "tipo": "contiene",
+    "texto": "Revisar la prorrata"
+   },
+   {
+    "tipo": "numeracion_lista",
+    "items": [
+     "1. Libro registro de facturas emitidas",
+     "2. Libro registro de facturas recibidas",
+     "3. Modelo 303 del primer trimestre"
+    ]
+   },
+   {
+    "tipo": "titulos",
+    "n": 2
+   }
+  ],
+  "mime": "",
+  "nota": "Lista numerada automática (List Number), viñetas y títulos"
+ },
+ {
+  "id": "docx05",
+  "archivo": "docx05_control_cambios.docx",
+  "cajetilla": "otros",
+  "verdad": "texto",
+  "checks": [
+   {
+    "tipo": "contiene",
+    "texto": "El importe correcto es 1.354,60 € según la factura rectificada."
+   },
+   {
+    "tipo": "no_contiene",
+    "texto": "IMPORTE ANTIGUO BORRADO"
+   },
+   {
+    "tipo": "aviso_esperado",
+    "texto": "control de cambios",
+    "patron": "(?i)revision|tracked|cambios|w:ins|w:del"
+   }
+  ],
+  "mime": "",
+  "nota": "Control de cambios sin aceptar: una eliminación y una inserción"
+ },
+ {
+  "id": "docx06",
+  "archivo": "docx06_texto_oculto.docx",
+  "cajetilla": "otros",
+  "verdad": "texto",
+  "checks": [
+   {
+    "tipo": "contiene",
+    "texto": "Texto visible del informe."
+   },
+   {
+    "tipo": "oculto_marcado",
+    "marca": "OCULTO_DOCX"
+   }
+  ],
+  "mime": "",
+  "nota": "Texto oculto de Word (w:vanish) con una instrucción inyectada"
+ },
+ {
+  "id": "docx07",
+  "archivo": "docx07_cuadro_texto.docx",
+  "cajetilla": "otros",
+  "verdad": "texto",
+  "checks": [
+   {
+    "tipo": "contiene",
+    "texto": "Texto del cuadro: importe pendiente de cobro 1.000,00 €"
+   },
+   {
+    "tipo": "apariciones",
+    "texto": "importe pendiente de cobro",
+    "n": 1
+   }
+  ],
+  "mime": "",
+  "nota": "Cuadro de texto como lo guarda Word (mc:AlternateContent con Choice y Fallback VML)"
+ },
+ {
+  "id": "docx08",
+  "archivo": "docx08_celdas_combinadas.docx",
+  "cajetilla": "otros",
+  "verdad": "tabla_combinada",
+  "checks": [
+   {
+    "tipo": "celda_bajo_cabecera",
+    "fila_contiene": "Total general",
+    "columna": "Total",
+    "valor": "1.633,50"
+   },
+   {
+    "tipo": "celda_bajo_cabecera",
+    "fila_contiene": "Total general",
+    "columna": "Cuota",
+    "valor": "283,50"
+   },
+   {
+    "tipo": "celda_bajo_cabecera",
+    "fila_contiene": "100,00",
+    "columna": "Base",
+    "valor": "100,00"
+   }
+  ],
+  "mime": "",
+  "nota": "Celda combinada vertical (vMerge) y horizontal (gridSpan)"
+ },
+ {
+  "id": "docx09",
+  "archivo": "docx09_tabla_anidada.docx",
+  "cajetilla": "otros",
+  "verdad": "texto",
+  "checks": [
+   {
+    "tipo": "contiene_en_algun_sitio",
+    "texto": "7.777,77"
+   },
+   {
+    "tipo": "contiene_en_algun_sitio",
+    "texto": "1.633,33"
+   },
+   {
+    "tipo": "contiene_en_algun_sitio",
+    "texto": "Base anidada"
+   },
+   {
+    "tipo": "contiene_en_algun_sitio",
+    "texto": "Ferretería Núñez, S.L."
+   }
+  ],
+  "mime": "",
+  "nota": "Tabla dentro de una celda"
+ },
+ {
+  "id": "docx11",
+  "archivo": "docx11_encabezado_pie.docx",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura",
+   {
+    "tipo": "contiene",
+    "texto": "Registro Mercantil de Madrid, tomo 123"
+   },
+   {
+    "tipo": "contiene",
+    "texto": "PIE: Página 1 de 1"
+   }
+  ],
+  "mime": "",
+  "nota": "Encabezado y pie de página"
+ },
+ {
+  "id": "docx12",
+  "archivo": "docx12_truncado.docx",
+  "cajetilla": "otros",
+  "verdad": "error",
+  "checks": [
+   {
+    "tipo": "rechazo_controlado"
+   }
+  ],
+  "mime": "",
+  "nota": "ZIP truncado a la mitad"
+ },
+ {
+  "id": "xlsx01",
+  "archivo": "xlsx01_libro_emitidas.xlsx",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros",
+   "valores_formula"
+  ],
+  "mime": "",
+  "nota": "Guardado por LibreOffice Calc: fechas reales, importes numéricos, cuota y total con fórmula (valor guardado)"
+ },
+ {
+  "id": "xlsx02",
+  "archivo": "xlsx02_titulo_y_total.xlsx",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros",
+   "fila_total_excluida"
+  ],
+  "mime": "",
+  "nota": "Dos filas de título, cabecera en la fila 4 y fila «Total» con SUMA"
+ },
+ {
+  "id": "xlsx03",
+  "archivo": "xlsx03_importes_texto_es.xlsx",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros"
+  ],
+  "mime": "",
+  "nota": "Importes y fechas guardados como TEXTO en formato español («1.234,56», «14/03/2025»)"
+ },
+ {
+  "id": "xlsx09",
+  "archivo": "xlsx09_fechas_1904.xlsx",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros"
+  ],
+  "mime": "",
+  "nota": "Sistema de fechas 1904 (libros creados en Excel para Mac)"
+ },
+ {
+  "id": "xlsx07",
+  "archivo": "xlsx07_celdas_combinadas.xlsx",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros"
+  ],
+  "mime": "",
+  "nota": "Columna Serie combinada verticalmente (B2:B13)"
+ },
+ {
+  "id": "xlsx06",
+  "archivo": "xlsx06_hoja_oculta.xlsx",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros",
+   {
+    "tipo": "hoja_oculta_marcada",
+    "hoja": "Config"
+   },
+   {
+    "tipo": "inyeccion_detectada",
+    "marca": "OCULTO_XLSX"
+   }
+  ],
+  "mime": "",
+  "nota": "3 hojas; la hoja «Config» está oculta y contiene una instrucción inyectada"
+ },
+ {
+  "id": "xlsx04",
+  "archivo": "xlsx04_formulas_compartidas.xlsx",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros",
+   "valores_formula"
+  ],
+  "mime": "",
+  "nota": "Fórmulas compartidas (t=\"shared\") como las guarda Excel al «arrastrar» una fórmula"
+ },
+ {
+  "id": "xlsx05",
+  "archivo": "xlsx05_celdas_sin_referencia.xlsx",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros"
+  ],
+  "mime": "",
+  "nota": "Celdas y filas sin atributo r (permitido por ECMA-376; lo hacen algunos generadores)"
+ },
+ {
+  "id": "xlsx08",
+  "archivo": "xlsx08_cadenas_en_linea.xlsx",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros"
+  ],
+  "mime": "",
+  "nota": "Cadenas en línea (inlineStr), habitual en exportaciones de ERP y bancos"
+ },
+ {
+  "id": "xlsx10",
+  "archivo": "xlsx10_grande_25000_filas.xlsx",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "grande",
+  "checks": [
+   {
+    "tipo": "truncado_avisado",
+    "filas": 25000
+   }
+  ],
+  "mime": "",
+  "nota": "25.000 filas × 9 columnas (supera el límite de 20.000 filas)"
+ },
+ {
+  "id": "xlsx11",
+  "archivo": "xlsx11_truncado.xlsx",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "error",
+  "checks": [
+   {
+    "tipo": "rechazo_controlado"
+   }
+  ],
+  "mime": "",
+  "nota": "ZIP truncado a la mitad"
+ },
+ {
+  "id": "xls01",
+  "archivo": "xls01_libro_emitidas.xls",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros",
+   "valores_formula"
+  ],
+  "mime": "",
+  "nota": "BIFF8 guardado por LibreOffice Calc (fechas, importes, fórmulas con valor guardado)"
+ },
+ {
+  "id": "xls02",
+  "archivo": "xls02_titulo_y_total.xls",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros",
+   "fila_total_excluida"
+  ],
+  "mime": "",
+  "nota": "BIFF8: dos filas de título, cabecera en la fila 4 y fila «Total»"
+ },
+ {
+  "id": "xls05",
+  "archivo": "xls05_importes_texto_es.xls",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros"
+  ],
+  "mime": "",
+  "nota": "BIFF8 con importes y fechas como texto"
+ },
+ {
+  "id": "xls03",
+  "archivo": "xls03_sst_continue.xls",
+  "cajetilla": "otros",
+  "verdad": "sst",
+  "checks": [
+   {
+    "tipo": "cadenas_exactas",
+    "n": 3000
+   }
+  ],
+  "mime": "",
+  "nota": "3.000 cadenas únicas (tabla SST con registros CONTINUE, mezcla de 8 y 16 bits)"
+ },
+ {
+  "id": "xls04",
+  "archivo": "xls04_xlwt.xls",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros"
+  ],
+  "mime": "",
+  "nota": "BIFF8 generado por otra librería (xlwt)"
+ },
+ {
+  "id": "xls06",
+  "archivo": "xls06_truncado.xls",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "error",
+  "checks": [
+   {
+    "tipo": "rechazo_controlado"
+   }
+  ],
+  "mime": "",
+  "nota": "OLE2 truncado a la mitad"
+ },
+ {
+  "id": "docx10",
+  "archivo": "docx10_writer.docx",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura",
+   "tabla_lineas"
+  ],
+  "mime": "",
+  "nota": "DOCX guardado por LibreOffice Writer"
+ },
+ {
+  "id": "pdf03",
+  "archivo": "pdf03_factura_writer.pdf",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura",
+   "tabla_lineas"
+  ],
+  "mime": "",
+  "nota": "PDF exportado por LibreOffice Writer desde Word"
+ },
+ {
+  "id": "htm10",
+  "archivo": "htm10_calc_guardado_como_html.htm",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros"
+  ],
+  "mime": "text/html",
+  "nota": "Hoja de cálculo «Guardar como página web» (LibreOffice Calc)"
+ },
+ {
+  "id": "html12",
+  "archivo": "html12_writer_guardado_como_html.html",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura",
+   "tabla_lineas"
+  ],
+  "mime": "text/html",
+  "nota": "Documento Word «Guardar como página web» (LibreOffice Writer)"
+ },
+ {
+  "id": "pdf01",
+  "archivo": "pdf01_factura_reportlab.pdf",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura",
+   "tabla_lineas"
+  ],
+  "mime": "",
+  "nota": "PDF digital (reportlab)"
+ },
+ {
+  "id": "pdf05",
+  "archivo": "pdf05_dos_columnas.pdf",
+  "cajetilla": "otros",
+  "verdad": "dos_columnas",
+  "checks": [
+   "orden_lectura",
+   {
+    "tipo": "sin_tablas_falsas"
+   }
+  ],
+  "mime": "",
+  "nota": "Texto maquetado en dos columnas (informes, resoluciones, BOE)"
+ },
+ {
+  "id": "pdf07",
+  "archivo": "pdf07_tres_facturas.pdf",
+  "cajetilla": "otros",
+  "verdad": "varias_facturas",
+  "checks": [
+   {
+    "tipo": "varias_facturas",
+    "numeros": [
+     "A-2025/0301",
+     "A-2025/0302",
+     "A-2025/0303"
+    ],
+    "totales": [
+     121.0,
+     302.5,
+     1210.0
+    ]
+   }
+  ],
+  "mime": "",
+  "nota": "Un PDF con tres facturas (una por página)"
+ },
+ {
+  "id": "pdf08",
+  "archivo": "pdf08_formulario_acroform.pdf",
+  "cajetilla": "otros",
+  "verdad": "texto",
+  "checks": [
+   {
+    "tipo": "contiene_en_algun_sitio",
+    "texto": "B12345674"
+   },
+   {
+    "tipo": "contiene_en_algun_sitio",
+    "texto": "Construcciones Munoz Ibanez SL"
+   },
+   {
+    "tipo": "contiene_en_algun_sitio",
+    "texto": "1.354,60"
+   },
+   {
+    "tipo": "contiene_en_algun_sitio",
+    "texto": "ES9121000418450200051332"
+   }
+  ],
+  "mime": "",
+  "nota": "Formulario PDF rellenable (AcroForm) con valores"
+ },
+ {
+  "id": "pdf10",
+  "archivo": "pdf10_texto_oculto.pdf",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura",
+   {
+    "tipo": "inyeccion_detectada",
+    "marca": "OCULTO_PDF_BLANCO"
+   },
+   {
+    "tipo": "inyeccion_detectada",
+    "marca": "OCULTO_PDF_INVISIBLE"
+   },
+   {
+    "tipo": "oculto_marcado",
+    "marca": "OCULTO_PDF_INVISIBLE"
+   }
+  ],
+  "mime": "",
+  "nota": "Instrucción inyectada en texto blanco y en texto invisible (modo de render 3)"
+ },
+ {
+  "id": "pdf11a",
+  "archivo": "pdf11a_cifrado_con_clave.pdf",
+  "cajetilla": "otros",
+  "verdad": "error",
+  "checks": [
+   {
+    "tipo": "rechazo_controlado",
+    "patron": "(?i)contrase|cifrad|password|protegid"
+   }
+  ],
+  "mime": "",
+  "nota": "PDF con contraseña de apertura"
+ },
+ {
+  "id": "pdf11b",
+  "archivo": "pdf11b_cifrado_solo_propietario.pdf",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura"
+  ],
+  "mime": "",
+  "nota": "PDF con restricciones de propietario y sin contraseña de apertura (habitual en extractos bancarios y certificados)"
+ },
+ {
+  "id": "pdf12",
+  "archivo": "pdf12_truncado.pdf",
+  "cajetilla": "otros",
+  "verdad": "error_o_parcial",
+  "checks": [
+   {
+    "tipo": "rechazo_controlado"
+   }
+  ],
+  "mime": "",
+  "nota": "PDF truncado a la mitad"
+ },
+ {
+  "id": "pdf13",
+  "archivo": "pdf13_pagina_rotada.pdf",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura"
+  ],
+  "mime": "",
+  "nota": "Página con /Rotate 90"
+ },
+ {
+  "id": "pdf14",
+  "archivo": "pdf14_bytes_previos.pdf",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura"
+  ],
+  "mime": "",
+  "nota": "Dos bytes (CRLF) antes de %PDF- (los visores admiten la cabecera en los primeros 1.024 bytes)"
+ },
+ {
+  "id": "pdf02",
+  "archivo": "pdf02_factura_chromium.pdf",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura",
+   "tabla_lineas"
+  ],
+  "mime": "",
+  "nota": "«Imprimir a PDF» de Chrome/Edge"
+ },
+ {
+  "id": "pdf04",
+  "archivo": "pdf04_libro_emitidas_chromium.pdf",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros"
+  ],
+  "mime": "",
+  "nota": "Libro de facturas impreso a PDF desde Chrome (tabla con bordes)"
+ },
+ {
+  "id": "pdf06",
+  "archivo": "pdf06_libro_60_filas_multipagina.pdf",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro60",
+  "checks": [
+   "registros"
+  ],
+  "mime": "",
+  "nota": "60 filas en 2 páginas con la cabecera repetida en cada página"
+ },
+ {
+  "id": "png01",
+  "archivo": "png01_factura.png",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura",
+   "tabla_lineas"
+  ],
+  "mime": "image/png",
+  "nota": "Captura nítida (1508×925 px, ≈190 ppp)"
+ },
+ {
+  "id": "jpg02",
+  "archivo": "jpg02_factura.jpg",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura",
+   "tabla_lineas"
+  ],
+  "mime": "image/jpeg",
+  "nota": "La misma factura en JPEG calidad 85"
+ },
+ {
+  "id": "jpeg03",
+  "archivo": "jpeg03_factura_escaneo_degradado.jpeg",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura",
+   "tabla_lineas"
+  ],
+  "mime": "image/jpeg",
+  "nota": "Simulación de escaneo malo: inclinación 1,5°, ≈120 ppp, ruido, desenfoque, fondo amarillento, JPEG 60"
+ },
+ {
+  "id": "png04",
+  "archivo": "png04_libro_emitidas.png",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros"
+  ],
+  "mime": "image/png",
+  "nota": "Captura del libro de facturas (2221×801 px)"
+ },
+ {
+  "id": "png05",
+  "archivo": "png05_baja_resolucion.png",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura"
+  ],
+  "mime": "image/png",
+  "nota": "Baja resolución (573×351 px, ≈72 ppp: captura de pantalla reducida)"
+ },
+ {
+  "id": "png06",
+  "archivo": "png06_grande_13mpx.png",
+  "cajetilla": "otros",
+  "verdad": "error",
+  "checks": [
+   {
+    "tipo": "rechazo_controlado",
+    "patron": "(?i)p[ií]xel|grande|megap|l[ií]mite"
+   }
+  ],
+  "mime": "image/png",
+  "nota": "4200×3100 = 13,0 Mpx (supera el máximo de 12 Mpx)"
+ },
+ {
+  "id": "png07",
+  "archivo": "png07_fondo_transparente.png",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura"
+  ],
+  "mime": "image/png",
+  "nota": "Texto negro sobre fondo TRANSPARENTE (PNG con canal alfa, p. ej. exportado desde un programa de diseño)"
+ },
+ {
+  "id": "jpg08",
+  "archivo": "jpg08_rotada_90.jpg",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura"
+  ],
+  "mime": "image/jpeg",
+  "nota": "Factura girada 90° (escaneo apaisado o foto de móvil sin girar)"
+ },
+ {
+  "id": "pdfE1",
+  "archivo": "pdfE1_factura_escaneada.pdf",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura",
+   "tabla_lineas"
+  ],
+  "mime": "",
+  "nota": "PDF solo imagen (escáner, ≈200 ppp efectivos)"
+ },
+ {
+  "id": "pdfE2",
+  "archivo": "pdfE2_factura_escaneo_degradado.pdf",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura",
+   "tabla_lineas"
+  ],
+  "mime": "",
+  "nota": "PDF solo imagen con el escaneo degradado"
+ },
+ {
+  "id": "pdfE3",
+  "archivo": "pdfE3_libro_escaneado.pdf",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros"
+  ],
+  "mime": "",
+  "nota": "Libro de facturas escaneado (PDF solo imagen)"
+ },
+ {
+  "id": "pdf09",
+  "archivo": "pdf09_mixto_sello_digital_mas_imagen.pdf",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "checks": [
+   "campos_factura"
+  ],
+  "mime": "",
+  "nota": "Factura escaneada con una línea de texto digital añadida (sello de copia auténtica/CSV), caso típico de la sede electrónica"
+ },
+ {
+  "id": "html13",
+  "archivo": "html13_inyeccion_variantes.html",
+  "cajetilla": "otros",
+  "verdad": "inyeccion",
+  "checks": [],
+  "mime": "text/html",
+  "nota": "11 variantes de instrucción inyectada (texto visible) en es/en/ca/fr/eu, sutil, cambio de rol, invisibles, delimitador, homoglifo"
+ },
+ {
+  "id": "pdf15",
+  "archivo": "pdf15_100_paginas.pdf",
+  "cajetilla": "otros",
+  "verdad": "rendimiento",
+  "checks": [],
+  "mime": "",
+  "nota": "PDF digital de 100 páginas (rendimiento)"
+ },
+ {
+  "id": "pdfE4",
+  "archivo": "pdfE4_5_paginas_escaneadas.pdf",
+  "cajetilla": "otros",
+  "verdad": "rendimiento",
+  "checks": [],
+  "mime": "",
+  "nota": "PDF escaneado de 5 páginas (rendimiento del OCR)"
+ },
+ {
+  "id": "docx13",
+  "archivo": "docx13_delimitador.docx",
+  "cajetilla": "otros",
+  "verdad": "inyeccion",
+  "checks": [
+   {
+    "tipo": "inyeccion_detectada",
+    "marca": "INY10"
+   }
+  ],
+  "mime": "",
+  "nota": "Intento de cerrar el bloque DOCUMENT_DATA desde el documento"
+ },
+ {
+  "id": "png09",
+  "archivo": "png09_libro_sin_bordes.png",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "checks": [
+   "registros"
+  ],
+  "mime": "image/png",
+  "nota": "El mismo libro en imagen, tabla SIN líneas de cuadrícula"
+ }
+]

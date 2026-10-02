@@ -1,0 +1,1111 @@
+[
+ {
+  "id": "png01",
+  "archivo": "png01_factura.png",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "nota": "Captura nítida (1508×925 px, ≈190 ppp)",
+  "ok": true,
+  "ms": 1284,
+  "error": null,
+  "estado": "complete",
+  "parser": "native-image-metadata",
+  "ocr": {
+   "requested": true,
+   "used": true,
+   "status": "complete",
+   "engine": "tesseract-local",
+   "languages": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ]
+  },
+  "issues": [],
+  "confianza_global": 0.64,
+  "n_bloques": 16,
+  "n_tablas": 0,
+  "texto_inicio": "Número de factura: A-2025/0157 Fecha de expedición: 14/03/2025 Emisor: Construcciones Muñoz Ibáñez, S.L. NIF emisor: B12345674 Domicilio: C/ Mayor 12, 28013 Madrid Cliente: Talleres Peña Gutiérrez, S.A. NIF cliente: A58818501 Domicilio cliente: Avda. de la Constitución 45, 41001 Sevilla Concepto | Cantidad] ber importe] Reparación de cubierta 850,00 850,00 Sustitución de canalón (m) 32,05 384,60 R",
+  "factura": {
+   "campos": {
+    "numero": true,
+    "fecha": true,
+    "nif_emisor": true,
+    "nif_cliente": true,
+    "base": true,
+    "cuota": true,
+    "total": true
+   },
+   "campos_ok": 7,
+   "campos_total": 7,
+   "obtenidos": {
+    "numero": "A-2025/0157",
+    "fecha": "2025-03-14",
+    "nifs": [
+     "B12345674",
+     "A58818501"
+    ],
+    "base": 1354.6,
+    "cuota": 284.47,
+    "total": 1639.07
+   },
+   "recall_palabras": 0.9259259259259259,
+   "cer": 0.044802867383512544,
+   "d7_importes_ok": 1.0
+  },
+  "tabla_lineas": {
+   "exactitud_celdas": 0.0,
+   "tabla": null
+  },
+  "checks": []
+ },
+ {
+  "id": "jpg02",
+  "archivo": "jpg02_factura.jpg",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "nota": "La misma factura en JPEG calidad 85",
+  "ok": true,
+  "ms": 1208,
+  "error": null,
+  "estado": "complete",
+  "parser": "native-image-metadata",
+  "ocr": {
+   "requested": true,
+   "used": true,
+   "status": "complete",
+   "engine": "tesseract-local",
+   "languages": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ]
+  },
+  "issues": [],
+  "confianza_global": 0.64,
+  "n_bloques": 16,
+  "n_tablas": 0,
+  "texto_inicio": "Número de factura: A-2025/0157 Fecha de expedición: 14/03/2025 Emisor: Construcciones Muñoz Ibáñez, S.L. NIF emisor: B12345674 Domicilio: C/ Mayor 12, 28013 Madrid Cliente: Talleres Peña Gutiérrez, S.A. NIF cliente: A58818501 Domicilio cliente: Avda. de la Constitución 45, 41001 Sevilla [comento] Sai ped ber Reparación de cubierta 850,00 850,00 Sustitución de canalón (m) 32,05 384,60 Retirada de e",
+  "factura": {
+   "campos": {
+    "numero": true,
+    "fecha": true,
+    "nif_emisor": true,
+    "nif_cliente": true,
+    "base": true,
+    "cuota": true,
+    "total": true
+   },
+   "campos_ok": 7,
+   "campos_total": 7,
+   "obtenidos": {
+    "numero": "A-2025/0157",
+    "fecha": "2025-03-14",
+    "nifs": [
+     "B12345674",
+     "A58818501"
+    ],
+    "base": 1354.6,
+    "cuota": 284.47,
+    "total": 1639.07
+   },
+   "recall_palabras": 0.9012345679012346,
+   "cer": 0.06810035842293907,
+   "d7_importes_ok": 1.0
+  },
+  "tabla_lineas": {
+   "exactitud_celdas": 0.0,
+   "tabla": null
+  },
+  "checks": []
+ },
+ {
+  "id": "jpeg03",
+  "archivo": "jpeg03_factura_escaneo_degradado.jpeg",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "nota": "Simulación de escaneo malo: inclinación 1,5°, ≈120 ppp, ruido, desenfoque, fondo amarillento, JPEG 60",
+  "ok": true,
+  "ms": 1284,
+  "error": null,
+  "estado": "complete",
+  "parser": "native-image-metadata",
+  "ocr": {
+   "requested": true,
+   "used": true,
+   "status": "complete",
+   "engine": "tesseract-local",
+   "languages": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ]
+  },
+  "issues": [],
+  "confianza_global": 0.64,
+  "n_bloques": 15,
+  "n_tablas": 0,
+  "texto_inicio": "Número de factura: A-2025/0157 Fecha de expedición: 14/03/2025 Emisor: Construcciones Muñoz Ibáñez, S.L. NIF emisor: B12345674 Domicilio: C/ Mayor 12, 28013 Madrid Cliente: Talleres Peña Gutiérrez, S.A. NIF cliente: A58818501 Domicilio cliente: Avda. de la Constitución 45, 41001 Sevilla TUNES Ea eel ee Reparación de cubierta EU 850,00 850,00 Sustitución de canalón (m) [ — | el 384,60 Base imponibl",
+  "factura": {
+   "campos": {
+    "numero": true,
+    "fecha": true,
+    "nif_emisor": true,
+    "nif_cliente": true,
+    "base": true,
+    "cuota": true,
+    "total": true
+   },
+   "campos_ok": 7,
+   "campos_total": 7,
+   "obtenidos": {
+    "numero": "A-2025/0157",
+    "fecha": "2025-03-14",
+    "nifs": [
+     "B12345674",
+     "A58818501"
+    ],
+    "base": 1354.6,
+    "cuota": 284.47,
+    "total": 1639.07
+   },
+   "recall_palabras": 0.8271604938271605,
+   "cer": 0.14695340501792115,
+   "d7_importes_ok": 0.8333333333333334
+  },
+  "tabla_lineas": {
+   "exactitud_celdas": 0.0,
+   "tabla": null
+  },
+  "checks": []
+ },
+ {
+  "id": "png04",
+  "archivo": "png04_libro_emitidas.png",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "nota": "Captura del libro de facturas (2221×801 px)",
+  "ok": true,
+  "ms": 2237,
+  "error": null,
+  "estado": "complete",
+  "parser": "native-image-metadata",
+  "ocr": {
+   "requested": true,
+   "used": true,
+   "status": "complete",
+   "engine": "tesseract-local",
+   "languages": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ]
+  },
+  "issues": [],
+  "confianza_global": 0.27,
+  "n_bloques": 5,
+  "n_tablas": 0,
+  "texto_inicio": "Libro registro de facturas emitidas - Ejercicio 2025 Titular: Construcciones Muñoz Ibáñez, S.L. - NIF: B12345674 [Fecha expedición [Serie | Número factura _ [NIF cliente | Nombre cliente | Base imponible] Tipo VA] Cuota iva| bi pr [a [2025108 mek [Lucia Feréndezoraénez | 0860) a] 194] Sosa 2305/2028 |A [2025110 jessezzios [asociación culuallÁmos | egi 6] — 000 99889",
+  "libro": {
+   "registros": 0,
+   "registros_esperados": 12,
+   "campos_ok": 0,
+   "campos_total": 108,
+   "exactitud_campos": 0.0,
+   "totales_ok": {
+    "base_imponible": false,
+    "cuota_iva": false,
+    "total": false
+   },
+   "estado_formato": "no_reconocido",
+   "fallos_ejemplo": {
+    "fecha_expedicion": [
+     {
+      "esperado": "2025-01-03",
+      "obtenido": null
+     },
+     {
+      "esperado": "2025-01-08",
+      "obtenido": null
+     },
+     {
+      "esperado": "2025-02-13",
+      "obtenido": null
+     }
+    ],
+    "serie": [
+     {
+      "esperado": "A",
+      "obtenido": null
+     },
+     {
+      "esperado": "A",
+      "obtenido": null
+     },
+     {
+      "esperado": "A",
+      "obtenido": null
+     }
+    ],
+    "numero_factura": [
+     {
+      "esperado": "2025/0101",
+      "obtenido": null
+     },
+     {
+      "esperado": "2025/0102",
+      "obtenido": null
+     },
+     {
+      "esperado": "2025/0103",
+      "obtenido": null
+     }
+    ],
+    "nif_destinatario": [
+     {
+      "esperado": "B87654323",
+      "obtenido": null
+     },
+     {
+      "esperado": "12345678Z",
+      "obtenido": null
+     },
+     {
+      "esperado": "F60123452",
+      "obtenido": null
+     }
+    ],
+    "nombre_destinatario": [
+     {
+      "esperado": "Ferretería Núñez, S.L.",
+      "obtenido": null
+     },
+     {
+      "esperado": "José Ángel Peña Ibáñez",
+      "obtenido": null
+     },
+     {
+      "esperado": "Comercial Gòdia, SCCL",
+      "obtenido": null
+     }
+    ],
+    "base_imponible": [
+     {
+      "esperado": 1250.0,
+      "obtenido": null
+     },
+     {
+      "esperado": 89.9,
+      "obtenido": null
+     },
+     {
+      "esperado": 12345.67,
+      "obtenido": null
+     }
+    ],
+    "tipo_iva": [
+     {
+      "esperado": 21.0,
+      "obtenido": null
+     },
+     {
+      "esperado": 21.0,
+      "obtenido": null
+     },
+     {
+      "esperado": 21.0,
+      "obtenido": null
+     }
+    ],
+    "cuota_iva": [
+     {
+      "esperado": 262.5,
+      "obtenido": null
+     },
+     {
+      "esperado": 18.88,
+      "obtenido": null
+     },
+     {
+      "esperado": 2592.59,
+      "obtenido": null
+     }
+    ],
+    "total": [
+     {
+      "esperado": 1512.5,
+      "obtenido": null
+     },
+     {
+      "esperado": 108.78,
+      "obtenido": null
+     },
+     {
+      "esperado": 14938.26,
+      "obtenido": null
+     }
+    ]
+   },
+   "n_fallos_por_campo": {
+    "fecha_expedicion": 12,
+    "serie": 12,
+    "numero_factura": 12,
+    "nif_destinatario": 12,
+    "nombre_destinatario": 12,
+    "base_imponible": 12,
+    "tipo_iva": 12,
+    "cuota_iva": 12,
+    "total": 12
+   },
+   "recall_palabras_texto": 0.02158273381294964
+  },
+  "checks": []
+ },
+ {
+  "id": "png05",
+  "archivo": "png05_baja_resolucion.png",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "nota": "Baja resolución (573×351 px, ≈72 ppp: captura de pantalla reducida)",
+  "ok": true,
+  "ms": 1175,
+  "error": null,
+  "estado": "complete",
+  "parser": "native-image-metadata",
+  "ocr": {
+   "requested": true,
+   "used": true,
+   "status": "complete",
+   "engine": "tesseract-local",
+   "languages": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ]
+  },
+  "issues": [],
+  "confianza_global": 0.28,
+  "n_bloques": 7,
+  "n_tablas": 0,
+  "texto_inicio": "Número de fc 200157 [canes] III [mepracón dame e ee pren e aan [meda e scones | 200] aoe] TT GEO",
+  "factura": {
+   "campos": {
+    "numero": false,
+    "fecha": false,
+    "nif_emisor": false,
+    "nif_cliente": false,
+    "base": false,
+    "cuota": false,
+    "total": false
+   },
+   "campos_ok": 0,
+   "campos_total": 7,
+   "obtenidos": {
+    "numero": null,
+    "fecha": null,
+    "nifs": [],
+    "base": null,
+    "cuota": null,
+    "total": null
+   },
+   "recall_palabras": 0.024691358024691357,
+   "cer": 0.8584229390681004,
+   "d7_importes_ok": 0.0
+  },
+  "checks": []
+ },
+ {
+  "id": "png07",
+  "archivo": "png07_fondo_transparente.png",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "nota": "Texto negro sobre fondo TRANSPARENTE (PNG con canal alfa, p. ej. exportado desde un programa de diseño)",
+  "ok": true,
+  "ms": 1112,
+  "error": null,
+  "estado": "complete",
+  "parser": "native-image-metadata",
+  "ocr": {
+   "requested": true,
+   "used": true,
+   "status": "complete",
+   "engine": "tesseract-local",
+   "languages": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ]
+  },
+  "issues": [],
+  "confianza_global": 0.64,
+  "n_bloques": 16,
+  "n_tablas": 0,
+  "texto_inicio": "Número de factura: A-2025/0157 Fecha de expedición: 14/03/2025 Emisor: Construcciones Muñoz Ibáñez, S.L. NIF emisor: B12345674 Domicilio: C/ Mayor 12, 28013 Madrid Cliente: Talleres Peña Gutiérrez, S.A. NIF cliente: A58818501 Domicilio cliente: Avda. de la Constitución 45, 41001 Sevilla Concepte | Cantina] Prec] Importe Reparación de cubierta 850,00 850,00 Sustitución de canalón (m) 32,05 384,60 R",
+  "factura": {
+   "campos": {
+    "numero": true,
+    "fecha": true,
+    "nif_emisor": true,
+    "nif_cliente": true,
+    "base": true,
+    "cuota": true,
+    "total": true
+   },
+   "campos_ok": 7,
+   "campos_total": 7,
+   "obtenidos": {
+    "numero": "A-2025/0157",
+    "fecha": "2025-03-14",
+    "nifs": [
+     "B12345674",
+     "A58818501"
+    ],
+    "base": 1354.6,
+    "cuota": 284.47,
+    "total": 1639.07
+   },
+   "recall_palabras": 0.9135802469135802,
+   "cer": 0.03942652329749104,
+   "d7_importes_ok": 1.0
+  },
+  "checks": []
+ },
+ {
+  "id": "jpg08",
+  "archivo": "jpg08_rotada_90.jpg",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "nota": "Factura girada 90° (escaneo apaisado o foto de móvil sin girar)",
+  "ok": true,
+  "ms": 8927,
+  "error": null,
+  "estado": "complete",
+  "parser": "native-image-metadata",
+  "ocr": {
+   "requested": true,
+   "used": true,
+   "status": "complete",
+   "engine": "tesseract-local",
+   "languages": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ]
+  },
+  "issues": [],
+  "confianza_global": 0.51,
+  "n_bloques": 59,
+  "n_tablas": 0,
+  "texto_inicio": "ololo 2 2/12 o|+|o nio o |m ei oju|o 2e 1212 olan GO Dima © A vin ei OO ri = “+ E d GO = LS) > GO GO Les! o o a < in E s a = “ © i [a] © N E 2 = 2 = 4 = a GO D E GO E mn a sou E c nn = = Q [e] E — GO N m pa 9) 29 2 7 E as = 5 GRA E 2% y E w wo NO = o 5 = o N à = N = © v NY ow ei e si © 2 0 yw Ed 0 q © © to e 3 Se < ~ E e gl=2]5 < o un E SOT EO 3 dS OO LA me SS 5346 09 d GS E Ty oo I Eg USO da: STS",
+  "factura": {
+   "campos": {
+    "numero": false,
+    "fecha": false,
+    "nif_emisor": false,
+    "nif_cliente": false,
+    "base": false,
+    "cuota": false,
+    "total": false
+   },
+   "campos_ok": 0,
+   "campos_total": 7,
+   "obtenidos": {
+    "numero": null,
+    "fecha": null,
+    "nifs": [],
+    "base": null,
+    "cuota": null,
+    "total": null
+   },
+   "recall_palabras": 0.012345679012345678,
+   "cer": 1.0806451612903225,
+   "d7_importes_ok": 0.0
+  },
+  "checks": []
+ },
+ {
+  "id": "pdfE1",
+  "archivo": "pdfE1_factura_escaneada.pdf",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "nota": "PDF solo imagen (escáner, ≈200 ppp efectivos)",
+  "ok": true,
+  "ms": 1095,
+  "error": null,
+  "estado": "complete",
+  "parser": "pdfjs-local-6.2.108-legacy",
+  "ocr": {
+   "requested": true,
+   "used": true,
+   "status": "complete",
+   "engine": "tesseract-local",
+   "languages": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ]
+  },
+  "issues": [],
+  "confianza_global": 0.64,
+  "n_bloques": 15,
+  "n_tablas": 0,
+  "texto_inicio": "Número de factura: A-2025/0157 Fecha de expedición: 14/03/2025 Emisor: Construcciones Muñoz Ibáñez, S.L. NIF emisor: B12345674 Domicilio: C/ Mayor 12, 28013 Madrid Cliente: Talleres Peña Gutiérrez, S.A. NIF cliente: A58818501 Domicilio cliente: Avda. de la Constitución 45, 41001 Sevilla Reparación de cubierta 850,00 850,00 Sustitución de canalón (m) 32,05 384,60 Retirada de escombros 120,00 120,00",
+  "factura": {
+   "campos": {
+    "numero": true,
+    "fecha": true,
+    "nif_emisor": true,
+    "nif_cliente": true,
+    "base": true,
+    "cuota": true,
+    "total": true
+   },
+   "campos_ok": 7,
+   "campos_total": 7,
+   "obtenidos": {
+    "numero": "A-2025/0157",
+    "fecha": "2025-03-14",
+    "nifs": [
+     "B12345674",
+     "A58818501"
+    ],
+    "base": 1354.6,
+    "cuota": 284.47,
+    "total": 1639.07
+   },
+   "recall_palabras": 0.8888888888888888,
+   "cer": 0.08960573476702509,
+   "d7_importes_ok": 1.0
+  },
+  "tabla_lineas": {
+   "exactitud_celdas": 0.0,
+   "tabla": null
+  },
+  "checks": []
+ },
+ {
+  "id": "pdfE2",
+  "archivo": "pdfE2_factura_escaneo_degradado.pdf",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "nota": "PDF solo imagen con el escaneo degradado",
+  "ok": true,
+  "ms": 1764,
+  "error": null,
+  "estado": "complete",
+  "parser": "pdfjs-local-6.2.108-legacy",
+  "ocr": {
+   "requested": true,
+   "used": true,
+   "status": "complete",
+   "engine": "tesseract-local",
+   "languages": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ]
+  },
+  "issues": [],
+  "confianza_global": 0.64,
+  "n_bloques": 15,
+  "n_tablas": 0,
+  "texto_inicio": "Número de factura: A-2025/0157 Fecha de expedición: 14/03/2025 Emisor: Construcciones Muñoz Ibáñez, S.L. NIF emisor: B12345674 Domicilio: C/ Mayor 12, 28013 Madrid Cliente: Talleres Peña Gutiérrez, S.A. NIF cliente: A58818501 Domicilio cliente: Avda. de la Constitución 45, 41001 Sevilla E E [ Comtidad| — Precio] imports] Sustitución de canal (m) EA mel DR Retirada de escombros A ml mew] Base impon",
+  "factura": {
+   "campos": {
+    "numero": true,
+    "fecha": true,
+    "nif_emisor": true,
+    "nif_cliente": true,
+    "base": true,
+    "cuota": true,
+    "total": true
+   },
+   "campos_ok": 7,
+   "campos_total": 7,
+   "obtenidos": {
+    "numero": "A-2025/0157",
+    "fecha": "2025-03-14",
+    "nifs": [
+     "B12345674",
+     "A58818501"
+    ],
+    "base": 1354.6,
+    "cuota": 284.47,
+    "total": 1639.07
+   },
+   "recall_palabras": 0.7777777777777778,
+   "cer": 0.16666666666666666,
+   "d7_importes_ok": 0.5
+  },
+  "tabla_lineas": {
+   "exactitud_celdas": 0.0,
+   "tabla": null
+  },
+  "checks": []
+ },
+ {
+  "id": "pdfE3",
+  "archivo": "pdfE3_libro_escaneado.pdf",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "nota": "Libro de facturas escaneado (PDF solo imagen)",
+  "ok": true,
+  "ms": 5777,
+  "error": null,
+  "estado": "complete",
+  "parser": "pdfjs-local-6.2.108-legacy",
+  "ocr": {
+   "requested": true,
+   "used": true,
+   "status": "complete",
+   "engine": "tesseract-local",
+   "languages": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ]
+  },
+  "issues": [],
+  "confianza_global": 0.19,
+  "n_bloques": 12,
+  "n_tablas": 0,
+  "texto_inicio": "Libro registro de facturas emitidas - Ejercicio 2025 Titular: Construcciones Muñoz Ibáñez, S.L. : NIF: B12345674 [Fecha expedición [sere | Número ractura |W lente [Nombre cliente] bs impnile]_ipo VA Sariei bei zez [a [aor ezz [rermemanäñenst | egi e egi 15250 zerk zz rz tzare | eer SI egi 10078 ezz ze rz erraza amaga 250250] 1403025 ezz [x zz eer arenga | 72] I egi pez perrik zz ren erreze TT eei ",
+  "libro": {
+   "registros": 0,
+   "registros_esperados": 12,
+   "campos_ok": 0,
+   "campos_total": 108,
+   "exactitud_campos": 0.0,
+   "totales_ok": {
+    "base_imponible": false,
+    "cuota_iva": false,
+    "total": false
+   },
+   "estado_formato": "no_reconocido",
+   "fallos_ejemplo": {
+    "fecha_expedicion": [
+     {
+      "esperado": "2025-01-03",
+      "obtenido": null
+     },
+     {
+      "esperado": "2025-01-08",
+      "obtenido": null
+     },
+     {
+      "esperado": "2025-02-13",
+      "obtenido": null
+     }
+    ],
+    "serie": [
+     {
+      "esperado": "A",
+      "obtenido": null
+     },
+     {
+      "esperado": "A",
+      "obtenido": null
+     },
+     {
+      "esperado": "A",
+      "obtenido": null
+     }
+    ],
+    "numero_factura": [
+     {
+      "esperado": "2025/0101",
+      "obtenido": null
+     },
+     {
+      "esperado": "2025/0102",
+      "obtenido": null
+     },
+     {
+      "esperado": "2025/0103",
+      "obtenido": null
+     }
+    ],
+    "nif_destinatario": [
+     {
+      "esperado": "B87654323",
+      "obtenido": null
+     },
+     {
+      "esperado": "12345678Z",
+      "obtenido": null
+     },
+     {
+      "esperado": "F60123452",
+      "obtenido": null
+     }
+    ],
+    "nombre_destinatario": [
+     {
+      "esperado": "Ferretería Núñez, S.L.",
+      "obtenido": null
+     },
+     {
+      "esperado": "José Ángel Peña Ibáñez",
+      "obtenido": null
+     },
+     {
+      "esperado": "Comercial Gòdia, SCCL",
+      "obtenido": null
+     }
+    ],
+    "base_imponible": [
+     {
+      "esperado": 1250.0,
+      "obtenido": null
+     },
+     {
+      "esperado": 89.9,
+      "obtenido": null
+     },
+     {
+      "esperado": 12345.67,
+      "obtenido": null
+     }
+    ],
+    "tipo_iva": [
+     {
+      "esperado": 21.0,
+      "obtenido": null
+     },
+     {
+      "esperado": 21.0,
+      "obtenido": null
+     },
+     {
+      "esperado": 21.0,
+      "obtenido": null
+     }
+    ],
+    "cuota_iva": [
+     {
+      "esperado": 262.5,
+      "obtenido": null
+     },
+     {
+      "esperado": 18.88,
+      "obtenido": null
+     },
+     {
+      "esperado": 2592.59,
+      "obtenido": null
+     }
+    ],
+    "total": [
+     {
+      "esperado": 1512.5,
+      "obtenido": null
+     },
+     {
+      "esperado": 108.78,
+      "obtenido": null
+     },
+     {
+      "esperado": 14938.26,
+      "obtenido": null
+     }
+    ]
+   },
+   "n_fallos_por_campo": {
+    "fecha_expedicion": 12,
+    "serie": 12,
+    "numero_factura": 12,
+    "nif_destinatario": 12,
+    "nombre_destinatario": 12,
+    "base_imponible": 12,
+    "tipo_iva": 12,
+    "cuota_iva": 12,
+    "total": 12
+   },
+   "recall_palabras_texto": 0.02877697841726619
+  },
+  "checks": []
+ },
+ {
+  "id": "pdf09",
+  "archivo": "pdf09_mixto_sello_digital_mas_imagen.pdf",
+  "cajetilla": "otros",
+  "verdad": "factura",
+  "nota": "Factura escaneada con una línea de texto digital añadida (sello de copia auténtica/CSV), caso típico de la sede electrónica",
+  "ok": true,
+  "ms": 247,
+  "error": null,
+  "estado": "complete",
+  "parser": "pdfjs-local-6.2.108-legacy",
+  "ocr": {
+   "requested": true,
+   "used": false,
+   "status": "not-needed",
+   "engine": null
+  },
+  "issues": [],
+  "confianza_global": 0.64,
+  "n_bloques": 1,
+  "n_tablas": 0,
+  "texto_inicio": "Copia auténtica de documento digitalizado · CSV: GEN-1a2b-3c4d-5e6f · Verificable en la sede electrónica",
+  "factura": {
+   "campos": {
+    "numero": false,
+    "fecha": false,
+    "nif_emisor": false,
+    "nif_cliente": false,
+    "base": false,
+    "cuota": false,
+    "total": false
+   },
+   "campos_ok": 0,
+   "campos_total": 7,
+   "obtenidos": {
+    "numero": null,
+    "fecha": null,
+    "nifs": [],
+    "base": null,
+    "cuota": null,
+    "total": null
+   },
+   "recall_palabras": 0.024691358024691357,
+   "cer": 0.8853046594982079,
+   "d7_importes_ok": null
+  },
+  "checks": []
+ },
+ {
+  "id": "pdfE4",
+  "archivo": "pdfE4_5_paginas_escaneadas.pdf",
+  "cajetilla": "otros",
+  "verdad": "rendimiento",
+  "nota": "PDF escaneado de 5 páginas (rendimiento del OCR)",
+  "ok": true,
+  "ms": 4154,
+  "error": null,
+  "estado": "complete",
+  "parser": "pdfjs-local-6.2.108-legacy",
+  "ocr": {
+   "requested": true,
+   "used": true,
+   "status": "complete",
+   "engine": "tesseract-local",
+   "languages": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ]
+  },
+  "issues": [],
+  "confianza_global": 0.64,
+  "n_bloques": 75,
+  "n_tablas": 0,
+  "texto_inicio": "Número de factura: A-2025/0157 Fecha de expedición: 14/03/2025 Emisor: Construcciones Muñoz Ibáñez, S.L. NIF emisor: B12345674 Domicilio: C/ Mayor 12, 28013 Madrid Cliente: Talleres Peña Gutiérrez, S.A. NIF cliente: A58818501 Domicilio cliente: Avda. de la Constitución 45, 41001 Sevilla Reparación de cubierta 850,00 850,00 Sustitución de canalón (m) 32,05 384,60 Retirada de escombros 120,00 120,00",
+  "checks": []
+ },
+ {
+  "id": "png09",
+  "archivo": "png09_libro_sin_bordes.png",
+  "cajetilla": "libro_facturas_emitidas",
+  "verdad": "libro",
+  "nota": "El mismo libro en imagen, tabla SIN líneas de cuadrícula",
+  "ok": true,
+  "ms": 2454,
+  "error": null,
+  "estado": "complete",
+  "parser": "native-image-metadata",
+  "ocr": {
+   "requested": true,
+   "used": true,
+   "status": "complete",
+   "engine": "tesseract-local",
+   "languages": [
+    "spa",
+    "cat",
+    "eus",
+    "eng",
+    "fra"
+   ]
+  },
+  "issues": [],
+  "confianza_global": 0.32,
+  "n_bloques": 15,
+  "n_tablas": 0,
+  "texto_inicio": "Libro registro de facturas emitidas : Ejercicio 2025 Titular: Construcciones Muñoz Ibáñez, S.L. NIE B12345674 Fecha expedición Serie Número factura NIF cliente Nombre cliente Base imponible Tipo IVA Cuota IVA Total 03/01/2025 A 2025/0101 B87654323 Ferretería Núñez, S.L. 1.250,00 21 262,50 1.512,50 08/01/2025 A 2025/0102 123456787 José Ángel Peña Ibáñez 89,90 21 18,88 108,78 13/02/2025 A 2025/0103 ",
+  "libro": {
+   "registros": 0,
+   "registros_esperados": 12,
+   "campos_ok": 0,
+   "campos_total": 108,
+   "exactitud_campos": 0.0,
+   "totales_ok": {
+    "base_imponible": false,
+    "cuota_iva": false,
+    "total": false
+   },
+   "estado_formato": "no_reconocido",
+   "fallos_ejemplo": {
+    "fecha_expedicion": [
+     {
+      "esperado": "2025-01-03",
+      "obtenido": null
+     },
+     {
+      "esperado": "2025-01-08",
+      "obtenido": null
+     },
+     {
+      "esperado": "2025-02-13",
+      "obtenido": null
+     }
+    ],
+    "serie": [
+     {
+      "esperado": "A",
+      "obtenido": null
+     },
+     {
+      "esperado": "A",
+      "obtenido": null
+     },
+     {
+      "esperado": "A",
+      "obtenido": null
+     }
+    ],
+    "numero_factura": [
+     {
+      "esperado": "2025/0101",
+      "obtenido": null
+     },
+     {
+      "esperado": "2025/0102",
+      "obtenido": null
+     },
+     {
+      "esperado": "2025/0103",
+      "obtenido": null
+     }
+    ],
+    "nif_destinatario": [
+     {
+      "esperado": "B87654323",
+      "obtenido": null
+     },
+     {
+      "esperado": "12345678Z",
+      "obtenido": null
+     },
+     {
+      "esperado": "F60123452",
+      "obtenido": null
+     }
+    ],
+    "nombre_destinatario": [
+     {
+      "esperado": "Ferretería Núñez, S.L.",
+      "obtenido": null
+     },
+     {
+      "esperado": "José Ángel Peña Ibáñez",
+      "obtenido": null
+     },
+     {
+      "esperado": "Comercial Gòdia, SCCL",
+      "obtenido": null
+     }
+    ],
+    "base_imponible": [
+     {
+      "esperado": 1250.0,
+      "obtenido": null
+     },
+     {
+      "esperado": 89.9,
+      "obtenido": null
+     },
+     {
+      "esperado": 12345.67,
+      "obtenido": null
+     }
+    ],
+    "tipo_iva": [
+     {
+      "esperado": 21.0,
+      "obtenido": null
+     },
+     {
+      "esperado": 21.0,
+      "obtenido": null
+     },
+     {
+      "esperado": 21.0,
+      "obtenido": null
+     }
+    ],
+    "cuota_iva": [
+     {
+      "esperado": 262.5,
+      "obtenido": null
+     },
+     {
+      "esperado": 18.88,
+      "obtenido": null
+     },
+     {
+      "esperado": 2592.59,
+      "obtenido": null
+     }
+    ],
+    "total": [
+     {
+      "esperado": 1512.5,
+      "obtenido": null
+     },
+     {
+      "esperado": 108.78,
+      "obtenido": null
+     },
+     {
+      "esperado": 14938.26,
+      "obtenido": null
+     }
+    ]
+   },
+   "n_fallos_por_campo": {
+    "fecha_expedicion": 12,
+    "serie": 12,
+    "numero_factura": 12,
+    "nif_destinatario": 12,
+    "nombre_destinatario": 12,
+    "base_imponible": 12,
+    "tipo_iva": 12,
+    "cuota_iva": 12,
+    "total": 12
+   },
+   "recall_palabras_texto": 0.9712230215827338
+  },
+  "checks": []
+ }
+]

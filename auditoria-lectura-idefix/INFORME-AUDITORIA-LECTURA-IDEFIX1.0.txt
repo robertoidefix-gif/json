@@ -1,0 +1,433 @@
+=====================================================================================================
+INFORME DE AUDITORÍA REAL · CALIDAD DE LECTURA POR FORMATO Y VALORACIÓN DEL CÓDIGO
+Idefix1.0 = AnalizadorArchivos 6.14.0 (archivo único analizador-archivos.js, 16.510 líneas)
+Fecha: 2026-10-02
+=====================================================================================================
+
+Regla de este informe: nada se da por bueno sin evidencia. Cada resultado procede de EJECUTAR el
+código entregado con documentos de verdad-terreno conocida; cada fallo lleva archivo y línea. Lo que no
+se ha podido comprobar se marca «⚠️ No demostrable con el código proporcionado».
+
+-----------------------------------------------------------------------------------------------------
+0. RESUMEN EJECUTIVO
+-----------------------------------------------------------------------------------------------------
+Nota de lectura por formato (configuración de producción de index.html: OCR activo con los 7 idiomas).
+Escala 0–10 = 10 × (casos ✅ + ½ casos ⚠️) / casos. «Típicos» = documentos habituales; «límite» = casos
+difíciles pero reales. Las reglas de veredicto están en el apartado 1.5.
+
+  Formato                       Casos  ✅  ⚠️  ❌   NOTA   Típicos  Límite   Tiempo (mediana / máx.)
+  XLS  (.xls)                     6     6   0   0   10,0    10,0     10,0     45 ms / 133 ms
+  XLSX (.xlsx)                   11     9   1   1    8,6    10,0      7,0     58 ms / 2,4 s (25.000 filas)
+  DOCX (.docx)                   13     7   6   0    7,7     9,0      6,9     63 ms / 73 ms
+  HTML (.html) + HTM (.htm)      13     8   1   4    6,5    10,0      3,6     38 ms / 80 ms
+      .html (10 casos) 5,5 · .htm (3 casos típicos) 10,0 — mismo lector: los fallos del .html aplican al .htm
+  PDF digital (.pdf)             15     7   5   3    6,3     9,3      3,8    228 ms / 592 ms (100 págs.)
+  PDF escaneado (.pdf + OCR)      5     1   2   2    4,0     5,0      0,0    2,0 s / 12,8 s
+  Imágenes PNG/JPG/JPEG (OCR)     9     1   4   4    3,3     3,0      3,8    1,4 s / 14,2 s
+      .png (6 casos) 3,3 · .jpg (2) 2,5 · .jpeg (1) 5,0 — mismo decodificador y mismo OCR
+
+Valoración total del código: 6,9 / 10 (ponderación en el apartado 6.4).
+  Seguridad 8,5 · Calidad de lectura 6,6 · Robustez 6,0 · Mantenibilidad 5,5 · Rendimiento 7,5
+
+Lo mejor (verificado):
+  - 0 peticiones fuera del propio servidor: 72 documentos, repeticiones de OCR con 1 y 5 idiomas e interfaz real.
+  - Excel (.xlsx/.xls): 100 % de los registros y campos en todos los libros típicos, incluidos fórmulas
+    (valor guardado), fórmulas compartidas, fechas 1904, importes como texto en formato español, títulos
+    antes de la cabecera, fila «Total» excluida y la tabla SST de .xls partida en 24 registros CONTINUE
+    (3.000/3.000 cadenas idénticas).
+  - DOCX, HTML y PDF digitales «normales»: 7/7 datos fiscales y 100 % del texto.
+  - Todos los archivos dañados se rechazan de forma controlada; nada se cuelga.
+
+Lo peor (verificado):
+  1. [CRÍTICO] Con el despliegue «mínimo» que permiten las instrucciones (solo los núcleos simd-lstm y
+     lstm), la aplicación ENTERA no arranca en Chromium 141: Tesseract 7 pide el núcleo relaxed-SIMD y la
+     verificación lo bloquea. No se puede analizar ni un XLSX.
+  2. [ALTO] Los 7 idiomas OCR por defecto empeoran el OCR: Tesseract descarta las líneas de detalle de la
+     factura (texto 70 % frente a 91–93 % con español o con los 5 idiomas latinos) y es hasta 18 veces más
+     lento en tablas (14,2 s frente a 0,8 s). Causa: los modelos de chino.
+  3. [ALTO] Pérdidas de datos con estado «complete» y sin aviso real: PDF escaneado con una línea de texto
+     digital (sello CSV de copia auténtica) → no se hace OCR; XLSX sin atributo r → libro vacío; PDF con la
+     página girada → texto ilegible; HTML con rowspan → todas las filas desplazadas de columna, con solo un
+     aviso informativo que dice lo contrario y confianza global 0,88.
+  4. [ALTO] Ningún documento escaneado o fotografiado produce tablas: un libro registro escaneado da
+     0 registros incluso cuando el OCR lee el 97 % del texto.
+
+Recomendación final (apartado 10): Idefix1.0 es APTO para Excel (.xlsx/.xls) y para DOCX/HTML/PDF digitales
+habituales. NO es apto todavía para confiar en documentos escaneados o fotografiados ni para tablas HTML/
+DOCX con celdas combinadas sin revisión humana. Antes de usarlo en producción hay que corregir los puntos
+1 a 6 de la lista priorizada (apartado 8); los dos primeros son cambios de configuración e instrucciones.
+
+-----------------------------------------------------------------------------------------------------
+1. QUÉ SE HA AUDITADO Y CÓMO
+-----------------------------------------------------------------------------------------------------
+1.1 Código auditado
+  - Archivo subido: 04f297ed-Idefix1.0-codigo-completo_1.txt (SHA-256 86566e4a…6572). Se extrajeron sus
+    17 archivos byte a byte (analizador-archivos.js original: SHA-256 03ac9a81…8d9f, 16.510 líneas).
+  - Única modificación para ejecutarlo: el sellado del paso 4 de sus instrucciones (manifiesto de
+    vendor/, línea 443 SHA256_MANIFIESTO_INTEGRIDAD y SRI de las páginas). El resto del archivo es idéntico
+    (comprobado con diff: solo difiere la línea 443). Las líneas citadas en este informe son las del
+    archivo ORIGINAL.
+  - Librerías oficiales: PDF.js 6.2.108 (386/386 archivos coinciden con el manifiesto de Idefix),
+    Tesseract.js 7.0.0 + tesseract.js-core 7.0.0 (los 6 núcleos) y los 7 modelos de idioma.
+
+1.2 Entorno
+  - Navegador: Chromium 141.0.7390.37 (Playwright), Linux. Servidor: su propio servidor-local.py.
+  - Página de pruebas con LA MISMA CSP que index.html, que llama a crearAnalizadorArchivos() y
+    analizarArchivo() del código sellado (mismo worker núcleo, mismo PDF.js, mismo Tesseract).
+  - Comprobación adicional por la interfaz real (index.html, subida por las cajetillas y «Descargar JSON»).
+  - Configuraciones de OCR: «prod» (los 7 idiomas, como index.html), «5 latinos» (spa, cat, eus, eng, fra)
+    y «spa».
+
+1.3 Corpus (72 documentos, todos en auditoria-lectura-idefix/corpus/)
+  Generados con herramientas reales para que tengan la estructura de los archivos del mundo real:
+  LibreOffice 24.2 (Calc y Writer), Chromium («Imprimir a PDF» y capturas), reportlab 5.0, openpyxl 3.1,
+  python-docx 1.2, xlwt 1.3 y Pillow 12.3. Datos fiscales ficticios con NIF/CIF de dígito de control válido.
+    - Factura: número A-2025/0157, fecha 14/03/2025, NIF emisor B12345674, NIF cliente A58818501,
+      3 líneas, base 1.354,60 €, IVA 21 % 284,47 €, total 1.639,07 €.
+    - Libro registro de facturas emitidas: 12 facturas × 9 columnas (con acentos, ñ, ò, À y apóstrofos), totales
+      base 38.214,51 €, cuota 7.664,27 €, total 45.878,78 €; versión de 60 filas en 2 páginas.
+  Por formato: PDF digital 15 · PDF escaneado 5 · DOCX 13 · XLSX 11 · XLS 6 · HTML 10 · HTM 3 · PNG 6 ·
+  JPG 2 · JPEG 1. Se comprobó con lectores de referencia (xlrd, openpyxl, pdftotext, LibreOffice) que los
+  archivos son válidos y contienen lo esperado.
+
+1.4 Métricas
+  - Datos fiscales de la factura (7): número, fecha, NIF emisor, NIF cliente, base, cuota y total, leídos
+    de documento.numero_documento, documento.fecha_documento, partes.nifs_mencionados e
+    importes.inferidos del JSON.
+  - Texto: % de palabras de la verdad presentes en el texto extraído (multiconjunto) y CER (distancia
+    de edición por carácter).
+  - Tabla de líneas: % de celdas idénticas en la mejor tabla de content.tables.
+  - Libros: datos_especificos.registros comparados campo a campo (12 × 9 = 108 campos) y totales.
+  - Casos especiales: comprobaciones concretas (texto oculto, orden de lectura, cadenas exactas…).
+
+1.5 Reglas de veredicto (las mismas en todos los formatos)
+  factura ✅ 7/7 datos, texto ≥ 95 % y tabla de líneas ≥ 95 % (si se mide) y resto de comprobaciones OK
+          ⚠️ ≥ 4 datos o texto ≥ 80 %   ❌ en otro caso
+  libro   ✅ todos los registros y el 100 % de los campos   ⚠️ campos ≥ 80 %   ❌ en otro caso
+  dañado  ✅ rechazo controlado con mensaje claro en español   ⚠️ controlado con mensaje técnico en inglés
+          ❌ cuelgue o excepción
+  resto   ✅ todas las comprobaciones   ⚠️ alguna   ❌ ninguna
+
+1.6 Límites de esta auditoría
+  - ⚠️ No demostrable aquí: Chrome y Edge de marca en Windows (se usó Chromium 141 en Linux, el mismo motor),
+    escaneos físicos reales (la degradación de escaneo se simuló: inclinación, ruido, desenfoque, JPEG) y
+    documentos reales de clientes.
+  - Las notas dependen de la mezcla de casos elegida; por eso se dan separadas para casos típicos y límite,
+    y cada caso tiene su resultado medido.
+
+-----------------------------------------------------------------------------------------------------
+2. RESULTADO POR FORMATO
+-----------------------------------------------------------------------------------------------------
+Formato de cada fila: id | caso | veredicto | resultado medido | tiempo
+
+2.1 XLSX (.xlsx) — NOTA 8,6 (típicos 10,0 · límite 7,0)
+  xlsx01 | Libro guardado por LibreOffice Calc, fechas reales, cuota y total con fórmula | ✅ | 12/12 registros, 100 % campos, totales 3/3; las 12 cuotas marcadas como valor calculado por Excel | 71 ms
+  xlsx02 | 2 filas de título, cabecera en la fila 4, fila «Total» con SUMA | ✅ | 12/12, 100 %; la fila «Total» se excluye y se conserva aparte | 54 ms
+  xlsx03 | Importes y fechas como TEXTO español («1.234,56», «14/03/2025») | ✅ | 12/12, 100 % | 56 ms
+  xlsx04 | Fórmulas compartidas (t="shared"), como las guarda Excel al arrastrar | ✅ | 12/12, 100 % (valores guardados correctos; aviso XLSX_SHARED_FORMULA_UNRESOLVED) | 67 ms
+  xlsx08 | Cadenas en línea (inlineStr) de exportaciones de ERP | ✅ | 12/12, 100 % | 48 ms
+  xlsx09 | Sistema de fechas 1904 (Excel para Mac) | ✅ | 12/12, 100 % (fechas correctas) | 61 ms
+  xlsx06 | 3 hojas, una oculta con una instrucción inyectada | ✅ | 12/12; hoja «Config» marcada hidden; instrucción detectada | 59 ms
+  xlsx10 | 25.000 filas (supera el límite de 20.000) | ✅ | truncado con aviso (XLSX_ROWS_TRUNCATED) | 2,4 s
+  xlsx11 | ZIP truncado | ✅ | «ZIP inválido: no se encontró el directorio central.» | 37 ms
+  xlsx07 | Columna Serie combinada verticalmente (B2:B13) | ⚠️ | 89,8 % campos: la serie solo consta en la 1.ª fila (aviso «no expandidas», informativo) | 55 ms
+  xlsx05 | Celdas y filas sin atributo r (permitido por ECMA-376) | ❌ | 0/12 registros, 0 % del texto, estado complete y SIN aviso. LibreOffice y openpyxl leen el archivo entero | 44 ms
+  Causa del ❌: analizador-archivos.js:2052 — si la referencia r no casa con /^([A-Z]{1,3})(\d{1,7})$/ la
+  celda se descarta en silencio; r es opcional en CT_Cell y CT_Row.
+
+2.2 XLS (.xls, BIFF8) — NOTA 10,0
+  xls01 | BIFF8 de LibreOffice Calc (LABELSST, RK, MULRK, FORMULA) | ✅ | 12/12, 100 %, totales 3/3; fórmulas con valor guardado | 54 ms
+  xls02 | Títulos, cabecera en la fila 4 y fila «Total» | ✅ | 12/12, 100 %; «Total» excluida | 45 ms
+  xls04 | BIFF8 de otra librería (xlwt) | ✅ | 12/12, 100 % | 45 ms
+  xls05 | Importes y fechas como texto español | ✅ | 12/12, 100 % | 44 ms
+  xls03 | 3.000 cadenas únicas; SST partida en 24 registros CONTINUE, mezcla de 8 y 16 bits | ✅ | 3.000/3.000 cadenas idénticas | 133 ms
+  xls06 | OLE2 truncado | ✅ | rechazo controlado con recomendación de guardarlo como .xlsx | 28 ms
+  Comentario: el lector propio de OLE2/BIFF8 (líneas 2119–2658) es la pieza más sólida del programa.
+
+2.3 DOCX (.docx) — NOTA 7,7 (típicos 9,0 · límite 6,9)
+  docx01 | Factura python-docx: párrafos + tabla de líneas | ✅ | 7/7 datos, texto 100 %, tabla 100 % | 68 ms
+  docx10 | La factura guardada por LibreOffice Writer | ✅ | 7/7, 100 %, tabla 100 % | 56 ms
+  docx11 | Factura con encabezado y pie | ✅ | 7/7, 100 %; encabezado y pie incluidos | 68 ms
+  docx03 | Libro de facturas en tabla Word | ✅ | 12/12, 100 %, totales 3/3 | 65 ms
+  docx09 | Tabla anidada dentro de una celda | ✅ | los 4 valores presentes | 54 ms
+  docx12 | ZIP truncado | ✅ | rechazo controlado | 18 ms
+  docx13 | Intento de cerrar el bloque </DOCUMENT_DATA> | ✅ | detectado (suplantacion_delimitador, alta) | 63 ms
+  docx02 | Base, IVA y total en una tabla de 2 columnas (muy habitual) | ⚠️ | 4/7 datos: base, cuota y total NO se infieren | 63 ms
+  docx04 | Lista numerada automática y viñetas | ⚠️ | texto completo, pero 0/3 elementos con su número («1.», «2.»…) | 55 ms
+  docx05 | Control de cambios sin aceptar (1 eliminación + 1 inserción) | ⚠️ | el texto final es correcto, pero no hay ningún aviso de revisiones pendientes | 55 ms
+  docx06 | Texto oculto (w:vanish) con instrucción inyectada | ⚠️ | no se marca como oculto; solo se detecta porque la frase empieza por «IGNORA…» | 57 ms
+  docx07 | Cuadro de texto (mc:AlternateContent, como lo guarda Word) | ⚠️ | el texto sale DUPLICADO (2 apariciones) | 73 ms
+  docx08 | Celdas combinadas: vMerge y gridSpan | ⚠️ | fila «Total general»: «1.633,50» bajo «Cuota» y «Total» vacío | 66 ms
+  Causas (líneas): 1569–1581 docxTexto recorre todo, incluidos mc:Choice y mc:Fallback (duplicado) y no
+  mira w:numPr ni w:vanish (búsqueda de «vanish», «numPr», «AlternateContent» en el archivo: 0 apariciones);
+  1631–1642 cada w:tc ocupa una columna aunque tenga gridSpan; 4891–4921 inferirCampos solo usa los
+  rótulos «Nombre: valor» de los párrafos, no las tablas.
+
+2.4 PDF digital (.pdf) — NOTA 6,3 (típicos 9,3 · límite 3,8)
+  pdf01 | Factura reportlab | ✅ | 7/7, texto 100 %, tabla 100 % | 245 ms
+  pdf02 | Factura «Imprimir a PDF» de Chrome | ✅ | 7/7, 100 %, tabla 100 % | 211 ms
+  pdf11b | Con restricciones de propietario, sin contraseña de apertura (extractos, certificados) | ✅ | 7/7, 100 % | 220 ms
+  pdf04 | Libro de facturas impreso desde Chrome (tabla con bordes) | ✅ | 12/12, 100 %, totales 3/3 | 250 ms
+  pdf06 | 60 filas en 2 páginas con cabecera repetida | ✅ | 60/60 registros, 100 % | 296 ms
+  pdf08 | Formulario AcroForm rellenado | ✅ | los 4 valores incorporados | 253 ms
+  pdf15 | 100 páginas | ✅ | 1.800 bloques | 592 ms
+  pdf03 | Factura exportada por Writer (celdas en 2 líneas) | ⚠️ | 7/7, texto 100 %, tabla 81 %: cada celda de 2 líneas se parte en 2 filas | 200 ms
+  pdf07 | Tres facturas en un PDF (una por página) | ⚠️ | se lee todo el texto, pero solo la 1.ª factura se estructura (A-2025/0301, total 121) — ya conocido (F12) | 211 ms
+  pdf10 | Instrucción en texto blanco y en texto invisible (modo 3) | ⚠️ | detectada por la frase; NO se marca como texto oculto | 216 ms
+  pdf11a | Con contraseña de apertura | ⚠️ | rechazo controlado, mensaje en inglés: «No password given» | 142 ms
+  pdf12 | PDF truncado | ⚠️ | rechazo controlado, mensaje en inglés: «Invalid PDF structure.» | 151 ms
+  pdf05 | Texto a dos columnas (informes, resoluciones) | ❌ | 0/6 párrafos legibles: las líneas de ambas columnas se intercalan; además se inventa 1 tabla — ya conocido (PDF-1) | 217 ms
+  pdf13 | Página con /Rotate 90 | ❌ | 0/7 datos, texto 20 %: todo el pie de la factura en una sola línea ilegible | 235 ms
+  pdf14 | 2 bytes (CRLF) antes de «%PDF-» | ❌ | rechazado como «formato no admitido» (los visores lo abren) | 27 ms
+  Causas: 2722–2723 pdfAgruparLineas ordena por y y luego x en toda la página (dos columnas y páginas
+  giradas); 12415–12440 las coordenadas se toman con la rotación aplicada; 5512 la firma %PDF- se exige en el
+  byte 0. Nota: en Chromium 141 se usa la build legacy de PDF.js (7585–7592: detección por funciones); es
+  correcto, la build moderna exige APIs más nuevas.
+
+2.5 PDF escaneado (.pdf + OCR) — NOTA 4,0 (los 7 idiomas)
+  pdfE4 | 5 páginas escaneadas (rendimiento) | ✅ | completo | 3,9 s (≈ 0,8 s/página)
+  pdfE1 | Factura escaneada (≈200 ppp) | ⚠️ | 7/7 datos; texto 69 % (se pierden las líneas de detalle); 0 tablas | 1,0 s
+  pdfE2 | Escaneo degradado | ⚠️ | 7/7 datos; texto 77 %; 0 tablas | 2,0 s
+  pdfE3 | Libro registro escaneado | ❌ | 0/12 registros; texto 4 % (la cuadrícula destroza el OCR) | 12,8 s
+  pdf09 | Escaneo + 1 línea digital (sello «Copia auténtica… CSV») | ❌ | 0/7, texto 2 %: NO se hace OCR, estado complete, sin aviso | 201 ms
+  Causas: 12579 el OCR solo se activa si la página tiene < 20 caracteres de texto; 12623–12629 la rama
+  «hybrid» es inalcanzable (si se llegó al OCR, se cumple siempre la condición anterior); 5746 y 2934–2936
+  el OCR nunca produce tablas (las páginas OCR no tienen elementos con posición y el texto OCR no lleva
+  los dobles espacios que espera N.tablasTexto).
+
+2.6 HTML (.html) — NOTA 5,5 (típicos 10,0 · límite 3,6)
+  html01 | Factura UTF-8 | ✅ | 7/7, 100 %, tabla 100 % | 80 ms
+  html02 | Libro con thead/tbody | ✅ | 12/12, 100 % | 55 ms
+  html12 | Word «Guardar como página web» (Writer) | ✅ | 7/7, 100 %, tabla 100 % | 38 ms
+  html11 | Entidades con nombre, numéricas, &#128; y sin «;» | ✅ | todas decodificadas | 32 ms
+  html05 | 8 formas de ocultar texto con una instrucción inyectada | ⚠️ | 7/7 datos; marcados como ocultos 3/8 (display:none, hidden, opacity:0); sin marcar: clase CSS, texto blanco, 1px, fuera de pantalla, altura 0; la instrucción se detecta en 8/8 por la frase | 44 ms
+  html13 | 11 variantes de instrucción inyectada | ⚠️ | detectadas 4/10 aplicables: es, en, invisibles y homoglifo; NO: catalán, francés, euskera, sutil, cambio de rol, «no menciones…» | 35 ms
+  html06 | Columna Serie con rowspan=12 | ❌ | 19,4 % campos, totales 0/3: de la fila 2 a la 12 todo se desplaza una columna (serie=«2025/0102», número=«12345678Z»…) | 36 ms
+  html07 | Filas <tr onclick=…> (páginas guardadas de banca o ERP) | ❌ | 0/12 registros: se descartan las filas con su contenido (con aviso) | 36 ms
+  html08 | Fragmento que empieza por <table> (exportaciones «Excel» de bancos) | ❌ | rechazado: «no es una página HTML reconocible» | 66 ms
+  html09 | Empieza por <meta charset> sin <html> | ❌ | rechazado igual | 23 ms
+  Causas: 3884–3891 solo se expande colspan; 4106 rowspan solo se cuenta; 4163–4164 el aviso (de nivel
+  info) afirma «las demás quedan vacías», lo que es falso con rowspan; 4052 los elementos con on* se
+  descartan con todo su contenido; 3740 solo se acepta si empieza por <!DOCTYPE html>, <html>, <head> o
+  <body>; 3809–3822 motivoOculto solo mira atributos y estilos en línea.
+
+2.7 HTM (.htm) — NOTA 10,0 en sus 3 casos (mismo lector que .html: le aplican los fallos de 2.6)
+  htm03 | Declara iso-8859-1 y contiene € (byte 0x80) | ✅ | 7/7, 100 %, sin mojibake | 36 ms
+  htm04 | Sin declaración de codificación, bytes windows-1252 | ✅ | 7/7, 100 % (aviso HTML_CHARSET_ASSUMED) | 38 ms
+  htm10 | Hoja «Guardar como página web» (Calc) | ✅ | 12/12, 100 % | 39 ms
+
+2.8 PNG (.png) — NOTA 3,3 (los 7 idiomas)
+  png06 | 13,0 Mpx (límite 12) | ✅ | rechazo claro con el número de píxeles | 27 ms
+  png01 | Factura nítida (≈190 ppp) | ⚠️ | 7/7 datos; texto 70 %; importes 3/6; sin las 3 líneas de detalle; 0 tablas | 927 ms
+  png07 | Texto negro sobre fondo transparente | ⚠️ | igual que png01 (el canal alfa se maneja bien) | 690 ms
+  png04 | Libro de facturas (tabla con cuadrícula) | ❌ | 0/12 registros; texto 11 % | 14,2 s
+  png09 | El mismo libro SIN cuadrícula | ❌ | texto 97 % pero 0/12 registros (el OCR no genera tablas) | 3,0 s
+  png05 | Baja resolución (≈72 ppp) | ❌ | 0/7 datos, texto 5 % (no se reescala) | 1,8 s
+
+2.9 JPG (.jpg) — NOTA 2,5
+  jpg02 | Factura JPEG calidad 85 | ⚠️ | 7/7 datos; texto 70 %; importes 3/6 | 722 ms
+  jpg08 | Factura girada 90° | ❌ | 0/7, texto 1 % (no se detecta la orientación) | 14,2 s
+
+2.10 JPEG (.jpeg) — NOTA 5,0
+  jpeg03 | Escaneo malo simulado (1,5°, ≈120 ppp, ruido, desenfoque, JPEG 60) | ⚠️ | 7/7 datos; texto 70 %; importes 3/6 | 556 ms
+
+  Causas comunes de imágenes: 340 idiomas por defecto (ver 3); 12161–12195 la imagen pasa tal cual a
+  Tesseract (sin orientación, sin reescalado, sin quitar cuadrícula); 5746 tables: [] para imágenes.
+
+-----------------------------------------------------------------------------------------------------
+3. OCR: EFECTO DE LOS IDIOMAS (misma imagen, mismo código)
+-----------------------------------------------------------------------------------------------------
+  Doc.    | 7 idiomas (index.html)              | 5 latinos (spa,cat,eus,eng,fra)    | solo spa
+  png01   | texto 70 % · CER 29 % · imp. 3/6 · 927 ms | texto 93 % · CER 4 % · imp. 6/6 · 1,3 s | texto 91 % · CER 5 % · imp. 6/6 · 1,1 s
+  jpg02   | texto 70 % · CER 29 % · imp. 3/6 · 722 ms | texto 90 % · CER 7 % · imp. 6/6 · 1,2 s | texto 91 % · CER 5 % · imp. 6/6 · 911 ms
+  jpeg03  | texto 70 % · CER 29 % · imp. 3/6 · 556 ms | texto 83 % · CER 15 % · imp. 5/6 · 1,3 s | texto 83 % · CER 15 % · imp. 5/6 · 765 ms
+  pdfE1   | texto 69 % · CER 29 % · imp. 3/6 · 1,0 s | texto 89 % · CER 9 % · imp. 6/6 · 1,1 s | texto 90 % · CER 9 % · imp. 6/6 · 1,0 s
+  png04   | texto 11 % · 14,2 s | texto 2 % · 2,2 s | texto 4 % · 805 ms
+  pdfE3   | texto 4 % · 12,8 s | texto 3 % · 5,8 s | texto 7 % · 1,9 s
+  jpg08   | texto 1 % · CER 97 % · imp. 0/6 · 14,2 s | texto 1 % · CER 108 % · imp. 0/6 · 8,9 s | texto 1 % · CER 104 % · imp. 0/6 · 2,2 s
+  png09   | texto 97 % · 3,0 s | texto 97 % · 2,5 s | texto 95 % · 1,8 s
+  («imp.» = importes normalizados por D7 que coinciden con los 6 de la factura: 3 líneas, base, cuota y total.)
+
+  Diagnóstico con Tesseract.js en bruto (sin Idefix, misma imagen png01):
+    spa → 3/3 líneas de detalle · spa+cat · spa+eng · 5 latinos → 3/3 · spa+chi_sim → 2/3 · los 7 → 0/3.
+  Conclusión: no es un fallo del código de Idefix al recoger los bloques, sino de la combinación de idiomas
+  por defecto (línea 340 y comentario de index.html). Los modelos de chino hacen que Tesseract descarte
+  las líneas de la tabla y multiplican el tiempo en páginas con tablas.
+  Común a todas las configuraciones: el título grande «FACTURA» no se reconoce (Tesseract) y las líneas de
+  detalle nunca se convierten en tabla.
+
+-----------------------------------------------------------------------------------------------------
+4. PRUEBA DE DESPLIEGUE MÍNIMO (núcleos de Tesseract)
+-----------------------------------------------------------------------------------------------------
+  Instrucciones (Idefix1.0-instrucciones.txt, paso 2.2 d): «Como mínimo hacen falta: tesseract-core-simd-
+  lstm.wasm.js … tesseract-core-lstm.wasm.js». Código: línea 8120 (AA_ARCHIVOS_TESSERACT.nucleos) lista
+  solo esos dos.
+  Prueba: copia de la aplicación con solo esos núcleos (.wasm.js y .wasm), sellada con su procedimiento.
+  Resultado en Chromium 141 (admite relaxed SIMD): index.html muestra «El analizador no se ha iniciado …
+  el OCR pidió un script no verificado: …/tesseract-core-relaxedsimd-lstm.wasm.js». Ningún archivo se
+  puede procesar, tampoco Excel ni Word: líneas 12809–12820, cualquier fallo al crear el OCR aborta
+  crearAnalizadorArchivos.
+  Lo positivo: la verificación de integridad funciona (el shim no deja cargar nada fuera del manifiesto).
+  Con los 6 núcleos oficiales copiados todo arranca (resto de pruebas).
+
+-----------------------------------------------------------------------------------------------------
+5. SEGURIDAD DURANTE LA LECTURA (comprobado)
+-----------------------------------------------------------------------------------------------------
+  ✅ Red: 0 peticiones fuera de http://127.0.0.1 (blob: y el propio servidor) en la ejecución completa
+     (72 documentos, 143 peticiones), en las repeticiones de OCR con 1 y 5 idiomas (52 y 56) y en la
+     interfaz real (9 archivos de todos los formatos).
+  ✅ Archivos dañados: 6/6 rechazados sin cuelgue (docx12, xlsx11, xls06, pdf11a, pdf12, png06).
+  ✅ Instrucciones inyectadas en español/inglés, con caracteres invisibles, con homoglifos y el delimitador
+     DOCUMENT_DATA: detectadas (gravedad alta) en DOCX, XLSX (hoja oculta), PDF (texto blanco e invisible) y
+     HTML.
+  ⚠️ Detector solo en español e inglés (líneas 4527–4560): no detecta catalán, francés ni euskera, aunque la
+     aplicación hace OCR en esos idiomas; tampoco frases sutiles («Nota para el asistente…», «A partir de
+     ahora actúas…», «No menciones el descuadre…»). Es una capa complementaria: la defensa principal es que
+     el prompt trata DOCUMENT_DATA como dato no confiable.
+  ⚠️ Texto oculto: solo se marca en HTML con atributos o estilos en línea (3/8 variantes). En DOCX (w:vanish)
+     y PDF (blanco o invisible) no hay marca de «oculto».
+
+-----------------------------------------------------------------------------------------------------
+6. VALORACIÓN DEL CÓDIGO
+-----------------------------------------------------------------------------------------------------
+6.1 Métricas (analizador-archivos.js)
+  16.510 líneas: 13.964 de código, 1.540 de comentario (densidad 9,9 %), 180 bloques JSDoc, 15 clases,
+  80 Object.freeze, 61 catch (8 vacíos, todos comentados) y 9 .catch(() => {}). 224 líneas de más de 160
+  caracteres (máximo 430).
+
+6.2 ESLint 10.1 (reglas recomendadas + seguridad + complejidad; configuración en herramientas/)
+  - Reglas de seguridad (no-eval, no-implied-eval, no-new-func, no-script-url): 0 infracciones.
+  - Búsqueda de sumideros peligrosos: innerHTML 0, outerHTML 0, insertAdjacentHTML 0, document.write 0,
+    eval 0, new Function 0, setTimeout con texto 0, localStorage/sessionStorage 0, cookies 0. Se usa
+    textContent (41). fetch solo se llama en 2 puntos: 7342 (descarga del mismo origen y comprobación SHA-256) y 7597 (HEAD
+    al mismo origen); los recursos que pide PDF.js pasan por 7540–7559 y obtenerVerificado; XMLHttpRequest, WebSocket, EventSource y sendBeacon anulados en los workers
+    (512–513, 7767–7770).
+  - Errores reales: 4 variables sin uso (270 FACTOR_MEMORIA_IMAGEN, 10595 clave, 10644
+    actividadesLineas, 15169 perfil); caracteres invisibles LITERALES dentro de expresiones regulares
+    (769, 3099, 3104, 3177, 3734): funcionan, pero no se ven al revisar el código y un editor puede
+    alterarlos (deben escribirse como secuencias de escape: \u200B, \uFEFF…).
+  - Falsos positivos analizados: no-control-regex (9) y no-misleading-character-class (8) son
+    expresiones de saneamiento intencionadas; CSS (3) es un global del navegador; las 4 desestructuraciones
+    «sin uso» de 10408–10415 son el modismo para omitir propiedades.
+  - Complejidad: 46 funciones con complejidad ciclomática > 25. Las peores: construir 228 (4924),
+    aaConstruirPromptFiscal 190 (10584), HTML.extraer 123 (3825), aaAutorrevisarPrompt 114 (11214),
+    aaEvaluarContexto 113 (9633), extraerXLS 94 (2424). 8 funciones de más de 200 líneas (máx. 577) y
+    anidamiento de 8 niveles en analizarDocumento (12623).
+
+6.3 Lectura de diseño
+  + Arquitectura defensiva coherente: análisis en un Web Worker sin red, PDF.js y Tesseract desde blob: con
+    bytes verificados, CSP sin 'unsafe-inline', cadena SRI → ancla → manifiesto.
+  + Lectores propios de ZIP, XML, OOXML, OLE2/BIFF8 y HTML con límites explícitos (tamaño, celdas,
+    profundidad, ratio de compresión) y mensajes en español.
+  + Trazabilidad: cada valor lleva origen (DOCUMENTO, NORMALIZACION, INFERENCIA…), bloque y confianza.
+  − Un único archivo de 16.510 líneas con funciones gigantes: difícil de revisar y de probar. El propio
+    archivo dice que hay una versión de desarrollo separada (líneas 445–457) que no se ha entregado.
+  − La entrega no incluye pruebas automáticas.
+  − Fallos silenciosos: en 5 casos (pdf09, xlsx05, html06, pdf13 y, en parte, docx08) el resultado es
+    «complete» o solo lleva un aviso informativo, aunque los datos están perdidos o desplazados. Para una
+    herramienta fiscal es el tipo de fallo más peligroso.
+  − Un fallo del OCR tumba toda la aplicación (12809–12820) en lugar de degradarse.
+
+6.4 Nota total = 0,25·Seguridad + 0,35·Lectura + 0,15·Robustez + 0,15·Mantenibilidad + 0,10·Rendimiento
+  Seguridad 8,5   (red 0, sin sumideros, integridad real; −: detector solo es/en, ocultos solo en HTML)
+  Lectura 6,6     (media de las 7 notas de formato del apartado 0)
+  Robustez 6,0    (dañados 6/6 controlados; −: 5 pérdidas silenciosas, la app no arranca sin relaxed SIMD)
+  Mantenibilidad 5,5 (comentado y con JSDoc; −: complejidad extrema, archivo único, sin pruebas)
+  Rendimiento 7,5 (100 págs. PDF 0,59 s; 25.000 filas 2,4 s; −: OCR de 7 idiomas hasta 14 s por página)
+  → 0,25·8,5 + 0,35·6,6 + 0,15·6,0 + 0,15·5,5 + 0,10·7,5 = 6,9 / 10
+
+-----------------------------------------------------------------------------------------------------
+7. CONTRASTE CON EL INFORME DE IDEFIX1.0 (informe-auditoria-Idefix1.0)
+-----------------------------------------------------------------------------------------------------
+  R06 «reconocimiento real con Tesseract 7 y 7 idiomas NO DEMOSTRABLE» → ahora DEMOSTRADO: funciona, pero
+      los 7 idiomas juntos degradan el resultado (apartado 3).
+  Excel 8,5 → confirmado y mejor de lo indicado en .xls (10,0); nuevo fallo no recogido: celdas sin r.
+  Word 7,5 «texto oculto señalado» → NO confirmado para w:vanish (no se marca como oculto). Confirmado:
+      listas sin número, celdas combinadas y revisiones no distinguidas. Nuevo: cuadros de texto duplicados
+      y totales en tabla sin inferir.
+  PDF digital 7,5 → confirmado en documentos normales (9,3); confirmados F12 y dos columnas; nuevos: página
+      girada, bytes previos a %PDF-, mensajes en inglés.
+  OCR 6 «con motor real no demostrable» → demostrado con el motor real: 4,0 (PDF escaneado) y 3,3
+      (imágenes) con la configuración por defecto; nuevos: PDF mixto sin OCR, OCR sin tablas, sin
+      orientación ni reescalado.
+  HTML 8 «un texto oculto por CSS se extrae igual, aunque se señala» → solo se «señala» con un aviso
+      genérico de que el CSS no se evalúa; el fragmento no se marca. Nuevos: rowspan desplaza columnas,
+      fragmentos rechazados, filas con onclick descartadas.
+
+-----------------------------------------------------------------------------------------------------
+8. LISTA ÚNICA PRIORIZADA
+-----------------------------------------------------------------------------------------------------
+Punto | Estado | Archivo | Línea | Evidencia | Impacto | Corrección | Prioridad
+1 | ❌ | analizador-archivos.js + Idefix1.0-instrucciones.txt | 8120, 12809–12820; instrucciones paso 2.2 d | Con solo simd-lstm y lstm: «El analizador no se ha iniciado … pidió un script no verificado: tesseract-core-relaxedsimd-lstm.wasm.js» (Chromium 141) | La aplicación entera queda inservible en Chrome/Edge actuales si se sigue el mínimo de las instrucciones | Instrucciones: copiar los 6 *.wasm.js y *.wasm. Código: incluir relaxedsimd-lstm en nucleos y comprobarlo al sellar; si el OCR no arranca, iniciar sin OCR con un aviso visible | Crítica
+2 | ❌ | analizador-archivos.js, index.html | 340; comentario de index.html | 7 idiomas: texto 70 %, importes 3/6, líneas de detalle perdidas, 14,2 s por libro; spa o 5 latinos: 89–93 %, 6/6, 0,8–2,2 s; Tesseract en bruto: los 7 → 0/3 líneas | Facturas sin líneas de detalle y OCR hasta 18× más lento | Por defecto ["spa"] (o los 5 latinos); chino solo bajo demanda y en una pasada aparte | Alta
+3 | ❌ | analizador-archivos.js | 12579, 12623–12629 | pdf09: escaneo con 1 línea digital (sello CSV) → 1 bloque, OCR «not-needed», estado complete, 0/7 datos, sin aviso | Documentos de la sede electrónica y escaneos sellados se quedan sin contenido sin que nadie lo sepa | Detectar imágenes grandes en la página (operadores paintImageXObject) y aplicar OCR híbrido; como mínimo, aviso «página con imagen sin OCR» | Alta
+4 | ❌ | analizador-archivos.js | 3884–3891, 4106, 4163–4164 | html06: 19,4 % campos, totales 0/3; filas 2–12 desplazadas; aviso «info» que dice «las demás quedan vacías»; confianza global 0,88 | Datos fiscales atribuidos a la columna equivocada sin aviso real | Matriz de ocupación con rowspan y colspan (algoritmo de tablas HTML); corregir el texto del aviso | Alta
+5 | ❌ | analizador-archivos.js | 2052 | xlsx05: 0/12 registros, texto 0 %, estado complete sin aviso; LibreOffice y openpyxl lo leen completo | Libro vacío en silencio con algunos generadores | Si falta r, usar la posición implícita (siguiente columna / siguiente fila), como permite ECMA-376 | Alta
+6 | ❌ | analizador-archivos.js | 5746, 2934–2936, 12161–12195 | png09: OCR 97 % del texto y 0/12 registros; png04/pdfE3 (con cuadrícula): texto 4–11 % | Libros, extractos y facturas escaneados no producen tablas ni registros | Agrupar en columnas con las cajas de palabra de Tesseract (mismo criterio que pdfTablasGeometricas); quitar la cuadrícula antes del OCR | Alta
+7 | ⚠️ | analizador-archivos.js | 1631–1642 | docx08: «1.633,50» bajo «Cuota» y «Total» vacío | Importes bajo la columna equivocada en tablas Word combinadas | Expandir gridSpan (y vMerge) con celdas vacías, como ya se hace con colspan en HTML | Media
+8 | ⚠️ | analizador-archivos.js | 4891–4921 | docx02: base, IVA y total en tabla → 4/7 datos | Facturas Word habituales sin importes inferidos | Inferir también de tablas de 2 columnas (rótulo → valor) | Media
+9 | ❌ | analizador-archivos.js | 2722–2723 | pdf05: 0/6 párrafos, 1 tabla inventada (ya conocido, PDF-1) | Informes y resoluciones ilegibles para la IA | Detectar columnas por huecos verticales o usar el árbol de estructura | Media
+10 | ❌ | analizador-archivos.js | 12415–12440, 2722 | pdf13 (/Rotate 90): 0/7 datos, texto 20 % | Páginas apaisadas o giradas ilegibles | Agrupar con coordenadas sin rotación (viewport sin /Rotate) | Media
+11 | ❌ | analizador-archivos.js | 3740 | html08/html09 rechazados («no es una página HTML reconocible») | Exportaciones bancarias .html/.xls-HTML no se pueden cargar | Aceptar si en los primeros KB aparece <table>, <meta> o <div> y la extensión es .html/.htm (sigue sin ejecutarse nada) | Media
+12 | ❌ | analizador-archivos.js | 4052 | html07: 0/12 registros (aviso warning) | Páginas guardadas de banca/ERP con onclick pierden todas las filas | Ignorar el atributo on*, no el contenido (el texto nunca se ejecuta); mantener el aviso | Media
+13 | ⚠️ | analizador-archivos.js | 3809–3822; sin código para w:vanish | html05 3/8; docx06 y pdf10 sin marca de oculto | Instrucciones ocultas sin marcar si no usan una frase conocida | Marcar w:vanish/w:specVanish, color blanco y tamaño ≤ 1 px; en PDF, texto invisible o blanco | Media
+14 | ⚠️ | analizador-archivos.js | 4527–4560 | html13: 4/10 variantes; no detecta catalán, francés, euskera ni frases sutiles | Falsa sensación de protección en documentos en esos idiomas | Añadir patrones cat/eus/fra y de cambio de rol/ocultación; presentarlo como ayuda, no como garantía | Media
+15 | ❌ | analizador-archivos.js | 12161–12195 | jpg08 girada 0/7; png05 (≈72 ppp) 0/7 | Fotos de móvil y capturas reducidas sin datos | Detectar orientación (probar giros o modelo OSD) y reescalar si el texto mide < 20 px | Media
+16 | ⚠️ | analizador-archivos.js | (mensajes de PDF.js sin traducir) | pdf11a «No password given», pdf12 «Invalid PDF structure.» | El usuario no entiende por qué falla | Traducir PasswordException e InvalidPDFException, como ya se hace con Office cifrado (7239–7241) | Baja
+17 | ❌ | analizador-archivos.js | 5512 | pdf14: CRLF antes de %PDF- → rechazado | Algunos PDF descargados no se pueden cargar | Buscar %PDF- en los primeros 1.024 bytes | Baja
+18 | ⚠️ | analizador-archivos.js | 1569–1581 | docx07: texto del cuadro duplicado | Importes duplicados en el texto | En mc:AlternateContent leer solo mc:Choice (o Fallback si no hay Choice) | Baja
+19 | ⚠️ | analizador-archivos.js | 1569–1581 | docx04: 0/3 elementos numerados | Se pierde «1.», «2.» de cláusulas y listas | Calcular la numeración a partir de numbering.xml | Baja
+20 | ⚠️ | analizador-archivos.js | 1569–1581 | docx05: sin aviso de revisiones pendientes | La IA no sabe que el documento tiene cambios sin aceptar | Aviso DOCX_TRACKED_CHANGES con el recuento de w:ins y w:del | Baja
+21 | ⚠️ | analizador-archivos.js | 1959–1963 (aviso «info»), celdas combinadas no propagadas | xlsx07: 89,8 % | Serie u otros datos vacíos en filas combinadas | Propagar el valor del rango combinado (ya previsto como XLSX-2) | Baja
+22 | ⚠️ | analizador-archivos.js | 2792–2894 | pdf03: tabla 81 % (celdas de 2 líneas partidas) | Conceptos largos partidos en filas | Unir líneas de una misma celda cuando la fila no tiene importes | Baja
+23 | ⚠️ | analizador-archivos.js | 2896 | pdf07: solo la 1.ª de 3 facturas estructurada (ya conocido, F12) | Varias facturas llegan como una | Partición por cabeceras repetidas (PDF-3) | Baja
+24 | ⚠️ | analizador-archivos.js | 270, 10595, 10644, 15169; 769, 3099, 3104, 3177, 3734; 46 funciones > 25 | ESLint | Mantenimiento y revisión más difíciles | Quitar variables muertas, escribir los invisibles como \uXXXX, dividir construir y aaConstruirPromptFiscal, entregar pruebas automáticas | Baja
+
+-----------------------------------------------------------------------------------------------------
+9. FASE DE MEJORA (en este orden)
+-----------------------------------------------------------------------------------------------------
+  Fase A · Inmediata: configuración e instrucciones, casi sin tocar la lógica
+    A1 Instrucciones: copiar los 6 núcleos de tesseract.js-core 7.0.0 (*.wasm.js y *.wasm) y volver a sellar.
+    A2 index.html: data-idiomas-ocr="spa" (o "spa,cat,eus,eng,fra"); chino solo si se necesita.
+    A3 Que un fallo del OCR no impida arrancar: el analizador sin OCR y un aviso visible.
+  Fase B · Pérdidas silenciosas (prioridad 3–6)
+    B1 PDF mixto: OCR híbrido o, como mínimo, aviso.  B2 HTML rowspan.  B3 XLSX sin r.
+    B4 Tablas desde el OCR con las cajas de palabra; quitar la cuadrícula antes del OCR.
+  Fase C · Estructura de tablas y texto (7–12): gridSpan/vMerge en DOCX, totales en tabla, dos columnas,
+    páginas giradas, fragmentos HTML, filas con on*.
+  Fase D · Seguridad de contenido (13–14): ocultos en DOCX/PDF/CSS y patrones cat/eus/fra.
+  Fase E · OCR (15): orientación y reescalado.
+  Fase F · Calidad (16–24): mensajes en español, pequeñas correcciones, división de funciones y pruebas
+    automáticas con este mismo corpus (auditoria-lectura-idefix/ ya incluye los generadores y el evaluador).
+  Criterio de salida: repetir esta auditoría y exigir 0 pérdidas silenciosas y nota ≥ 8 en cada formato.
+
+-----------------------------------------------------------------------------------------------------
+10. RECOMENDACIÓN FINAL
+-----------------------------------------------------------------------------------------------------
+  - Usarlo ya: libros y listados en .xlsx/.xls (nota 8,6 y 10,0) y facturas o documentos DOCX/HTML/PDF
+    digitales sin maquetación compleja.
+  - Usarlo con revisión humana: DOCX con tablas combinadas o totales en tabla, PDF a dos columnas o con
+    varias facturas, HTML con tablas combinadas.
+  - No confiar todavía: PDF escaneados e imágenes (notas 4,0 y 3,3), sobre todo libros, extractos y fotos.
+  - Antes de cualquier despliegue: aplicar la Fase A (configuración e instrucciones). Es barata y evita la
+    caída total de la aplicación y la pérdida de las líneas de detalle en el OCR.
+
+-----------------------------------------------------------------------------------------------------
+11. REPRODUCCIÓN
+-----------------------------------------------------------------------------------------------------
+  Carpeta auditoria-lectura-idefix/:
+    corpus/                 los 72 documentos de prueba
+    herramientas/           generadores (datos.py, generar_corpus.py, generar_corpus_imagenes.py,
+                            generar_extra.py, render_chromium.js, render2.js), ejecutor (ejecutar.js +
+                            prueba-auditoria.html/.js), evaluador (evaluar.py, consolidar.py), interfaz
+                            (ui.js), diagnóstico Tesseract en bruto (diag.js, diag-tesseract.html/.js),
+                            sellado (sellar-idefix.py) y eslint.config.mjs
+    resultados/             JSON de Idefix por documento y configuración (salvo xlsx10, 61 MB:
+                            se regenera), evaluaciones, consolidado.json, eslint.json, registros de red
+  Pasos: 1) montar Idefix1.0 con sus vendor/ y sellar (sellar-idefix.py <carpeta>); 2) copiar
+  prueba-auditoria.html/.js a la carpeta y poner en el atributo integrity el SRI del sellado; 3) python
+  servidor-local.py 8090; 4) python3 generar_corpus.py salida && node render_chromium.js salida &&
+  python3 generar_corpus_imagenes.py salida && python3 generar_extra.py salida; 5) node ejecutar.js salida
+  prod (y spa, latinos); 6) python3 evaluar.py salida prod && python3 consolidar.py salida.
+  Las herramientas de prueba usan Node/Python solo para GENERAR y MEDIR; Idefix se ejecuta tal cual en el
+  navegador, sin Node ni frameworks.
