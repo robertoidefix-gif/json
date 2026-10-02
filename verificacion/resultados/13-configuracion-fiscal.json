@@ -1,0 +1,181 @@
+{
+ "pruebas": {
+  "P1": {
+   "ok": true,
+   "fallos": [],
+   "extracto": [
+    " / CONFIGURACIÓN FISCAL",
+    "---------------------------------",
+    "Régimen de IRPF (selección del usuario, literal): EDS; EDN",
+    "8. EPÍGRAFES",
+    "------------",
+    "===== INICIO EPIGRAFES_USUARIO [USR-4993ea91317d] =====",
+    "Fila 1 · Epígrafe: Actividad profesional · Código de epígrafe: 123.4",
+    "Fila 2 · Epígrafe: Comercio minorista · Código de epígrafe: 456.7",
+    "===== FIN EPIGRAFES_USUARIO [USR-4993ea91317d] =====",
+    "(Cada fila es un par independiente: no mezcles el código de una fila con la descripción de otra. Textos literales del usuario.)",
+    "9. CONTEXTO DEL ANÁLISIS INDICADO POR EL USUARIO",
+    "------------------------------------------------",
+    "Contexto del análisis: no indicado",
+    "10. DOCUMENTACIÓN DECLARADA COMO APORTADA",
+    "-----------------------------------------",
+    "- Se aporta facturas Recibidas",
+    "- Libro Facturas Recibidas",
+    "- Cuentas Bancarias"
+   ]
+  },
+  "P2": {
+   "ok": true,
+   "fallos": []
+  },
+  "P3": {
+   "ok": true,
+   "fallos": []
+  },
+  "P4": {
+   "ok": true,
+   "fallos": []
+  },
+  "P5": {
+   "ok": true,
+   "fallos": [],
+   "pasos": [
+    {
+     "impuesto": "IVA",
+     "zona": {
+      "filas": 0,
+      "marcadas": 0,
+      "seleccionadas": 0,
+      "selectores": 1,
+      "valoresTexto": ""
+     },
+     "mensajes": [
+      "Se ha cambiado de IRPF a IVA: se han descartado el régimen, los epígrafes y la documentación de IRPF."
+     ]
+    },
+    {
+     "impuesto": "IRNR",
+     "zona": {
+      "filas": 0,
+      "marcadas": 0,
+      "seleccionadas": 0,
+      "selectores": 0,
+      "valoresTexto": ""
+     },
+     "mensajes": [
+      "Se ha cambiado de IVA a IRNR: se han descartado el régimen, los epígrafes y la documentación de IVA."
+     ]
+    },
+    {
+     "impuesto": "IS",
+     "zona": {
+      "filas": 0,
+      "marcadas": 0,
+      "seleccionadas": 0,
+      "selectores": 0,
+      "valoresTexto": ""
+     },
+     "mensajes": []
+    },
+    {
+     "impuesto": "IRPF",
+     "zona": {
+      "filas": 0,
+      "marcadas": 0,
+      "seleccionadas": 0,
+      "selectores": 1,
+      "valoresTexto": ""
+     },
+     "mensajes": []
+    }
+   ]
+  },
+  "P6": {
+   "ok": true,
+   "fallos": [],
+   "erroresJuntoAlCampo": [
+    "El NIF del cliente es obligatorio.",
+    "El nombre es obligatorio.",
+    "Seleccione el impuesto."
+   ]
+  },
+  "P7": {
+   "ok": true,
+   "fallos": [],
+   "mensajes": [
+    "aacf-mensaje-error: No se ha generado el prompt. Nombre: No puede contener «{{» ni «}}» (reservados para marcadores internos). Epígrafe 1: No puede contener «{{» ni «}}» (reservados para marcadores internos). Código del epígrafe 1: No puede contener «{{» ni «}"
+   ],
+   "documentoConMarcadores": {
+    "ok": true,
+    "marcadoresEnPrompt": 0,
+    "invisiblesEnPrompt": false,
+    "equivalente": true,
+    "revision": [
+     "sin_marcadores:true",
+     "cliente_identificado:true",
+     "aislamiento_impuesto:true",
+     "opciones_del_impuesto:true",
+     "bloques_delimitados:true",
+     "json_extraccion_intacto:true"
+    ]
+   }
+  },
+  "P8": {
+   "ok": true,
+   "fallos": [],
+   "detalle": {
+    "intacto": true,
+    "congelado": {
+     "ok": true,
+     "sigueCongelado": true
+    }
+   }
+  },
+  "P9": {
+   "ok": true,
+   "fallos": [],
+   "recuento": {
+    "original": {
+     "aa": 17,
+     "sourceRef": 11,
+     "nativeRef": 7
+    },
+    "documentData": {
+     "aa": 17,
+     "sourceRef": 11,
+     "nativeRef": 7
+    }
+   }
+  },
+  "P10": {
+   "ok": true,
+   "fallos": [],
+   "filas": [
+    "1 | \"libro-emitidas-1T-2025.xlsx\" | \"xlsx\" | \"Libro de facturas emitidas\" | \"completado\" | no indicado | [\"Emitidas\"] | 0.97 | completa según el analizador | [\"id=aa://document/7f3a1c\",\"sourceRef=aa://document/7f3a1c\"] |",
+    "2 | \"extracto-banco-enero-2025.pdf\" | \"pdf\" | \"Cuentas bancarias\" | \"completado\" | 2 | no indicado | 0.93 | NO completamente fiable: 1 entrada(s) de advertencias | [\"id=aa://document/2b9e44\",\"sourceRef=aa://document/2b9e",
+    "3 | \"ticket-restaurante.jpg\" | \"jpeg\" | \"Otros\" | \"incompleto\" | 1 | no indicado | 0.52 | NO completamente fiable: estado \"incompleto\"; confianza baja (0.52); 1 entrada(s) de baja confianza; 1 entrada(s) de advertencias;",
+    "4 | \"libro-recibidas-1T-2025.xlsx\" | \"xlsx\" | \"Libro de facturas recibidas\" | \"completado\" | no indicado | [\"Recibidas\"] | 0.95 | completa según el analizador | [\"id=aa://document/9e0f71\",\"sourceRef=aa://document/9e0f71\"",
+    "5 | \"modelo-303-1T-2025.pdf\" | \"pdf\" | \"Modelo 303\" | \"completado\" | 3 | no indicado | 0.9 | completa según el analizador | [\"id=aa://document/5a3b2d\",\"sourceRef=aa://document/5a3b2d\"] | /documentos/4",
+    "6 | \"contrato-con-macros.docm\" | \"docm\" | \"Otros\" | \"rechazado\" | no indicado | no indicado | no indicada | NO completamente fiable: estado \"rechazado\"; 2 entrada(s) de seguridad | [\"id=aa://document/e11b6a\",\"sourceRef=a"
+   ]
+  }
+ },
+ "red": {
+  "peticionesNoLocales": [],
+  "violacionesCSP": []
+ },
+ "errores": [],
+ "resumen": {
+  "P1": "OK",
+  "P2": "OK",
+  "P3": "OK",
+  "P4": "OK",
+  "P5": "OK",
+  "P6": "OK",
+  "P7": "OK",
+  "P8": "OK",
+  "P9": "OK",
+  "P10": "OK"
+ },
+ "todoOK": true
+}

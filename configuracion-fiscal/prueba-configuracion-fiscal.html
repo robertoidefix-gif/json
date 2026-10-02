@@ -1,0 +1,71 @@
+<!doctype html>
+<!--
+  Ruta: configuracion-fiscal/prueba-configuracion-fiscal.html
+  HTML de prueba del bloque «Configuración para análisis fiscal» (IRPF, IVA, IRNR e IS).
+  Simula la parte de AnalizadorArchivos que aporta los datos: se puede probar sin datos de extracción,
+  con el EJEMPLO FICTICIO incluido o con un JSON real descargado de Idefix («Descargar JSON»).
+  Se abre con doble clic en Chrome o Edge (file://); no usa red.
+  Dependencias: ../ocr-local/css/ocr-local.css, ../ocr-local/js/cargador-verificado.js (Bootstrap
+  verificado), ejemplo-extraccion.js, configuracion-fiscal.js y prueba-configuracion-fiscal.js.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; connect-src 'none'; img-src 'self' data:; style-src 'self'; font-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Prueba · Configuración para análisis fiscal</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../ocr-local/css/ocr-local.css">
+</head>
+<body>
+  <div class="pantalla-carga" role="status">Cargando…</div>
+  <div class="app">
+    <header class="cabecera">
+      <div class="container py-3">
+        <h1 class="titulo-app">Prueba · Configuración para análisis fiscal</h1>
+        <p class="subtitulo-app">Bloque nuevo para AnalizadorArchivos (Idefix1.0): formulario fiscal y generación del prompt para la IA</p>
+      </div>
+    </header>
+    <main class="container contenido">
+      <section class="card tarjeta" aria-labelledby="tituloDatos">
+        <div class="card-body">
+          <h2 class="titulo-tarjeta" id="tituloDatos">Datos de extracción que recibirá el bloque (simulan AnalizadorArchivos)</h2>
+          <fieldset class="mb-2">
+            <legend class="visually-hidden">Origen de los datos de extracción</legend>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="origenDatos" id="origenNinguno" value="ninguno">
+              <label class="form-check-label" for="origenNinguno">Sin datos de extracción</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="origenDatos" id="origenEjemplo" value="ejemplo" checked>
+              <label class="form-check-label" for="origenEjemplo">Ejemplo ficticio incluido (6 documentos, con descuadres y gastos dudosos)</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="origenDatos" id="origenArchivo" value="archivo">
+              <label class="form-check-label" for="origenArchivo">JSON descargado de Idefix («Descargar JSON»)</label>
+            </div>
+          </fieldset>
+          <input class="form-control mb-2" type="file" id="archivoJSON" accept=".json,application/json" aria-label="Archivo JSON de extracción" disabled>
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" for="simEjercicio">Ejercicio fiscal ya existente en la aplicación (simulado, opcional)</label>
+              <input class="form-control" type="text" id="simEjercicio" placeholder="Vacío = la aplicación no lo tiene">
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" for="simPeriodo">Periodo ya existente en la aplicación (simulado, opcional)</label>
+              <input class="form-control" type="text" id="simPeriodo" placeholder="Vacío = la aplicación no lo tiene">
+            </div>
+          </div>
+          <p class="nota" id="estadoDatos" aria-live="polite"></p>
+        </div>
+      </section>
+      <div id="contenedorConfiguracionFiscal"></div>
+    </main>
+  </div>
+  <script src="../ocr-local/js/cargador-verificado.js"></script>
+  <script src="ejemplo-extraccion.js"></script>
+  <script src="configuracion-fiscal.js"></script>
+  <script src="prueba-configuracion-fiscal.js"></script>
+</body>
+</html>

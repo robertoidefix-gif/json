@@ -1,0 +1,80 @@
+configuracion-fiscal/ — Bloque «Configuración para análisis fiscal» (AAConfiguracionFiscal 1.0.0)
+=====================================================================================================
+
+ESTADO DE LA ENTREGA (léalo primero)
+  - analizador-archivos.js (Idefix1.0) NO está en el repositorio: el commit «prueba1» trae las
+    instrucciones, el informe y las librerías de vendor/, pero no la aplicación. Por eso NO se ha
+    podido entregar «el código completo original con el bloque añadido al final»: no se ha inventado
+    ni reconstruido ninguna línea del código original.
+  - Se entrega el bloque nuevo COMPLETO y autónomo, listo para pegarse tal cual al final de
+    analizador-archivos.js (empieza en «INICIO DEL BLOQUE NUEVO» y termina en «FIN DEL BLOQUE NUEVO»).
+    Cuando suba analizador-archivos.js, lo integro y entrego el archivo entero (.js y .txt).
+
+ARCHIVOS
+  configuracion-fiscal.js ........ el bloque nuevo (sin dependencias; expone window.AAConfiguracionFiscal)
+  configuracion-fiscal.txt ....... copia idéntica byte a byte del .js (mismo SHA-256)
+  prueba-configuracion-fiscal.html / .js   HTML de prueba de IRPF, IVA, IRNR e IS
+  ejemplo-extraccion.js .......... JSON de extracción FICTICIO para la prueba (no es el esquema oficial)
+  Pruebas automáticas: ../verificacion/prueba-configuracion-fiscal.js
+  Resultados: ../verificacion/resultados/13-configuracion-fiscal.json (pruebas 1–10: todas OK)
+
+CÓMO PROBARLO
+  Abra prueba-configuracion-fiscal.html con Chrome o Edge (doble clic). Elija el origen de los datos:
+  sin datos, el ejemplo ficticio o el JSON real que descarga Idefix con «Descargar JSON». Rellene NIF,
+  Nombre e Impuesto y pulse «Generar prompt para IA fiscal».
+
+CÓMO INTEGRARLO EN analizador-archivos.js (pasos exactos; las llamadas internas de Idefix no se
+conocen porque su código no está disponible, por eso se indican como «<…>»)
+  1. Pegue el contenido íntegro de configuracion-fiscal.js al FINAL de analizador-archivos.js.
+     No cambie nada del código anterior.
+  2. Donde Idefix termina de construir su interfaz, monte la sección al final:
+        AAConfiguracionFiscal.montar(<contenedor raíz de la interfaz>, {
+          obtenerDatosExtraccion: () => <JSON consolidado que ya genera AnalizadorArchivos, o null>,
+          obtenerContextoSistema: () => ({ ejercicio: <valor del campo de ejercicio existente>,
+                                           periodo: <valor del periodo existente> }),
+          obtenerContextoUsuario: () => <texto de la cajetilla «Contexto del análisis» existente>
+        });
+     - obtenerDatosExtraccion: el bloque lo LEE y nunca lo modifica (comprobado en la prueba 8).
+     - obtenerContextoSistema: reutiliza el ejercicio/periodo que ya existan; si no existen, el prompt
+       dice «No indicado / no disponible» y no se crea ningún valor.
+     - obtenerContextoUsuario: si se pasa, la sección NO crea otra cajetilla de contexto (no duplica).
+  3. Idefix verifica su propio archivo (SRI en index.html y anclas SHA-256): después de pegar el
+     bloque hay que volver a sellar (paso 4 de Idefix1.0-instrucciones.txt).
+
+CONFLICTOS CON LA APLICACIÓN ACTUAL QUE DEBE DECIDIR USTED (según su descripción de Idefix1.0)
+  a) Idefix ya tiene un formulario fiscal con el impuesto, NIF, nombre, régimen, epígrafes y una tabla
+     de documentación. Este bloque crea OTRO al final, como pide la especificación. Tener dos
+     formularios duplica información. Opciones: sustituir el antiguo o mantener solo uno.
+  b) Las listas cerradas son las EXACTAS de la nueva especificación y difieren de las de Idefix:
+     - Régimen IVA: aquí «Estimación Objetiva, Regimen Oro, Regimen Agencia Viaje, Regimen Bienes
+       usados, Regimen General»; en Idefix «general, simplificado, bienes usados, oro de inversión,
+       agencias de viajes, agricultura–ganadería–pesca».
+     - Documentación: aquí 8 casillas iguales para los 4 impuestos; en Idefix 11 (IRPF) o 13 filas.
+  c) Respuesta de la IA: este prompt pide tablas en Markdown (incongruencias, gastos de dudosa
+     deducibilidad…); el prompt actual de Idefix pide un JSON que se valida con validarRespuestaIA.
+  d) Normativa: aquí solo la lista facilitada (LGT + ley y reglamento del impuesto, BOE). Idefix añade
+     otras según el caso (reglamento de facturación, Veri*Factu, LPACAP…). Este prompt permite a la IA
+     citar otra norma indicando que no está en la lista.
+  e) Idefix tiene cruces X01–X13 y un modo compacto de DOCUMENT_DATA; este bloque envía el JSON
+     completo (requisito «no eliminar información») y pide los cruces como instrucciones.
+
+QUÉ GARANTIZA EL BLOQUE (comprobado en las pruebas 1–10)
+  - NIF y Nombre obligatorios y literales (solo se quitan espacios en los extremos). El NIF se
+    comprueba de forma formal y solo avisa; nunca se corrige ni se completa.
+  - Impuesto obligatorio (IRPF, IVA, IRNR, IS). Antes de elegirlo no aparece ninguna configuración.
+    Al cambiarlo se destruyen los controles y el estado del anterior: nada se arrastra.
+  - IRPF y IVA: selector múltiple (un clic marca o desmarca); IRNR: sin régimen; IS: filas libres.
+  - Epígrafes en filas (descripción + código) sin límite artificial (máximo técnico 50 filas).
+  - Documentación: solo lo marcado; si no hay nada, «Documentación aportada: no indicada».
+  - Sin datos de extracción: «No indicado / no disponible». Con datos: DOCUMENT_DATA completo y
+    equivalente al original (los «{{» y caracteres invisibles se escapan sin pérdida), más un resumen
+    trazable con rutas JSON Pointer: documentos, estado, páginas, hojas, confianza, baja confianza,
+    OCR, advertencias, ambigüedad, errores, contenido parcial, seguridad y referencias
+    sourceRef/nativeRef/aa://document/….
+  - Un documento con estado parcial, baja confianza, advertencias, errores o bloqueo aparece como
+    «NO completamente fiable» con sus motivos.
+  - Autorrevisión antes de mostrar el prompt: sin_marcadores, cliente_identificado,
+    aislamiento_impuesto, opciones_del_impuesto, bloques_delimitados, json_extraccion_intacto.
+    Si una falla, no se muestra el prompt y se dice qué campo la provoca.
+  - Sin eval, new Function, fetch, XMLHttpRequest, CDN, scripts externos ni innerHTML; 0 peticiones
+    de red en las pruebas; compatible con una CSP sin 'unsafe-inline'.
