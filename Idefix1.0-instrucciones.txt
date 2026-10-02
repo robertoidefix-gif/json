@@ -1,0 +1,260 @@
+=====================================================================================================
+IDEFIX1.0 — INSTALACIÓN Y USO 100 % LOCAL EN GOOGLE CHROME Y MICROSOFT EDGE
+(AnalizadorArchivos 6.14.0 · OCR con Tesseract.js 7.0.0 · 2 de octubre de 2026)
+=====================================================================================================
+
+Lo que NO hace falta: Node.js, npm, compilar nada, un backend o un CDN.
+Lo que SÍ hace falta:
+  - Chrome o Edge en una versión reciente.
+  - Un servidor estático LOCAL (incluido). Abrir los archivos con doble clic (file://) no funciona: ver apartado A.
+  - Una conexión a Internet UNA SOLA VEZ, para descargar Tesseract.js y los modelos de idioma (paso 2).
+    Después todo funciona sin conexión.
+
+Leyenda: ✅ comprobado aquí · ⚠️ NO VERIFICADO aquí (lo explico en cada caso).
+
+
+-----------------------------------------------------------------------------------------------------
+A. VIABILIDAD REAL EN CHROME Y EDGE (comprobado antes de escribir el código)
+-----------------------------------------------------------------------------------------------------
+Probado en Chromium 141.0.7390.37, el motor de Chrome y de Edge. No he podido probar Chrome ni Edge de
+marca: en este entorno solo está Chromium.
+
+A.1 Página abierta como archivo (file://)
+  fetch() de un archivo local ............................... ❌ bloqueado («URL scheme "file" is not supported»)
+  XMLHttpRequest de un archivo local ........................ ❌ bloqueado por CORS (origen «null»)
+  new Worker("archivo.js") .................................. ❌ SecurityError (origen «null»)
+  WebAssembly.instantiateStreaming(fetch("x.wasm")) ......... ❌ (depende de fetch)
+  <script src> con atributo integrity ....................... ❌ no se ejecuta (la comprobación de integridad exige CORS)
+  <script src> sin integrity ................................ ✅ se ejecuta
+  Worker creado desde blob: + importScripts de un archivo ... ✅ funciona
+  WebAssembly.instantiate(bytes en memoria) ................. ✅ funciona
+  Con la opción --allow-file-access-from-files: XMLHttpRequest y new Worker pasan a funcionar, pero fetch
+  sigue bloqueado. Además esa opción deja leer tus archivos a cualquier página local: no la uses.
+
+A.2 Conclusión
+  Tesseract.js descarga los modelos de idioma (.traineddata.gz) con fetch. Además, la aplicación lee cada
+  archivo con fetch para comprobar su SHA-256 antes de ejecutarlo. Por eso en file:// NO es viable: ni
+  Tesseract, ni su núcleo WebAssembly, ni los modelos, ni PDF.js.
+  Alternativa exacta: un servidor estático local que solo escuche en este ordenador (http://localhost).
+  Desde http://localhost todo lo anterior funciona (✅ comprobado): fetch, workers, WebAssembly e integrity.
+
+A.3 Servidores incluidos (no hay que instalar nada en Windows)
+  iniciar-idefix.bat     Windows. Arranca servidor-local.ps1 con PowerShell 5.1 (viene con Windows 10/11)
+                         y abre el navegador.
+                         ⚠️ El script de PowerShell no se ha podido ejecutar aquí (no hay PowerShell en
+                         este entorno). Está escrito para PowerShell 5.1 y .NET HttpListener.
+  servidor-local.ps1     El servidor en sí: solo http://localhost:8080/, solo GET y HEAD, sin archivos
+                         ocultos ni nada fuera de la carpeta, con las cabeceras de seguridad (CSP incluida).
+  servidor-local.py      Alternativa con Python 3 (Windows, macOS, Linux). Mismas reglas.
+                         ✅ Probado: escucha solo en 127.0.0.1; 5 intentos de salir de la carpeta → 404;
+                         no lista carpetas; POST → 405; cabeceras y tipos MIME correctos (.js, .wasm, .gz).
+
+
+-----------------------------------------------------------------------------------------------------
+B. CONTENIDO DEL ZIP (carpeta Idefix1.0)
+-----------------------------------------------------------------------------------------------------
+  analizador-archivos.js          Aplicación completa en un archivo: JS, interfaz, CSS, worker núcleo y
+                                  MARCO_FISCAL_LOCAL.
+  index.html                      Aplicación con OCR (necesita el paso 2).
+  index-sin-ocr.html              Aplicación sin OCR: funciona nada más descomprimir y arrancar el servidor.
+  demo-ocr.html, demo-ocr.js,     Demostración: cargar una imagen y reconocer su texto en español.
+  demo-ocr.css
+  servidor-local.ps1,             Servidor local (ver A.3).
+  iniciar-idefix.bat,
+  servidor-local.py
+  herramientas/                   generar-manifiesto.html (sellado de integridad) y cabeceras recomendadas.
+  vendor/pdfjs, vendor/pdfjs-legacy   PDF.js 6.2.108 oficial (incluido).
+  vendor/tesseract, vendor/tesseract-core, vendor/tessdata
+                                  VACÍAS (solo un LEEME.txt): aquí van los archivos del paso 2.
+  vendor/manifiesto-integridad.json   SHA-256 de cada archivo de vendor/ (se regenera en el paso 4).
+
+
+-----------------------------------------------------------------------------------------------------
+C. PASO A PASO (Windows; con macOS o Linux, cambia el paso 3 por «python3 servidor-local.py»)
+-----------------------------------------------------------------------------------------------------
+
+PASO 1 · Descomprimir
+  Descomprime el zip, por ejemplo en C:\Idefix1.0. A partir de aquí, «la carpeta» es C:\Idefix1.0.
+  Si solo quieres probar la aplicación sin OCR, salta al paso 3 y abre http://localhost:8080/index-sin-ocr.html.
+
+PASO 2 · Descargar Tesseract.js 7.0.0, su núcleo y los modelos de idioma (una sola vez, con Internet)
+  Son archivos oficiales publicados en el registro de npm, pero no hace falta npm: el navegador los descarga
+  como cualquier archivo y Windows (10 1803 o posterior y 11) los descomprime con «tar», que ya trae.
+  ⚠️ No he podido descargarlos para comprobar su contenido (este entorno no tiene acceso a npm ni a
+  GitHub). Las rutas internas de los paquetes son las publicadas por el proyecto. Si alguna no coincide,
+  busca el archivo por su nombre dentro de la carpeta «package».
+
+  2.1 Tesseract.js 7.0.0
+      a) Abre en el navegador:  https://registry.npmjs.org/tesseract.js/-/tesseract.js-7.0.0.tgz
+         Se descarga tesseract.js-7.0.0.tgz.
+      b) (Recomendado) Comprueba que es el archivo publicado. Abre https://registry.npmjs.org/tesseract.js/7.0.0
+         y busca «"integrity":"sha512-…"». En PowerShell, en la carpeta de Descargas:
+           $h=(Get-FileHash .\tesseract.js-7.0.0.tgz -Algorithm SHA512).Hash
+           'sha512-'+[Convert]::ToBase64String([byte[]]($h -split '(..)' -ne '' | % {[Convert]::ToByte($_,16)}))
+         Los dos valores deben ser idénticos.
+      c) Descomprime en una carpeta temporal:  tar -xzf tesseract.js-7.0.0.tgz
+      d) Copia a C:\Idefix1.0\vendor\tesseract\ estos dos archivos:
+           package\dist\tesseract.min.js
+           package\dist\worker.min.js
+
+  2.2 Núcleo WebAssembly (tesseract.js-core)
+      a) Abre package\package.json (el del paso 2.1) con el Bloc de notas y busca "tesseract.js-core". Verás
+         una versión, por ejemplo "^7.0.0". Usa ese número sin el «^».
+      b) Abre:  https://registry.npmjs.org/tesseract.js-core/-/tesseract.js-core-<VERSIÓN>.tgz
+         (comprueba la integridad igual que en 2.1 b con https://registry.npmjs.org/tesseract.js-core/<VERSIÓN>).
+      c) tar -xzf tesseract.js-core-<VERSIÓN>.tgz
+      d) Copia a C:\Idefix1.0\vendor\tesseract-core\ todos los archivos package\tesseract-core*.wasm.js
+         (y los package\tesseract-core*.wasm, si vienen). Como mínimo hacen falta:
+           tesseract-core-simd-lstm.wasm.js   (navegadores con SIMD: Chrome y Edge actuales)
+           tesseract-core-lstm.wasm.js        (sin SIMD)
+
+  2.3 Modelos de idioma (.traineddata.gz)
+      La demo necesita solo el español (spa). La aplicación usa por defecto 7 idiomas: spa, cat, eus, eng,
+      fra, chi_sim y chi_tra. Si no quieres los 7, copia solo los que vayas a usar e indícalos en index.html
+      (ver paso 6).
+      Opción A (formato que espera Tesseract.js): los paquetes @tesseract.js-data/<idioma> del registro npm.
+        a) Abre https://registry.npmjs.org/@tesseract.js-data/spa y busca "dist-tags" → "latest" (versión) y,
+           en esa versión, "tarball" (URL de descarga). Ábrela para descargar el .tgz.
+        b) tar -xzf <archivo>.tgz y busca dentro spa.traineddata.gz (⚠️ su carpeta no verificada aquí;
+           suele estar en una subcarpeta del tipo 4.0.0_best_int).
+        c) Cópialo a C:\Idefix1.0\vendor\tessdata\spa.traineddata.gz
+        d) Repite con cat, eus, eng, fra, chi_sim y chi_tra si los quieres.
+      Opción B: los modelos oficiales de Tesseract (https://github.com/tesseract-ocr/tessdata_fast o
+        tessdata_best), que vienen sin comprimir (spa.traineddata). Comprímelos con gzip; en PowerShell:
+          $e=[IO.File]::OpenRead('spa.traineddata'); $s=[IO.File]::Create('spa.traineddata.gz')
+          $g=New-Object IO.Compression.GZipStream($s,[IO.Compression.CompressionMode]::Compress)
+          $e.CopyTo($g); $g.Close(); $e.Close()
+        y copia spa.traineddata.gz a vendor\tessdata\.
+      Los nombres deben ser exactamente <idioma>.traineddata.gz: spa, cat, eus, eng, fra, chi_sim, chi_tra.
+
+PASO 3 · Arrancar el servidor local
+  Haz doble clic en C:\Idefix1.0\iniciar-idefix.bat. Se abre una ventana de PowerShell («Idefix1.0 —
+  sirviendo C:\Idefix1.0») y el navegador en http://localhost:8080/.
+  - Si Windows muestra «Windows protegió su PC» (SmartScreen): «Más información» → «Ejecutar de todas formas».
+  - Si el puerto 8080 está ocupado: en una consola de la carpeta,
+      powershell -NoProfile -ExecutionPolicy Bypass -File .\servidor-local.ps1 -Puerto 8123
+    y usa http://localhost:8123/.
+  - Con Python:  python servidor-local.py   (o «py servidor-local.py»)  →  http://127.0.0.1:8080/
+  El navegador por defecto puede no ser Chrome ni Edge: en ese caso copia la dirección en Chrome o Edge.
+
+PASO 4 · Sellar la integridad (cada vez que cambies algo en vendor/)
+  La aplicación solo ejecuta archivos cuyo SHA-256 coincide con el manifiesto. Al añadir Tesseract hay que
+  regenerarlo:
+  4.1 Abre http://localhost:8080/herramientas/generar-manifiesto.html
+  4.2 Pulsa «Elegir la carpeta de la aplicación» y elige C:\Idefix1.0 (el navegador pide permiso para leerla:
+      la lectura ocurre en el navegador; no se envía nada).
+  4.3 Pulsa «Descargar manifiesto-integridad.json» y guarda el archivo como
+      C:\Idefix1.0\vendor\manifiesto-integridad.json (reemplaza el que hay).
+  4.4 Vuelve a elegir la carpeta. En la fila «SHA256_MANIFIESTO_INTEGRIDAD» aparecerá en rojo el valor nuevo.
+      Abre analizador-archivos.js con el Bloc de notas, busca (Ctrl+F) «const SHA256_MANIFIESTO_INTEGRIDAD»
+      (línea 443), sustituye el valor entre comillas por el nuevo y guarda.
+  4.5 Vuelve a elegir la carpeta. Ahora cambian los «integrity» de analizador-archivos.js: copia cada valor
+      en rojo en index.html, index-sin-ocr.html y demo-ocr.html (atributo integrity="sha256-…" de la línea
+      <script src="analizador-archivos.js" …>) y guarda.
+  4.6 Vuelve a elegir la carpeta: todas las filas deben decir «Coincide».
+
+PASO 5 · Demostración de OCR en español
+  Abre http://localhost:8080/demo-ocr.html, arrastra una imagen PNG o JPEG (o haz clic para elegirla) y pulsa
+  «Reconocer texto (español)». La primera vez carga Tesseract y el modelo de español; las siguientes reutiliza
+  el motor. Verás el texto, las líneas con su confianza y el panel «Comprobación de red».
+
+PASO 6 · La aplicación
+  Abre http://localhost:8080/ (index.html, con OCR) o http://localhost:8080/index-sin-ocr.html.
+  - Si solo has copiado algunos idiomas, edita index.html y añade al <script> por ejemplo
+      data-idiomas-ocr="spa"    o    data-idiomas-ocr="spa,eng"
+    (editar index.html no cambia ningún valor de integridad).
+  - En el panel del prompt hay una nueva cajetilla «Contexto del análisis»: escribe con tus palabras qué
+    quieres que se analice. Va al prompt delimitado y marcado como texto no confiable. No va al JSON.
+
+PASO 7 · Comprobación de que no sale nada a la red (hazla al menos una vez)
+  7.1 Con DevTools (la prueba directa):
+      a) Pulsa F12 → pestaña «Red» (Network). Marca «Conservar registro» y «Desactivar caché».
+      b) Recarga la página (F5) y haz el proceso completo: OCR en la demo, o en la aplicación añadir
+         documentos, generar el prompt y descargar el JSON.
+      c) En el filtro de la pestaña Red escribe:  -domain:localhost   (con Python: -domain:127.0.0.1)
+         La lista debe quedar VACÍA. Las peticiones de los workers (Tesseract, PDF.js) también aparecen en
+         esta pestaña.
+      d) Todas las peticiones son GET de archivos de la carpeta (vendor/…, analizador-archivos.js…). Ninguna
+         lleva tus documentos: no hay POST ni subidas.
+  7.2 Sin conexión: desactiva Wi-Fi y cable (o activa el modo avión) y repite el proceso. Funciona igual,
+      porque http://localhost no usa la red exterior.
+  7.3 En la demo, el panel «Comprobación de red» cuenta los recursos que pide la página y los intentos que
+      bloquea la CSP. Debe decir «peticiones externas: 0».
+  7.4 Registro completo (opcional): chrome://net-export (en Edge, edge://net-export) → «Start logging to
+      disk», haz el proceso, «Stop» y revisa el archivo: solo debe haber conexiones a localhost.
+
+PASO 8 · Parar
+  Cierra la ventana de PowerShell (o Ctrl+C). La aplicación no guarda nada: al cerrar la pestaña se borra todo.
+
+
+-----------------------------------------------------------------------------------------------------
+D. COMPROBACIÓN DE RED REALIZADA AQUÍ (resultados)
+-----------------------------------------------------------------------------------------------------
+Hecha con Chromium 141 automatizado (Playwright) y servidor-local.py. Se registraron todas las peticiones
+del contexto del navegador, también las de los workers, con un interceptor que ABORTA cualquier petición que
+no vaya al servidor local (además de la CSP).
+
+  ⚠️ Importante: el OCR se ejecutó con un SUSTITUTO de Tesseract.js que imita su forma de cargar el núcleo
+  (importScripts) y los modelos (fetch). Sin la librería real, el texto «reconocido» es fijo. Lo que se
+  demuestra es la carga, la verificación y la red, no la calidad del reconocimiento. El sustituto intenta
+  además una petición no autorizada («/fuga-de-datos»), que el bloqueo del worker OCR impidió.
+
+  D.1 Aplicación completa (index.html con OCR): una imagen con OCR en «Otros», un PDF en «Otros modelos», un
+      Excel en «Contabilidad» y un HTML en «Libro de facturas emitidas»; formulario (IVA, NIF y nombre);
+      «Contexto del análisis»; generar el prompt; descargar el JSON.
+        peticiones totales ........................ 18 (todas GET al propio servidor)
+        peticiones fuera de localhost ............. 0
+        intentos externos interceptados ........... 0
+        peticiones con cuerpo o distintas de GET .. 0
+        bloqueos de la CSP ........................ 0
+        destinos: index.html, analizador-archivos.js, vendor/manifiesto-integridad.json, PDF.js (pdf.mjs,
+        pdf.worker.mjs, 2 fuentes estándar), tesseract.min.js, worker.min.js, 2 núcleos .wasm.js y los 7
+        .traineddata.gz
+  D.2 Demo OCR: 13 peticiones (con las de los workers), 0 externas; solo se pidió spa.traineddata.gz; la
+      petición no autorizada del sustituto no llegó a hacerse.
+  D.3 Demo abierta como archivo (file://): no arranca y muestra el aviso que explica el servidor local.
+
+
+-----------------------------------------------------------------------------------------------------
+E. PROBLEMAS FRECUENTES
+-----------------------------------------------------------------------------------------------------
+  «La demostración no se ha iniciado» o la página sale en blanco
+      La has abierto como archivo (file://) o un integrity no coincide. Usa http://localhost:8080/ y repite
+      el paso 4.
+  «… no figura en el manifiesto de integridad»
+      Has copiado archivos en vendor/ sin volver a sellar: paso 4.
+  «Integridad fallida en … el archivo no coincide con el manifiesto»
+      Un archivo de vendor/ ha cambiado después de sellar (o está dañado): vuelve a copiarlo y repite el paso 4.
+  «el idioma chi_tra … no figura en el manifiesto»
+      Falta ese modelo. Cópialo y sella, o quita el idioma con data-idiomas-ocr (paso 6).
+  «el manifiesto no contiene núcleos de Tesseract»
+      Faltan los tesseract-core*.wasm.js en vendor/tesseract-core (paso 2.2).
+  El motor carga pero falla al reconocer
+      Comprueba que tesseract.min.js, worker.min.js y el núcleo son de la misma versión (la que indica el
+      package.json de tesseract.js 7.0.0).
+  PowerShell: «la ejecución de scripts está deshabilitada»
+      Usa iniciar-idefix.bat o el comando con -ExecutionPolicy Bypass (solo afecta a esa ejecución).
+
+
+-----------------------------------------------------------------------------------------------------
+F. QUÉ ESTÁ COMPROBADO Y QUÉ NO
+-----------------------------------------------------------------------------------------------------
+  ✅ Restricciones de file:// y funcionamiento por http://localhost (Chromium 141).
+  ✅ servidor-local.py: cabeceras, tipos MIME, solo 127.0.0.1, sin salir de la carpeta.
+  ✅ Carga verificada (SHA-256) de Tesseract, núcleo y modelos; un modelo manipulado o ausente impide
+     arrancar (con el sustituto).
+  ✅ Ninguna petición externa en el flujo completo y en la demo (apartado D).
+  ✅ «Contexto del análisis»: delimitado, no confiable, fuera del JSON y autorrevisado (prueba t-contexto).
+  ✅ Regresión completa de la aplicación (17 páginas de prueba + 20 cajetillas × 8 comprobaciones).
+  ⚠️ Reconocimiento real con Tesseract.js 7.0.0 y sus modelos: no se ha podido descargar la librería aquí.
+     Si me adjuntas tesseract.min.js, worker.min.js, los tesseract-core*.wasm.js y spa.traineddata.gz,
+     lo pruebo de verdad con imágenes de facturas.
+  ⚠️ servidor-local.ps1 e iniciar-idefix.bat: no ejecutados aquí (no hay PowerShell ni Windows).
+  ⚠️ Chrome y Edge de marca: probado el motor Chromium 141, no los navegadores de marca.
+
+Fuentes oficiales:
+  Tesseract.js 7.0.0 ............ https://github.com/naptha/tesseract.js/releases/tag/v7.0.0
+  Paquete npm tesseract.js ...... https://www.npmjs.com/package/tesseract.js
+  tesseract.js-core ............. https://github.com/naptha/tesseract.js-core
+  Modelos de Tesseract .......... https://github.com/tesseract-ocr/tessdata_fast
+  PDF.js 6.2.108 ................ https://github.com/mozilla/pdf.js/releases
